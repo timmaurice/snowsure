@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import logging
-from datetime import datetime, timedelta
+from datetime import timedelta
 from typing import Any
 
 from homeassistant.config_entries import ConfigEntry
@@ -12,7 +12,6 @@ from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
-from homeassistant.util import dt as dt_util
 
 from .api import (
     SnowsureAuthError,
@@ -28,7 +27,7 @@ from .const import (
     MAX_SCAN_INTERVAL_MINUTES,
     MIN_SCAN_INTERVAL_MINUTES,
 )
-from .parser import parse_resort, parse_snowfall_history
+from .parser import parse_resort
 
 _LOGGER = logging.getLogger(__package__)
 
@@ -49,13 +48,8 @@ def async_scan_interval(entry: ConfigEntry) -> timedelta:
     return timedelta(minutes=minutes)
 
 
-# The snowfall ledger gains one day a day; a few refreshes a day keep it current
-# without spending a request on every poll.
-HISTORY_MAX_AGE = timedelta(hours=3)
-
-
 class SnowsureCoordinator(DataUpdateCoordinator[dict[str, Any]]):
-    """Fetch one resort (detail + avalanche bulletin, snowfall history now and then) per poll interval."""
+    """Fetch one resort (detail + avalanche bulletin) per poll interval."""
 
     config_entry: SnowsureConfigEntry
 
@@ -69,8 +63,6 @@ class SnowsureCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             name=f"snowsure_{self.slug}",
             update_interval=async_scan_interval(entry),
         )
-        self._history: list[dict[str, Any]] | None = None
-        self._history_at: datetime | None = None
 
     async def _async_update_data(self) -> dict[str, Any]:
         try:
@@ -94,21 +86,4 @@ class SnowsureCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             _LOGGER.debug("Avalanche bulletin for %s unavailable: %s", self.slug, err)
             avalanche = None
 
-        data = parse_resort(detail, avalanche)
-        data["snowfall_history"] = await self._async_history()
-        return data
-
-    async def _async_history(self) -> list[dict[str, Any]] | None:
-        """Past days' snowfall, refetched every HISTORY_MAX_AGE; optional like the bulletin."""
-        now = dt_util.utcnow()
-        if self._history_at is not None and now - self._history_at < HISTORY_MAX_AGE:
-            return self._history
-        try:
-            payload = await self.client.async_get_snowfall_history(self.slug)
-        except SnowsureError as err:
-            _LOGGER.debug("Snowfall history for %s unavailable: %s", self.slug, err)
-            # Keep the last good ledger; try again on the next poll.
-            return self._history
-        self._history = parse_snowfall_history(payload)
-        self._history_at = now
-        return self._history
+        return parse_resort(detail, avalanche)

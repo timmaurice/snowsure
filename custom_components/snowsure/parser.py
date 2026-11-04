@@ -222,30 +222,6 @@ def _add_band_snowfall(daily: list[dict[str, Any]], bands: dict[str, Any]) -> di
     return elevations
 
 
-HISTORY_DAYS = 14
-# Lanes in the order the card prefers them. ``modeled`` is dense (an absent day
-# is 0 cm) and is what snowsure.ai itself plots; the station lanes have gaps.
-_HISTORY_LANES = ("modeled", "analysed", "measured")
-
-
-def parse_snowfall_history(payload: dict[str, Any] | None) -> list[dict[str, Any]] | None:
-    """The last HISTORY_DAYS days of the season's snowfall ledger, oldest first."""
-    lanes = {
-        lane.get("key"): lane
-        for lane in _dict(_dict(payload).get("data")).get("lanes") or []
-        if isinstance(lane, dict) and isinstance(lane.get("days"), list)
-    }
-    lane = next((lanes[key] for key in _HISTORY_LANES if key in lanes), None)
-    if lane is None:
-        return None
-    days = [
-        {"date": _str(day.get("date")), "snowfall": _num(day.get("cm"))}
-        for day in lane["days"]
-        if isinstance(day, dict) and _str(day.get("date"))
-    ]
-    return days[-HISTORY_DAYS:] or None
-
-
 def parse_avalanche(payload: dict[str, Any] | None) -> dict[str, Any]:
     """Flatten the avalanche envelope.
 

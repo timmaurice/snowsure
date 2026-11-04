@@ -4,12 +4,7 @@ from __future__ import annotations
 
 import copy
 
-from custom_components.snowsure.parser import (
-    parse_avalanche,
-    parse_resort,
-    parse_snowfall_history,
-    parse_trail_maps,
-)
+from custom_components.snowsure.parser import parse_avalanche, parse_resort, parse_trail_maps
 
 from .conftest import load_fixture
 
@@ -176,17 +171,3 @@ def test_forecast_without_bands_keeps_the_point_forecast() -> None:
     data = parse_resort(detail)
     assert data["forecast_band_elevations"] is None
     assert "snowfall_summit" not in data["forecast_daily"][0]
-
-
-def test_snowfall_history_prefers_the_modelled_lane() -> None:
-    days = parse_snowfall_history(load_fixture("snowfall_history.json"))
-    assert len(days) == 14
-    assert days[-1] == {"date": "2026-11-03", "snowfall": 0.6}
-    assert days[-2] == {"date": "2026-11-02", "snowfall": 3.4}
-
-
-def test_snowfall_history_tolerates_garbage() -> None:
-    assert parse_snowfall_history(None) is None
-    assert parse_snowfall_history({"data": {"lanes": [{"key": "modeled", "days": "x"}]}}) is None
-    measured = {"data": {"lanes": [{"key": "measured", "days": [{"date": "d", "cm": None}]}]}}
-    assert parse_snowfall_history(measured) == [{"date": "d", "snowfall": None}]

@@ -383,19 +383,7 @@ button {
   border-radius: 4px 4px 0 0;
 }
 
-// Past days: what fell, quieter than the forecast; today gets a soft panel.
-.bar.past {
-  background: rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.14);
-}
-
-.amount.past {
-  color: var(--secondary-text-color);
-}
-
-.day.first-forecast {
-  border-left: 1px dashed rgba(127, 127, 127, 0.45);
-}
-
+// SnowSure's first forecast day: a soft panel.
 .day.today {
   border-radius: 8px;
   background: rgba(var(--rgb-info-color, 3, 155, 229), 0.08);
@@ -474,20 +462,19 @@ button {
   }
 }
 
+// One row: up to three webcams share the width; more scroll sideways.
 .webcams {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(calc((100% - 16px) / 3), 1fr);
   gap: 8px;
-}
-
-// An odd number of webcams would leave a hole in the last row: the first one
-// gets the full width instead.
-.webcam:first-child:nth-last-child(odd):not(:only-child) {
-  grid-column: 1 / -1;
-  aspect-ratio: 21 / 9;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
 }
 
 .webcam {
+  scroll-snap-align: start;
   position: relative;
   overflow: hidden;
   border-radius: 10px;

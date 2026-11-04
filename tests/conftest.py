@@ -16,7 +16,6 @@ FIXTURES = Path(__file__).parent / "fixtures"
 SLUG = "matterhorn-ski-paradise"
 RESORT_URL = f"{API_URL}/resorts/{SLUG}"
 AVALANCHE_URL = f"{RESORT_URL}/avalanche"
-HISTORY_URL = f"{RESORT_URL}/snowfall-history"
 RESORTS_URL = f"{API_URL}/resorts"
 
 
@@ -42,9 +41,8 @@ def mock_entry() -> MockConfigEntry:
 
 @pytest.fixture
 def mock_api(aioclient_mock: AiohttpClientMocker) -> AiohttpClientMocker:
-    """Answer the requests a refresh makes, plus the catalogue."""
+    """Answer the two requests a refresh makes, plus the catalogue."""
     aioclient_mock.get(RESORT_URL, json=load_fixture("resort_detail.json"))
     aioclient_mock.get(AVALANCHE_URL, json=load_fixture("avalanche_bulletin.json"))
-    aioclient_mock.get(HISTORY_URL, json=load_fixture("snowfall_history.json"))
     aioclient_mock.get(RESORTS_URL, json=load_fixture("resorts.json"))
     return aioclient_mock

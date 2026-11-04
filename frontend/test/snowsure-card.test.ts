@@ -99,13 +99,12 @@ describe('render', () => {
       'Valley',
       'Summit',
       'New snow 24h',
-      'New snow 7d',
       'Snow quality',
       'Runs open',
       'Lifts open',
     ]);
-    expect(text(card, '.stat-value')).toEqual(['31 cm', '78 cm', '1.8 cm', '6.6 cm', 'Icy', '43 / 144', '– / 37']);
-    // snowfall_season has no entity in the fixture, so its tile is skipped rather than shown empty.
+    expect(text(card, '.stat-value')).toEqual(['31 cm', '78 cm', '1.8 cm', 'Icy', '43 / 144', '– / 37']);
+    // snowfall_7d and snowfall_season have no entity in the fixture, so their tiles are skipped rather than shown empty.
   });
 
   it('shows the configured tiles in the configured order', async () => {
@@ -161,7 +160,7 @@ describe('render', () => {
     const card = await mount({ device: DEVICE, forecast_days: 3 });
     expect(text(card, '.section-title .secondary')[0]).toBe('7.4 cm in 3 days');
     expect(text(card, '.confidence')).toEqual(['Low confidence']);
-    const day = root(card).querySelector<HTMLElement>('.day:not(.past)')!;
+    const day = root(card).querySelector<HTMLElement>('.day')!;
     expect(day.title).toBe('Slight snowfall · 0° 2,900 m');
   });
 
@@ -268,7 +267,7 @@ describe('render', () => {
 
   it('draws forecast_days bars, scaled to the biggest day', async () => {
     const card = await mount({ device: DEVICE, forecast_days: 5 });
-    const bars = Array.from(root(card).querySelectorAll<HTMLElement>('.day:not(.past) .bar'));
+    const bars = Array.from(root(card).querySelectorAll<HTMLElement>('.bar'));
     expect(bars).toHaveLength(5);
     expect(bars[2].style.height).toBe('100%');
     expect(bars[1].style.height).toBe('0%');
@@ -321,35 +320,21 @@ describe('render', () => {
     root(card).querySelectorAll<HTMLButtonElement>('.band')[2].click();
     await card.updateComplete;
     expect(text(card, '.band.active .band-name')).toEqual(['Summit']);
-    expect(text(card, '.day:not(.past) .amount')).toEqual(['1', '', '13']);
+    expect(text(card, '.amount')).toEqual(['1', '', '13']);
     expect(text(card, '.section-title .secondary')[0]).toBe('13.5 cm in 3 days');
   });
 
   it('starts on the configured band and drops the switch without band data', async () => {
     const card = await mount({ device: DEVICE, forecast_days: 3, forecast_band: 'base' });
     expect(text(card, '.band.active .band-name')).toEqual(['Valley']);
-    expect(text(card, '.day:not(.past) .amount')).toEqual(['', '', '0.4']);
+    expect(text(card, '.amount')).toEqual(['', '', '0.4']);
 
     const hass = makeHass();
     const forecast = hass.states['sensor.matterhorn_forecast'];
     forecast.attributes = { ...forecast.attributes, band_elevations: undefined };
     const plain = await mount({ device: DEVICE, forecast_days: 3, forecast_band: 'summit' }, hass);
     expect(root(plain).querySelector('.band-switch')).toBeNull();
-    expect(text(plain, '.day:not(.past) .amount')).toEqual(['0.5', '', '7']);
-  });
-
-  it('shows the past days from the snowfall ledger left of the forecast', async () => {
-    const card = await mount({ device: DEVICE, forecast_days: 3 });
-    // Three past days by default; the ledger's 2026-11-04 overlaps the forecast and is dropped.
-    expect(text(card, '.day.past .amount')).toEqual(['', '3', '0.6']);
-    expect(root(card).querySelectorAll('.day')).toHaveLength(6);
-    expect(root(card).querySelector('.day.first-forecast .bar')).not.toBeNull();
-    // The temperature lines cover the forecast columns only.
-    expect(root(card).querySelector<HTMLElement>('.temp-chart')!.style.left).toBe('50%');
-
-    const none = await mount({ device: DEVICE, forecast_days: 3, history_days: 0 });
-    expect(root(none).querySelectorAll('.day.past')).toHaveLength(0);
-    expect(root(none).querySelector<HTMLElement>('.temp-chart')!.style.left).toBe('0%');
+    expect(text(plain, '.amount')).toEqual(['0.5', '', '7']);
   });
 
   it('converts the cm/°C forecast attribute only when HA shows imperial units', async () => {
@@ -358,7 +343,7 @@ describe('render', () => {
     hass.states['sensor.matterhorn_temp_summit'].attributes.unit_of_measurement = '°F';
     const card = await mount({ device: DEVICE, forecast_days: 3 }, hass);
     // 6.9 cm -> 2.7 in, -12.8 °C -> 9 °F
-    expect(text(card, '.day:not(.past) .amount')[2]).toBe('2.7');
+    expect(text(card, '.amount')[2]).toBe('2.7');
     expect(text(card, '.temp-label.max')[0]).toBe('9°');
     expect(text(card, '.section-title .secondary')[0]).toBe('2.9 in in 3 days');
   });
@@ -383,7 +368,7 @@ describe('render', () => {
   it("marks SnowSure's first forecast day as today, whatever the viewer's clock says", async () => {
     const card = await mount({ device: DEVICE, forecast_days: 3 });
     expect(text(card, '.day.today .weekday')).toEqual(['Today']);
-    expect(root(card).querySelector('.day.today.first-forecast')).not.toBeNull();
+    expect(root(card).querySelectorAll('.day.today')).toHaveLength(1);
   });
 
   it('draws the temperature curve without overshooting its points', async () => {
@@ -394,7 +379,7 @@ describe('render', () => {
       temp_max: [0, -10, 0, 0][i] ?? 0,
     }));
     forecast.attributes = { ...forecast.attributes, daily };
-    const card = await mount({ device: DEVICE, forecast_days: 4, history_days: 0 }, hass);
+    const card = await mount({ device: DEVICE, forecast_days: 4 }, hass);
     const d = root(card).querySelector('.temp-line.max')!.getAttribute('d')!;
     const ys = [...d.matchAll(/[\d.]+ ([\d.]+)/g)].map((m) => Number(m[1]));
     const tops = [...root(card).querySelectorAll<HTMLElement>('.temp-dot.max')].map((dot) => parseFloat(dot.style.top));

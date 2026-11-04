@@ -92,8 +92,6 @@ export interface SnowsureCardConfig extends LovelaceCardConfig {
   stats?: StatKey[];
   show_forecast?: boolean;
   forecast_days?: number;
-  /** Past days (SnowSure's modelled snowfall) left of today in the forecast chart. */
-  history_days?: number;
   /** Elevation the snow forecast starts on; unset is SnowSure's own forecast point (usually mid). */
   forecast_band?: ForecastBand;
   show_avalanche?: boolean;
