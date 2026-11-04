@@ -489,17 +489,13 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
               <span class="stat-value">${this._statValue(key, entity)}</span>
               <span class="stat-label">${localize(hass, `card.${key}`)}</span>
               ${
-                // Every tile keeps the extra line, empty or not, so cards
-                // side by side come out the same height.
-                html`<span class="stat-extra"
-                  >${
-                    vsAverage !== null
-                      ? localize(hass, 'card.vs_average', {
-                          pct: formatNumber(vsAverage, hass, { maximumFractionDigits: 0 }),
-                        })
-                      : '\u00a0'
-                  }</span
-                >`
+                vsAverage !== null
+                  ? html`<span class="stat-extra"
+                      >${localize(hass, 'card.vs_average', {
+                        pct: formatNumber(vsAverage, hass, { maximumFractionDigits: 0 }),
+                      })}</span
+                    >`
+                  : nothing
               }
             </button>
           `;

@@ -293,11 +293,17 @@ button {
   gap: 8px;
 }
 
+// The minimum height fits a tile with the extra line ("% of avg"), so every
+// tile - and every card side by side - is the same height; the content sits
+// in the middle.
 .stat {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 2px;
+  min-height: 98px;
+  box-sizing: border-box;
   padding: 8px 4px;
   border-radius: 12px;
   background: var(--secondary-background-color);
@@ -334,6 +340,7 @@ button {
 // card): smaller tiles so four fit in a row.
 @container stats (max-width: 400px) {
   .stats > .stat {
+    min-height: 84px;
     padding: 6px 2px;
     border-radius: 10px;
 
@@ -645,7 +652,7 @@ button {
   align-items: center;
   gap: 12px;
   width: 100%;
-  min-height: 40px;
+  min-height: 42px;
 
   &.none {
     gap: 8px;

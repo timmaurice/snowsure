@@ -115,9 +115,6 @@ describe('render', () => {
     for (const id of Object.keys(hass.entities!)) if (id.includes('webcam')) delete hass.entities![id];
     const card = await mount({ device: DEVICE }, hass);
     expect(text(card, '.webcam-empty')).toEqual(['No webcams']);
-    // Every tile carries the extra line, filled or not.
-    const tiles = root(card).querySelectorAll('.stat');
-    expect(root(card).querySelectorAll('.stat .stat-extra')).toHaveLength(tiles.length);
   });
 
   it('renders the default tiles, with open/total for lifts and runs', async () => {
@@ -142,7 +139,7 @@ describe('render', () => {
 
   it('puts the depth against the average under the valley tile', async () => {
     const card = await mount({ device: DEVICE });
-    expect(text(card, '.stat-extra').filter(Boolean)).toEqual(['10% of avg']);
+    expect(text(card, '.stat-extra')).toEqual(['10% of avg']);
   });
 
   it('shows translated weather with valley and summit temperatures', async () => {
