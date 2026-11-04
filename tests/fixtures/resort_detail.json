@@ -1,0 +1,1041 @@
+{
+  "meta": {
+    "source": "SnowSure",
+    "timestamp": "2026-11-04T15:55:23.188Z"
+  },
+  "data": {
+    "name": "Matterhorn Ski Paradise",
+    "slug": "matterhorn-ski-paradise",
+    "country": "Switzerland",
+    "region": "Europe",
+    "heroImage": "https://cdn.sanity.io/images/f0f8zg45/production/f49a54b694fd070ab3dda5ce7788d07404230fcb-1920x1280.webp?fm=jpg",
+    "isOpen": true,
+    "operatingToday": true,
+    "seasonOpeningDate": "2026-11-01",
+    "seasonClosingDate": "2026-05-03",
+    "closure": null,
+    "elevation": {
+      "base": 1562,
+      "summit": 3883,
+      "vertical": 2321,
+      "unit": "m"
+    },
+    "operations": {
+      "openCounts": {
+        "state": "none",
+        "liftsOpen": null,
+        "runsOpen": null,
+        "observedAt": null,
+        "afterHours": true,
+        "closedFor": "day",
+        "nextOpen": null,
+        "timezone": "Europe/Zurich",
+        "hoursSource": "default"
+      },
+      "liftsOpen": null,
+      "liftsTotal": 37,
+      "liftPercentOpen": null,
+      "runsOpen": null,
+      "runsTotal": 78,
+      "terrainPercentOpen": null,
+      "acreageOpen": null,
+      "terrainBeginnerPercent": null,
+      "terrainIntermediatePercent": null,
+      "terrainAdvancedPercent": null,
+      "terrainExpertPercent": null
+    },
+    "snowSure": {
+      "score": 33,
+      "rating": "Solid",
+      "ratingColor": "#0d9488",
+      "calculatedAt": "2026-11-04T15:00:44.438Z",
+      "tagline": "Adequate snow - check forecasts before booking.",
+      "trend": "stable",
+      "breakdown": {
+        "depth": 5.9,
+        "recent": 2.8,
+        "seasonTotal": 3.2,
+        "forecast": 13,
+        "historic": 7.6
+      },
+      "byPersonaLabel": "Fit for skill level — not the SnowSure score"
+    },
+    "currentConditions": {
+      "temperature": -13.1,
+      "conditions": "Moderate snowfall",
+      "windSpeed": 6.9,
+      "humidity": 94,
+      "lastUpdated": "2026-11-04T15:00:44.438Z"
+    },
+    "snow": {
+      "depthCm": 31,
+      "depthIn": 12.2,
+      "depth": {
+        "cm": 31,
+        "inches": 12.2
+      },
+      "depthSource": "model",
+      "depthSourceLabel": "Modeled",
+      "depthElevationBand": "base",
+      "depthElevationM": 1562,
+      "depthStationName": null,
+      "baseDepthCm": 31,
+      "depthVsAvgPct": 10,
+      "depthVsAvgBasis": {
+        "averageCm": 295.6,
+        "averageBand": "base",
+        "readingBand": "base",
+        "readingSource": "model",
+        "suppressedReason": null
+      },
+      "depthDisagreement": null,
+      "reportedDepth": null,
+      "modelDepth": {
+        "base": {
+          "cm": 31,
+          "inches": 12.2
+        },
+        "mid": {
+          "cm": 78,
+          "inches": 30.7
+        },
+        "summit": {
+          "cm": 78,
+          "inches": 30.7
+        },
+        "source": "model"
+      },
+      "depthSources": {
+        "resortReported": {
+          "base": null,
+          "mid": null,
+          "summit": null
+        },
+        "modeled": {
+          "base": 31,
+          "mid": 78,
+          "summit": 78
+        }
+      },
+      "last24hCm": 1.8,
+      "last24hIn": 0.7,
+      "last24h": {
+        "cm": 1.8,
+        "inches": 0.7
+      },
+      "last24hUnknownReason": null,
+      "last24hSource": "model",
+      "last48hCm": 1.8,
+      "last48hIn": 0.7,
+      "last48hSource": "model",
+      "last72hCm": 1.8,
+      "last72hIn": 0.7,
+      "last72hSource": "model",
+      "last7dCm": 2,
+      "last7dIn": 0.8,
+      "last7d": {
+        "cm": 2,
+        "inches": 0.8
+      },
+      "last7dSource": "model",
+      "last10dCm": 10.4,
+      "last10dIn": 4.1,
+      "last10dSource": "model",
+      "seasonTotalCm": 70.1,
+      "seasonTotalIn": 27.6,
+      "seasonTotal": {
+        "cm": 70.1,
+        "inches": 27.6
+      },
+      "seasonTotalSource": "model",
+      "seasonTotalSourceLabel": "Modeled"
+    },
+    "conditionsByElevation": {
+      "base": {
+        "elevation": 1562,
+        "temperature": {
+          "celsius": 1.3,
+          "fahrenheit": 34
+        },
+        "snowDepth": {
+          "cm": 31,
+          "inches": 12.2,
+          "source": "model"
+        },
+        "windSpeed": 4
+      },
+      "mid": {
+        "elevation": 2723,
+        "temperature": {
+          "celsius": -5.5,
+          "fahrenheit": 22
+        },
+        "snowDepth": {
+          "cm": 78,
+          "inches": 30.7,
+          "source": "model"
+        },
+        "windSpeed": 6.9
+      },
+      "summit": {
+        "elevation": 3883,
+        "temperature": {
+          "celsius": -13.1,
+          "fahrenheit": 8
+        },
+        "snowDepth": {
+          "cm": 78,
+          "inches": 30.7,
+          "source": "model"
+        },
+        "windSpeed": 6.9
+      }
+    },
+    "forecast": {
+      "total14dCm": 26.8,
+      "peak": {
+        "date": "2026-11-06",
+        "snowfallCm": 6.9,
+        "windowDays": 14
+      },
+      "pointElevationM": 2723,
+      "pointBand": "mid",
+      "forecastPoint": {
+        "elevationM": 2723,
+        "elevationFt": 8934,
+        "band": "mid"
+      },
+      "modelHorizonDays": 14,
+      "confidence": {
+        "score": 0.13,
+        "label": "low",
+        "spreadCm": 20.2,
+        "meanCm": 16.5,
+        "modelCount": 6,
+        "regionSkill": 0.87,
+        "calibrated": true,
+        "basis": "6-model range over the first 7 of 14 days (days 1–7), which all 6 cover (spread 20.2cm vs mean 16.5cm); ensemble 26.8cm over 14 days, calibrated by verified regional skill (87%)",
+        "windowDays": 7,
+        "windowFromDay": 1,
+        "windowToDay": 7
+      },
+      "confidenceWeek2": {
+        "score": 0.57,
+        "label": "medium",
+        "spreadCm": 2.6,
+        "meanCm": 15,
+        "modelCount": 2,
+        "regionSkill": 0.87,
+        "calibrated": true,
+        "basis": "2-model range over days 8–14, after the 7-day window the first label covers (spread 2.6cm vs mean 15cm), calibrated by verified regional skill (87%)",
+        "windowDays": 7,
+        "windowFromDay": 8,
+        "windowToDay": 14
+      },
+      "daily": [
+        {
+          "code": 71,
+          "date": "2026-11-04",
+          "desc": "Slight snowfall",
+          "wind": 6.9,
+          "flMax": 2940,
+          "flMin": 2760,
+          "precip": 1.7,
+          "sunset": "2026-11-04T17:11",
+          "sunrise": "2026-11-04T07:13",
+          "tempMax": -12.8,
+          "tempMin": -14.5,
+          "snowfall": 0.5,
+          "precipProb": 99,
+          "windDirection": 160,
+          "sunshineDuration": 18332.27,
+          "snowfallLoCm": 0,
+          "snowfallHiCm": 2.3,
+          "modelCount": 9,
+          "conditions": "Slight snowfall"
+        },
+        {
+          "code": 73,
+          "date": "2026-11-05",
+          "desc": "Slight snowfall",
+          "wind": 5.8,
+          "flMax": 3162.5,
+          "flMin": 2940,
+          "precip": 0.8,
+          "sunset": "2026-11-05T17:09",
+          "sunrise": "2026-11-05T07:15",
+          "tempMax": -9.5,
+          "tempMin": -14.5,
+          "snowfall": 0.3,
+          "precipProb": 37,
+          "windDirection": 168,
+          "sunshineDuration": 10800,
+          "snowfallLoCm": 0,
+          "snowfallHiCm": 1.1,
+          "modelCount": 9,
+          "conditions": "Slight snowfall"
+        },
+        {
+          "code": 73,
+          "date": "2026-11-06",
+          "desc": "Moderate snowfall",
+          "wind": 4.6,
+          "flMax": 3170,
+          "flMin": 2620,
+          "precip": 9.7,
+          "sunset": "2026-11-06T17:08",
+          "sunrise": "2026-11-06T07:16",
+          "tempMax": -9.6,
+          "tempMin": -12.3,
+          "snowfall": 6.9,
+          "precipProb": 75,
+          "windDirection": 140,
+          "sunshineDuration": 13232.28,
+          "snowfallLoCm": 1.1,
+          "snowfallHiCm": 13.4,
+          "modelCount": 9,
+          "conditions": "Moderate snowfall"
+        },
+        {
+          "code": 73,
+          "date": "2026-11-07",
+          "desc": "Slight snowfall",
+          "wind": 4.5,
+          "flMax": 2650,
+          "flMin": 2480,
+          "precip": 6.1,
+          "sunset": "2026-11-07T17:06",
+          "sunrise": "2026-11-07T07:17",
+          "tempMax": -11.1,
+          "tempMin": -13.3,
+          "snowfall": 2.7,
+          "precipProb": 65,
+          "windDirection": 140,
+          "sunshineDuration": 18100.31,
+          "snowfallLoCm": 0.3,
+          "snowfallHiCm": 7.2,
+          "modelCount": 8,
+          "conditions": "Slight snowfall"
+        },
+        {
+          "code": 3,
+          "date": "2026-11-08",
+          "desc": "Slight snowfall",
+          "wind": 2.1,
+          "flMax": 2770,
+          "flMin": 2550,
+          "precip": 0.2,
+          "sunset": "2026-11-08T17:05",
+          "sunrise": "2026-11-08T07:19",
+          "tempMax": -12.6,
+          "tempMin": -23.8,
+          "snowfall": 0.3,
+          "precipProb": 16,
+          "windDirection": 273,
+          "sunshineDuration": 12048.05,
+          "snowfallLoCm": 0,
+          "snowfallHiCm": 2.5,
+          "modelCount": 7,
+          "conditions": "Slight snowfall"
+        },
+        {
+          "code": 71,
+          "date": "2026-11-09",
+          "desc": "Slight snowfall",
+          "wind": 6,
+          "flMax": 3150,
+          "flMin": 2710,
+          "precip": 0.3,
+          "sunset": "2026-11-09T17:04",
+          "sunrise": "2026-11-09T07:20",
+          "tempMax": -8.1,
+          "tempMin": -15.4,
+          "snowfall": 2.2,
+          "precipProb": 37,
+          "windDirection": 216,
+          "sunshineDuration": 19393.41,
+          "snowfallLoCm": 0,
+          "snowfallHiCm": 7.6,
+          "modelCount": 6,
+          "conditions": "Slight snowfall"
+        },
+        {
+          "code": 71,
+          "date": "2026-11-10",
+          "desc": "Slight snowfall",
+          "wind": 4,
+          "flMax": 3600,
+          "flMin": 2980,
+          "precip": 2.6,
+          "sunset": "2026-11-10T17:03",
+          "sunrise": "2026-11-10T07:22",
+          "tempMax": -5.7,
+          "tempMin": -11.2,
+          "snowfall": 2.3,
+          "precipProb": 68,
+          "windDirection": 213,
+          "sunshineDuration": 12577.71,
+          "snowfallLoCm": 0,
+          "snowfallHiCm": 7.4,
+          "modelCount": 6,
+          "conditions": "Slight snowfall"
+        },
+        {
+          "code": 73,
+          "date": "2026-11-11",
+          "desc": "Slight snowfall",
+          "wind": 5.9,
+          "flMax": 2970,
+          "flMin": 2420,
+          "precip": 2.4,
+          "sunset": "2026-11-11T17:01",
+          "sunrise": "2026-11-11T07:23",
+          "tempMax": -6.6,
+          "tempMin": -14.3,
+          "snowfall": 1.3,
+          "precipProb": 60,
+          "windDirection": 204,
+          "sunshineDuration": 10969.47,
+          "snowfallLoCm": 0,
+          "snowfallHiCm": 4.8,
+          "modelCount": 4,
+          "conditions": "Slight snowfall"
+        },
+        {
+          "code": 73,
+          "date": "2026-11-12",
+          "desc": "Moderate snowfall",
+          "wind": 6.1,
+          "flMax": 2700,
+          "flMin": 2040,
+          "precip": 2.2,
+          "sunset": "2026-11-12T17:00",
+          "sunrise": "2026-11-12T07:25",
+          "tempMax": -6.7,
+          "tempMin": -7.8,
+          "snowfall": 4.2,
+          "precipProb": 55,
+          "windDirection": 179,
+          "sunshineDuration": 13179.2,
+          "snowfallLoCm": 0,
+          "snowfallHiCm": 12,
+          "modelCount": 4,
+          "conditions": "Moderate snowfall"
+        },
+        {
+          "code": 73,
+          "date": "2026-11-13",
+          "desc": "Moderate snowfall",
+          "wind": 4.4,
+          "flMax": 1930,
+          "flMin": 10,
+          "precip": 12,
+          "sunset": "2026-11-13T16:59",
+          "sunrise": "2026-11-13T07:26",
+          "tempMax": -7.1,
+          "tempMin": -12.9,
+          "snowfall": 4.2,
+          "precipProb": 49,
+          "windDirection": 164,
+          "sunshineDuration": 10800,
+          "snowfallLoCm": 0,
+          "snowfallHiCm": 9.1,
+          "modelCount": 4,
+          "conditions": "Moderate snowfall"
+        },
+        {
+          "code": 73,
+          "date": "2026-11-14",
+          "desc": "Slight snowfall",
+          "wind": 10.7,
+          "flMax": 2000,
+          "flMin": 10,
+          "precip": 3.6,
+          "sunset": "2026-11-14T16:58",
+          "sunrise": "2026-11-14T07:27",
+          "tempMax": -9.8,
+          "tempMin": -26.2,
+          "snowfall": 1.8,
+          "precipProb": 31,
+          "windDirection": 337,
+          "sunshineDuration": 17583.38,
+          "snowfallLoCm": 0,
+          "snowfallHiCm": 3.6,
+          "modelCount": 3,
+          "conditions": "Slight snowfall"
+        },
+        {
+          "code": 0,
+          "date": "2026-11-15",
+          "desc": "Slight snowfall",
+          "wind": 6.3,
+          "flMax": 2600,
+          "flMin": 1420,
+          "precip": 0,
+          "sunset": "2026-11-15T16:57",
+          "sunrise": "2026-11-15T07:29",
+          "tempMax": -17.9,
+          "tempMin": -28.5,
+          "snowfall": 0.1,
+          "precipProb": 22,
+          "windDirection": 341,
+          "sunshineDuration": 13567.33,
+          "snowfallLoCm": 0,
+          "snowfallHiCm": 0.1,
+          "modelCount": 2,
+          "conditions": "Slight snowfall"
+        },
+        {
+          "code": 0,
+          "date": "2026-11-16",
+          "desc": "Clear sky",
+          "wind": 4.7,
+          "flMax": 2370,
+          "flMin": 1160,
+          "precip": 0,
+          "sunset": "2026-11-16T16:56",
+          "sunrise": "2026-11-16T07:30",
+          "tempMax": -20.1,
+          "tempMin": -28.5,
+          "snowfall": 0,
+          "precipProb": 18,
+          "windDirection": 332,
+          "sunshineDuration": 11809.19,
+          "snowfallLoCm": 0,
+          "snowfallHiCm": 0,
+          "modelCount": 2,
+          "conditions": "Clear sky"
+        },
+        {
+          "code": 2,
+          "date": "2026-11-17",
+          "desc": "Partly cloudy",
+          "wind": 2.6,
+          "flMax": 2470,
+          "flMin": 1130,
+          "precip": 0,
+          "sunset": "2026-11-17T16:55",
+          "sunrise": "2026-11-17T07:32",
+          "tempMax": -17,
+          "tempMin": -25.3,
+          "snowfall": 0,
+          "precipProb": 30,
+          "windDirection": 330,
+          "sunshineDuration": 10800,
+          "snowfallLoCm": 0,
+          "snowfallHiCm": 0,
+          "modelCount": 2,
+          "conditions": "Partly cloudy"
+        }
+      ],
+      "total7dCm": 15.2,
+      "forecastHorizonDays": 14,
+      "bands": {
+        "forecastPoint": {
+          "elevationM": 2723,
+          "elevationFt": 8934,
+          "band": "mid"
+        },
+        "bands": {
+          "base": {
+            "band": "base",
+            "elevationM": 1562,
+            "daily": [
+              {
+                "date": "2026-11-04",
+                "snowCm": 0.1
+              },
+              {
+                "date": "2026-11-05",
+                "snowCm": 0.0
+              },
+              {
+                "date": "2026-11-06",
+                "snowCm": 0.7
+              },
+              {
+                "date": "2026-11-07",
+                "snowCm": 0.3
+              },
+              {
+                "date": "2026-11-08",
+                "snowCm": 0.0
+              },
+              {
+                "date": "2026-11-09",
+                "snowCm": 0.2
+              },
+              {
+                "date": "2026-11-10",
+                "snowCm": 0.2
+              },
+              {
+                "date": "2026-11-11",
+                "snowCm": 0.1
+              },
+              {
+                "date": "2026-11-12",
+                "snowCm": 0.4
+              },
+              {
+                "date": "2026-11-13",
+                "snowCm": 0.4
+              },
+              {
+                "date": "2026-11-14",
+                "snowCm": 0.2
+              },
+              {
+                "date": "2026-11-15",
+                "snowCm": 0.0
+              },
+              {
+                "date": "2026-11-16",
+                "snowCm": 0.0
+              },
+              {
+                "date": "2026-11-17",
+                "snowCm": 0.0
+              }
+            ]
+          },
+          "mid": {
+            "band": "mid",
+            "elevationM": 2723,
+            "daily": [
+              {
+                "date": "2026-11-04",
+                "snowCm": 0.5
+              },
+              {
+                "date": "2026-11-05",
+                "snowCm": 0.3
+              },
+              {
+                "date": "2026-11-06",
+                "snowCm": 6.9
+              },
+              {
+                "date": "2026-11-07",
+                "snowCm": 2.7
+              },
+              {
+                "date": "2026-11-08",
+                "snowCm": 0.3
+              },
+              {
+                "date": "2026-11-09",
+                "snowCm": 2.2
+              },
+              {
+                "date": "2026-11-10",
+                "snowCm": 2.3
+              },
+              {
+                "date": "2026-11-11",
+                "snowCm": 1.3
+              },
+              {
+                "date": "2026-11-12",
+                "snowCm": 4.2
+              },
+              {
+                "date": "2026-11-13",
+                "snowCm": 4.2
+              },
+              {
+                "date": "2026-11-14",
+                "snowCm": 1.8
+              },
+              {
+                "date": "2026-11-15",
+                "snowCm": 0.1
+              },
+              {
+                "date": "2026-11-16",
+                "snowCm": 0
+              },
+              {
+                "date": "2026-11-17",
+                "snowCm": 0
+              }
+            ]
+          },
+          "summit": {
+            "band": "summit",
+            "elevationM": 3883,
+            "daily": [
+              {
+                "date": "2026-11-04",
+                "snowCm": 0.8
+              },
+              {
+                "date": "2026-11-05",
+                "snowCm": 0.5
+              },
+              {
+                "date": "2026-11-06",
+                "snowCm": 11.7
+              },
+              {
+                "date": "2026-11-07",
+                "snowCm": 4.6
+              },
+              {
+                "date": "2026-11-08",
+                "snowCm": 0.5
+              },
+              {
+                "date": "2026-11-09",
+                "snowCm": 3.7
+              },
+              {
+                "date": "2026-11-10",
+                "snowCm": 3.9
+              },
+              {
+                "date": "2026-11-11",
+                "snowCm": 2.2
+              },
+              {
+                "date": "2026-11-12",
+                "snowCm": 7.1
+              },
+              {
+                "date": "2026-11-13",
+                "snowCm": 7.1
+              },
+              {
+                "date": "2026-11-14",
+                "snowCm": 3.1
+              },
+              {
+                "date": "2026-11-15",
+                "snowCm": 0.2
+              },
+              {
+                "date": "2026-11-16",
+                "snowCm": 0.0
+              },
+              {
+                "date": "2026-11-17",
+                "snowCm": 0.0
+              }
+            ]
+          }
+        }
+      }
+    },
+    "links": {
+      "website": "https://www.matterhornparadise.ch/",
+      "snowsure": "https://www.snowsure.ai/resorts/matterhorn-ski-paradise",
+      "trailMapPdf": "https://qtmrhdvk0wsarlae.public.blob.vercel-storage.com/trail-maps/2026-27/matterhorn-ski-paradise/winter-panoramic-map-zermatt-matterhorn-ski-para-1.pdf",
+      "trailMaps": [
+        {
+          "label": "Winter panoramic map (Zermatt - Matterhorn ski paradise)",
+          "url": "https://qtmrhdvk0wsarlae.public.blob.vercel-storage.com/trail-maps/2026-27/_preview/matterhorn-ski-paradise-winter-panoramic-map-1.webp",
+          "type": "hosted",
+          "thumbnailUrl": "https://qtmrhdvk0wsarlae.public.blob.vercel-storage.com/trail-maps/2026-27/_thumbs/matterhorn-ski-paradise-winter-panoramic-map-1.webp",
+          "downloadUrl": "https://qtmrhdvk0wsarlae.public.blob.vercel-storage.com/trail-maps/2026-27/matterhorn-ski-paradise/winter-panoramic-map-zermatt-matterhorn-ski-para-1.pdf",
+          "format": "pdf",
+          "season": "unknown",
+          "width": 2400,
+          "height": 1042
+        },
+        {
+          "label": "Breuil-Cervinia piste map",
+          "url": "https://qtmrhdvk0wsarlae.public.blob.vercel-storage.com/trail-maps/2026-27/_preview/matterhorn-ski-paradise-breuil-cervinia-2.webp",
+          "type": "hosted",
+          "downloadUrl": "https://qtmrhdvk0wsarlae.public.blob.vercel-storage.com/trail-maps/2026-27/matterhorn-ski-paradise/breuil-cervinia-2.png",
+          "format": "png",
+          "width": 2400,
+          "height": 1700
+        },
+        {
+          "label": "Resort website map",
+          "url": "https://www.matterhornparadise.ch/en/map",
+          "type": "external"
+        },
+        {
+          "label": "Insecure map",
+          "url": "http://example.com/map.webp",
+          "type": "hosted"
+        }
+      ]
+    },
+    "liveData": {
+      "status": "fresh",
+      "asOf": "2026-11-04T15:00:44.438Z",
+      "ageMinutes": 55,
+      "maxAgeMinutes": 360,
+      "source": "Open-Meteo + resort reports",
+      "message": null
+    },
+    "conditions": {
+      "schemaVersion": "1.10.0",
+      "schema": "https://www.snowsure.ai/.well-known/schemas/resort-conditions-v1.json",
+      "data": {
+        "slug": "matterhorn-ski-paradise",
+        "resolvedAt": "2026-11-04T15:55:22.531Z",
+        "status": {
+          "value": "OPEN",
+          "source": "derived",
+          "observedAt": "2026-11-04T15:55:22.531Z",
+          "confidence": 1
+        },
+        "seasonOpening": {
+          "value": "2026-11-01",
+          "source": "profile",
+          "observedAt": null,
+          "confidence": 1
+        },
+        "seasonClosing": {
+          "value": "2026-05-03",
+          "source": "profile",
+          "observedAt": null,
+          "confidence": 1
+        },
+        "depth": {
+          "base": {
+            "value": 31,
+            "source": "model",
+            "observedAt": "2026-11-04T15:00:44.438+00:00",
+            "confidence": 0.6
+          },
+          "mid": {
+            "value": 55,
+            "source": "derived",
+            "observedAt": "2026-11-04T15:00:44.438+00:00",
+            "confidence": 0.6
+          },
+          "summit": {
+            "value": 78,
+            "source": "model",
+            "observedAt": "2026-11-04T15:00:44.438+00:00",
+            "confidence": 0.6
+          }
+        },
+        "displayDepthCm": {
+          "value": 31,
+          "source": "model",
+          "observedAt": "2026-11-04T15:00:44.438+00:00",
+          "confidence": 0.6
+        },
+        "displayDepthDetail": {
+          "source": "model",
+          "elevationBand": "base",
+          "elevationM": 1562,
+          "sourceLabel": "Modeled",
+          "stationName": null,
+          "rule": "base_preferred"
+        },
+        "depthVsAvgBasis": {
+          "averageCm": 295.6,
+          "averageBand": "base",
+          "readingBand": "base",
+          "readingSource": "model",
+          "suppressedReason": null
+        },
+        "depthDisagreement": null,
+        "reportedSourceTier": null,
+        "baseDepthCm": {
+          "value": 31,
+          "source": "model",
+          "observedAt": "2026-11-04T15:00:44.438+00:00",
+          "confidence": 0.6
+        },
+        "depthVsAvgPct": {
+          "value": 10,
+          "source": "derived",
+          "observedAt": null,
+          "confidence": 0.6
+        },
+        "lifts": {
+          "value": {
+            "open": null,
+            "total": 37
+          },
+          "source": "profile",
+          "observedAt": "2026-11-04T15:00:44.438+00:00",
+          "confidence": 0.7
+        },
+        "runs": {
+          "value": {
+            "open": null,
+            "total": 78
+          },
+          "source": "profile",
+          "observedAt": "2026-11-04T15:00:44.438+00:00",
+          "confidence": 0.7
+        },
+        "surface": {
+          "value": null,
+          "source": "none",
+          "observedAt": null,
+          "confidence": 0
+        },
+        "snowQuality": {
+          "value": {
+            "densityRatio": null,
+            "label": "icy",
+            "description": "Hard / refrozen surface",
+            "refreezeRisk": "low",
+            "basis": "modeled"
+          },
+          "source": "model",
+          "observedAt": "2026-11-04T15:00:44.438+00:00",
+          "confidence": 0.5
+        },
+        "snowSurfaceTemp": {
+          "value": {
+            "tempC": -5.4,
+            "state": "firm",
+            "description": "Firm, cold surface"
+          },
+          "source": "station",
+          "observedAt": "2026-11-04T15:30:00Z",
+          "confidence": 0.8
+        },
+        "forecast": {
+          "next7dCm": {
+            "value": 15.2,
+            "source": "model",
+            "observedAt": "2026-11-04T15:00:44.438+00:00",
+            "confidence": 0.7
+          },
+          "next14dCm": {
+            "value": 26.8,
+            "source": "model",
+            "observedAt": "2026-11-04T15:00:44.438+00:00",
+            "confidence": 0.5
+          },
+          "peak": {
+            "date": "2026-11-06",
+            "snowfallCm": 6.9,
+            "windowDays": 7
+          }
+        },
+        "abilityPct": {
+          "value": null,
+          "source": "none",
+          "observedAt": null,
+          "confidence": 0
+        },
+        "longestRun": {
+          "value": {
+            "name": "22 km / 13.7 mi",
+            "km": 22
+          },
+          "source": "profile",
+          "observedAt": null,
+          "confidence": 1
+        },
+        "flags": [
+          "mid_suppressed_ordering",
+          "mid_interpolated"
+        ]
+      },
+      "measuredNow": {
+        "stations": [
+          {
+            "source": "imis",
+            "stationId": "ZER1",
+            "name": "Platthorn",
+            "elevationM": 3345,
+            "role": "summit",
+            "tempC": -9.1,
+            "windMps": 3.3,
+            "snowDepthCm": null,
+            "observedAt": "2026-11-04T15:00:00+00:00",
+            "ageMinutes": 55
+          },
+          {
+            "source": "imis",
+            "stationId": "GOR2",
+            "name": "Gornergratsee",
+            "elevationM": 2953,
+            "role": "mid",
+            "tempC": -5.4,
+            "windMps": 0.3,
+            "snowDepthCm": 9.3,
+            "observedAt": "2026-11-04T15:00:00+00:00",
+            "ageMinutes": 55
+          },
+          {
+            "source": "imis",
+            "stationId": "ZER2",
+            "name": "Triftchumme",
+            "elevationM": 2752,
+            "role": "mid",
+            "tempC": -3.5,
+            "windMps": 0.7,
+            "snowDepthCm": 1,
+            "observedAt": "2026-11-04T15:00:00+00:00",
+            "ageMinutes": 55
+          },
+          {
+            "source": "imis",
+            "stationId": "ZER4",
+            "name": "Stafelalp",
+            "elevationM": 2408,
+            "role": "mid",
+            "tempC": -1,
+            "windMps": 2.8,
+            "snowDepthCm": 1,
+            "observedAt": "2026-11-04T15:00:00+00:00",
+            "ageMinutes": 55
+          }
+        ],
+        "stationCount": 4,
+        "sources": [
+          "imis"
+        ],
+        "freezingLineM": null,
+        "observedAt": "2026-11-04T15:00:00+00:00"
+      }
+    },
+    "webcams": [
+      {
+        "name": "Matterhorn Glacier Paradise (3883m)",
+        "url": "https://zbag.roundshot.com/matterhornglacierparadise/",
+        "type": "iframe",
+        "credit": "Zermatt Bergbahnen / Roundshot",
+        "thumbnailUrl": "https://backend.roundshot.com/cams/17995d1350ece1b2780e44a0740cfeb4/medium"
+      },
+      {
+        "name": "Hohtälli (3273m)",
+        "url": "https://zbag.roundshot.com/hohtaelli/",
+        "type": "iframe",
+        "credit": "Zermatt Bergbahnen / Roundshot",
+        "thumbnailUrl": "https://backend.roundshot.com/cams/4a19df9977b310d996c39cabb1cf6907/medium"
+      },
+      {
+        "name": "Gornergrat (3135m)",
+        "url": "https://zermatt.roundshot.com/gornergrat/",
+        "type": "iframe",
+        "credit": "Zermatt Bergbahnen / Roundshot",
+        "thumbnailUrl": "https://backend.roundshot.com/cams/4bf959d18548267b6c0333ed89096923/medium"
+      },
+      {
+        "name": "Rothorn (3104m)",
+        "url": "https://zbag.roundshot.com/rothorn/",
+        "type": "iframe",
+        "credit": "Zermatt Bergbahnen / Roundshot",
+        "thumbnailUrl": "https://backend.roundshot.com/cams/052cf992a17faeeca3f71114b049455c/medium"
+      },
+      {
+        "name": "Live stream",
+        "url": "https://www.youtube.com/embed/x",
+        "type": "youtube",
+        "thumbnailUrl": "https://img.youtube.com/vi/x/hqdefault.jpg"
+      },
+      {
+        "name": "Wolf Creek style",
+        "url": "https://player.example.com/snapshot/cam",
+        "type": "image",
+        "credit": "Example",
+        "thumbnailUrl": "https://example.com/thumb.jpg"
+      }
+    ]
+  }
+}

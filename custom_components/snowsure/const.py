@@ -1,0 +1,24 @@
+"""Constants for the SnowSure integration."""
+
+from __future__ import annotations
+
+DOMAIN = "snowsure"
+
+BASE_URL = "https://www.snowsure.ai"
+API_URL = f"{BASE_URL}/api/v1"
+USER_AGENT = "HomeAssistant snowsure integration"
+
+ATTRIBUTION = "Data by SnowSure.ai"
+
+CONF_COUNTRY = "country"
+CONF_RESORT = "resort"
+CONF_RESORT_NAME = "resort_name"
+CONF_SCAN_INTERVAL_MINUTES = "scan_interval_minutes"
+
+# SnowSure ingests forecasts hourly and resort reports a few times a day, so a
+# half-hour poll is fresh enough. The public budget is 120 requests per minute
+# per IP and endpoint; one refresh costs two requests, so even the lower bound
+# stays far away from it.
+DEFAULT_SCAN_INTERVAL_MINUTES = 30
+MIN_SCAN_INTERVAL_MINUTES = 15
+MAX_SCAN_INTERVAL_MINUTES = 360

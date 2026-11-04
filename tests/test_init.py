@@ -1,0 +1,210 @@
+"""Tests for setup, entities, failure handling and diagnostics."""
+
+from __future__ import annotations
+
+from datetime import timedelta
+from types import SimpleNamespace
+
+from homeassistant.config_entries import ConfigEntryState
+from homeassistant.const import ATTR_ATTRIBUTION, CONF_API_KEY, STATE_ON, STATE_UNKNOWN
+from homeassistant.core import HomeAssistant
+from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import entity_registry as er
+from pytest_homeassistant_custom_component.common import MockConfigEntry
+from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
+
+from custom_components.snowsure.const import CONF_SCAN_INTERVAL_MINUTES, DOMAIN
+from custom_components.snowsure.coordinator import async_scan_interval
+from custom_components.snowsure.diagnostics import async_get_config_entry_diagnostics
+from custom_components.snowsure.sensor import SENSORS
+
+from .conftest import AVALANCHE_URL, RESORT_URL, SLUG, load_fixture
+
+
+def _entity_id(hass: HomeAssistant, platform: str, key: str) -> str:
+    entity_id = er.async_get(hass).async_get_entity_id(platform, DOMAIN, f"{SLUG}_{key}")
+    assert entity_id, key
+    return entity_id
+
+
+async def _setup(hass: HomeAssistant, entry: MockConfigEntry) -> None:
+    entry.add_to_hass(hass)
+    assert await hass.config_entries.async_setup(entry.entry_id)
+    await hass.async_block_till_done()
+
+
+async def test_setup_creates_entities(
+    hass: HomeAssistant, mock_api: AiohttpClientMocker, mock_entry: MockConfigEntry
+) -> None:
+    await _setup(hass, mock_entry)
+    assert mock_entry.state is ConfigEntryState.LOADED
+
+    score = hass.states.get(_entity_id(hass, "sensor", "score"))
+    assert score.state == "33"
+    assert score.attributes["rating"] == "Solid"
+    assert score.attributes[ATTR_ATTRIBUTION] == "Data by SnowSure.ai"
+
+    depth = hass.states.get(_entity_id(hass, "sensor", "depth_summit"))
+    assert depth.state == "78.0"
+    assert depth.attributes["unit_of_measurement"] == "cm"
+
+    forecast = hass.states.get(_entity_id(hass, "sensor", "forecast_7d"))
+    assert len(forecast.attributes["daily"]) == 14
+
+    lifts = hass.states.get(_entity_id(hass, "sensor", "lifts_open"))
+    assert lifts.state == STATE_UNKNOWN
+    assert lifts.attributes["total"] == 37
+
+    assert hass.states.get(_entity_id(hass, "sensor", "avalanche_level")).state == "2"
+    assert hass.states.get(_entity_id(hass, "binary_sensor", "open")).state == STATE_ON
+    assert hass.states.get(_entity_id(hass, "sensor", "season_opening")).state == "2026-11-01"
+
+    (device,) = dr.async_entries_for_config_entry(dr.async_get(hass), mock_entry.entry_id)
+    assert device.identifiers == {(DOMAIN, SLUG)}
+    assert device.name == "Matterhorn Ski Paradise"
+    assert device.manufacturer == "SnowSure"
+    assert device.entry_type is dr.DeviceEntryType.SERVICE
+
+
+async def test_disabled_by_default(
+    hass: HomeAssistant, mock_api: AiohttpClientMocker, mock_entry: MockConfigEntry
+) -> None:
+    await _setup(hass, mock_entry)
+    registry = er.async_get(hass)
+    disabled = {d.key for d in SENSORS if registry.async_get(_entity_id(hass, "sensor", d.key)).disabled_by is not None}
+    assert disabled == {
+        "depth_mid",
+        "snowfall_48h",
+        "snowfall_72h",
+        "forecast_14d",
+        "terrain_open",
+        "temperature_mid",
+    }
+
+
+async def test_daily_forecast_is_not_recorded(
+    hass: HomeAssistant, mock_api: AiohttpClientMocker, mock_entry: MockConfigEntry
+) -> None:
+    await _setup(hass, mock_entry)
+    entity = hass.data["entity_components"]["sensor"].get_entity(_entity_id(hass, "sensor", "forecast_7d"))
+    assert "daily" in entity._unrecorded_attributes
+
+
+async def test_avalanche_failure_is_not_fatal(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, mock_entry: MockConfigEntry
+) -> None:
+    aioclient_mock.get(RESORT_URL, json=load_fixture("resort_detail.json"))
+    aioclient_mock.get(AVALANCHE_URL, status=500)
+    await _setup(hass, mock_entry)
+    assert mock_entry.state is ConfigEntryState.LOADED
+    assert hass.states.get(_entity_id(hass, "sensor", "avalanche_level")).state == STATE_UNKNOWN
+    assert hass.states.get(_entity_id(hass, "sensor", "score")).state == "33"
+
+
+async def test_connection_error_retries_setup(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, mock_entry: MockConfigEntry
+) -> None:
+    aioclient_mock.get(RESORT_URL, status=502)
+    mock_entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(mock_entry.entry_id)
+    assert mock_entry.state is ConfigEntryState.SETUP_RETRY
+
+
+async def test_auth_error_starts_reauth(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, mock_entry: MockConfigEntry
+) -> None:
+    aioclient_mock.get(RESORT_URL, status=401)
+    mock_entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(mock_entry.entry_id)
+    await hass.async_block_till_done()
+    assert mock_entry.state is ConfigEntryState.SETUP_ERROR
+    flows = hass.config_entries.flow.async_progress_by_handler(DOMAIN)
+    assert [flow["context"]["source"] for flow in flows] == ["reauth"]
+
+
+async def test_unload(hass: HomeAssistant, mock_api: AiohttpClientMocker, mock_entry: MockConfigEntry) -> None:
+    await _setup(hass, mock_entry)
+    assert await hass.config_entries.async_unload(mock_entry.entry_id)
+    assert mock_entry.state is ConfigEntryState.NOT_LOADED
+
+
+async def test_diagnostics_redact_the_key(hass: HomeAssistant, mock_api: AiohttpClientMocker) -> None:
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title="Matterhorn Ski Paradise",
+        unique_id=SLUG,
+        data={"resort": SLUG, "resort_name": "Matterhorn Ski Paradise", CONF_API_KEY: "secret-test-key"},
+    )
+    await _setup(hass, entry)
+    diagnostics = await async_get_config_entry_diagnostics(hass, entry)
+    assert diagnostics["entry"]["data"][CONF_API_KEY] == "**REDACTED**"
+    assert diagnostics["entry"]["has_api_key"] is True
+    assert "secret-test-key" not in repr(diagnostics)
+    assert diagnostics["coordinator"]["data"]["score"] == 33
+    assert diagnostics["coordinator"]["data"]["forecast_daily"] == "<14 days>"
+
+
+async def test_diagnostics_before_first_refresh(hass: HomeAssistant, mock_entry: MockConfigEntry) -> None:
+    diagnostics = await async_get_config_entry_diagnostics(hass, mock_entry)
+    assert diagnostics["coordinator"]["data"] is None
+
+
+def test_scan_interval_is_clamped() -> None:
+    assert async_scan_interval(SimpleNamespace(options={})) == timedelta(minutes=30)
+    assert async_scan_interval(SimpleNamespace(options={CONF_SCAN_INTERVAL_MINUTES: 60})) == timedelta(minutes=60)
+    assert async_scan_interval(SimpleNamespace(options={CONF_SCAN_INTERVAL_MINUTES: 1})) == timedelta(minutes=30)
+    assert async_scan_interval(SimpleNamespace(options={CONF_SCAN_INTERVAL_MINUTES: "x"})) == timedelta(minutes=30)
+
+
+async def test_image_entities(hass: HomeAssistant, mock_api: AiohttpClientMocker, mock_entry: MockConfigEntry) -> None:
+    await _setup(hass, mock_entry)
+    registry = er.async_get(hass)
+    entries = [e for e in er.async_entries_for_config_entry(registry, mock_entry.entry_id) if e.domain == "image"]
+    by_key = {e.unique_id.removeprefix(f"{SLUG}_"): e for e in entries}
+    assert "resort_image" in by_key
+    webcams = sorted(key for key in by_key if key.startswith("webcam_"))
+    # Four iframes + one image camera; the youtube stream is skipped.
+    assert len(webcams) == 5
+    enabled = [key for key in webcams if by_key[key].disabled_by is None]
+    assert len(enabled) == 3
+
+    first = hass.states.get(by_key["webcam_matterhorn_glacier_paradise_3883m"].entity_id)
+    assert first.attributes["page_url"].startswith("https://zbag.roundshot.com/")
+    assert first.attributes["friendly_name"] == "Matterhorn Ski Paradise Webcam Matterhorn Glacier Paradise (3883m)"
+
+
+async def test_trail_map_entities(
+    hass: HomeAssistant, mock_api: AiohttpClientMocker, mock_entry: MockConfigEntry
+) -> None:
+    await _setup(hass, mock_entry)
+    entity_id = _entity_id(hass, "image", "trail_map_winter_panoramic_map_zermatt_matterhorn_ski_paradise")
+    state = hass.states.get(entity_id)
+    assert state.attributes["pdf_url"].endswith(".pdf")
+    assert state.attributes["position"] == 0
+    assert state.attributes["friendly_name"].startswith("Matterhorn Ski Paradise Trail map Winter panoramic map")
+    second = hass.states.get(_entity_id(hass, "image", "trail_map_breuil_cervinia_piste_map"))
+    assert second.attributes["position"] == 1
+
+
+async def test_webcam_refetches_after_each_refresh(
+    hass: HomeAssistant, mock_api: AiohttpClientMocker, mock_entry: MockConfigEntry
+) -> None:
+    await _setup(hass, mock_entry)
+    entity_id = _entity_id(hass, "image", "webcam_matterhorn_glacier_paradise_3883m")
+    entity = hass.data["entity_components"]["image"].get_entity(entity_id)
+    entity._cached_image = object()
+    before = entity.image_last_updated
+    await mock_entry.runtime_data.async_refresh()
+    await hass.async_block_till_done()
+    assert entity._cached_image is None
+    assert entity.image_last_updated >= before
+
+
+async def test_forecast_confidence_sensor(
+    hass: HomeAssistant, mock_api: AiohttpClientMocker, mock_entry: MockConfigEntry
+) -> None:
+    await _setup(hass, mock_entry)
+    state = hass.states.get(_entity_id(hass, "sensor", "forecast_confidence"))
+    assert state.state == "low"
+    assert state.attributes["options"] == ["low", "medium", "high"]
+    assert state.attributes["week2"] == "medium"

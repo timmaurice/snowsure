@@ -1,0 +1,163 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "SnowSure",
+        "description": "Die Lese-API von SnowSure ist öffentlich, der API-Schlüssel ist daher optional. Trage nur einen Schlüssel ein, wenn du einen für SnowSure Pro hast (schaltet die 14-Tage-Prognose frei). Details: {developers_url}",
+        "data": {
+          "api_key": "API-Schlüssel (optional)"
+        },
+        "data_description": {
+          "api_key": "Wird als Bearer-Token gesendet. Leer lassen für die kostenlose 7-Tage-Prognose."
+        }
+      },
+      "country": {
+        "title": "Land auswählen",
+        "description": "Wähle das Land des Skigebiets.",
+        "data": {
+          "country": "Land"
+        }
+      },
+      "resort": {
+        "title": "Skigebiet auswählen",
+        "description": "Wähle das Skigebiet in {country}.",
+        "data": {
+          "resort": "Skigebiet"
+        }
+      },
+      "reauth_confirm": {
+        "title": "SnowSure-API-Schlüssel aktualisieren",
+        "description": "SnowSure hat den API-Schlüssel für {resort} abgelehnt. Gib einen neuen ein oder lass das Feld leer, um die öffentliche API zu nutzen. Details: {developers_url}",
+        "data": {
+          "api_key": "API-Schlüssel (optional)"
+        }
+      },
+      "reconfigure": {
+        "title": "SnowSure-API-Schlüssel ändern",
+        "description": "API-Schlüssel für {resort} hinzufügen, ersetzen oder entfernen. Leer lassen, um die öffentliche API zu nutzen. Details: {developers_url}",
+        "data": {
+          "api_key": "API-Schlüssel (optional)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "snowsure.ai ist nicht erreichbar. Bitte später erneut versuchen.",
+      "invalid_auth": "SnowSure hat den API-Schlüssel abgelehnt.",
+      "no_resorts": "SnowSure hat keine Skigebiete geliefert.",
+      "unknown": "Unerwarteter Fehler."
+    },
+    "abort": {
+      "already_configured": "Dieses Skigebiet ist bereits eingerichtet.",
+      "reauth_successful": "Der API-Schlüssel wurde aktualisiert.",
+      "reconfigure_successful": "Der API-Schlüssel wurde aktualisiert."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Aktualisierungsintervall",
+        "description": "Wie oft SnowSure abgefragt wird. Prognosen werden stündlich aktualisiert, 30 Minuten reichen also völlig.",
+        "data": {
+          "scan_interval_minutes": "Aktualisierungsintervall (Minuten)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "open": {
+        "name": "Geöffnet"
+      }
+    },
+    "image": {
+      "resort_image": {
+        "name": "Titelbild"
+      },
+      "webcam": {
+        "name": "Webcam {name}"
+      },
+      "trail_map": {
+        "name": "Pistenplan {name}"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "SnowSure-Score"
+      },
+      "depth_base": {
+        "name": "Schneehöhe Tal"
+      },
+      "depth_mid": {
+        "name": "Schneehöhe Mittelstation"
+      },
+      "depth_summit": {
+        "name": "Schneehöhe Berg"
+      },
+      "snowfall_24h": {
+        "name": "Neuschnee 24 h"
+      },
+      "snowfall_48h": {
+        "name": "Neuschnee 48 h"
+      },
+      "snowfall_72h": {
+        "name": "Neuschnee 72 h"
+      },
+      "snowfall_7d": {
+        "name": "Neuschnee 7 Tage"
+      },
+      "snowfall_season": {
+        "name": "Schneefall Saison"
+      },
+      "forecast_7d": {
+        "name": "Schneeprognose 7 Tage"
+      },
+      "forecast_14d": {
+        "name": "Schneeprognose 14 Tage"
+      },
+      "lifts_open": {
+        "name": "Lifte geöffnet"
+      },
+      "runs_open": {
+        "name": "Pisten geöffnet"
+      },
+      "terrain_open": {
+        "name": "Gelände geöffnet"
+      },
+      "temperature_base": {
+        "name": "Temperatur Tal"
+      },
+      "temperature_mid": {
+        "name": "Temperatur Mittelstation"
+      },
+      "temperature_summit": {
+        "name": "Temperatur Berg"
+      },
+      "weather": {
+        "name": "Wetter"
+      },
+      "snow_quality": {
+        "name": "Schneequalität"
+      },
+      "avalanche_level": {
+        "name": "Lawinenwarnstufe"
+      },
+      "season_opening": {
+        "name": "Saisonstart"
+      },
+      "season_closing": {
+        "name": "Saisonende"
+      },
+      "updated_at": {
+        "name": "Zuletzt aktualisiert"
+      },
+      "forecast_confidence": {
+        "name": "Prognose-Verlässlichkeit",
+        "state": {
+          "low": "Gering",
+          "medium": "Mittel",
+          "high": "Hoch"
+        }
+      }
+    }
+  }
+}

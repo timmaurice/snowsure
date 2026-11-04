@@ -1,0 +1,47 @@
+version: 2
+updates:
+  # Maintain dependencies for Python/Backend
+  - package-ecosystem: 'pip'
+    directory: '/'
+    schedule:
+      interval: 'monthly'
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: 'chore(deps)'
+
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'monthly'
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: 'chore(deps)'
+
+  # Enable version updates for npm
+  - package-ecosystem: 'npm'
+    # Look for `package.json` and `lock` files in the `root` directory
+    directory: '/'
+    # Check for updates every week
+    schedule:
+      interval: 'monthly'
+    cooldown:
+      default-days: 7
+    # Add a label to pull requests
+    labels:
+      - 'dependencies'
+    # TypeScript 7 is deliberately held back: `typescript-eslint` still declares
+    # `peer typescript: >=4.8.4 <6.1.0`, so a grouped bump that carries TypeScript 7 cannot be
+    # installed at all — `npm ci` aborts on the peer conflict and the whole group is stuck.
+    # Drop this once typescript-eslint supports it.
+    ignore:
+      - dependency-name: 'typescript'
+        update-types:
+          - 'version-update:semver-major'
+    # Group all npm dependencies into a single pull request
+    groups:
+      npm-dependencies:
+        patterns:
+          - '*'

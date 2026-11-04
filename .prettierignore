@@ -1,0 +1,17 @@
+# Dependencies
+node_modules
+
+# Lockfiles
+package-lock.json
+
+# Python side and the built bundle (rollup output, committed)
+custom_components
+tests
+test_config
+
+# Virtual Environments
+.venv
+venv
+
+# Local, gitignored editor settings - not the repository's to format
+.claude/

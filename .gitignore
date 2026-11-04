@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Local Home Assistant test instance: only the config file is tracked
+test_config/*
+!test_config/configuration.yaml
+LOCAL_LOGIN.md
+
+# Local machine compose override (corporate CA, local paths)
+docker-compose.override.yml
+
+# Frontend
+/node_modules
+bun.lock
+yarn.lock
+
+# OS / IDE / agents
+.DS_Store
+.vscode/
+.claude/
+CLAUDE.md

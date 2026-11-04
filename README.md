@@ -1,0 +1,94 @@
+# SnowSure for Home Assistant
+
+A Home Assistant integration for [SnowSure](https://www.snowsure.ai) ski resort data, with a bundled Lovelace card.
+
+- Snow depth (valley, mid-mountain, summit), new snow (24 h – 7 days) and season snowfall
+- 7-day snow forecast with a daily breakdown (14 days with SnowSure Pro)
+- SnowSure score (0–100) with rating and tagline
+- Lifts and runs open, resort open/closed, season dates
+- Temperatures, weather, snow quality and the official avalanche danger level where a bulletin exists
+- Forecast confidence (how far the weather models agree)
+- Resort photo and webcams as image entities, served through Home Assistant
+
+Data by [SnowSure.ai](https://www.snowsure.ai).
+
+## Installation
+
+HACS: add this repository as a custom repository (category _Integration_), install **SnowSure** and restart Home Assistant.
+
+The card ships with the integration: it is served from the integration folder and registered as a Lovelace resource automatically (storage-mode dashboards). In YAML-mode dashboards add `/snowsure_frontend/snowsure-card.js` as a `module` resource yourself.
+
+## Setup
+
+_Settings → Devices & services → Add integration → SnowSure_
+
+1. **API key (optional).** SnowSure's read API is public, so the field can stay empty. A key is sent as a bearer token and only matters for SnowSure Pro, which extends the forecast from 7 to 14 days.
+2. **Country**, then **resort**. Each resort is its own entry and device.
+
+Change the key later with _Reconfigure_; change the update interval (default 30 min) with _Configure_.
+
+## Entities
+
+| Entity                                     | Unit   | Enabled by default |
+| ------------------------------------------ | ------ | ------------------ |
+| Open                                       | on/off | yes                |
+| SnowSure score                             | 0–100  | yes                |
+| Snow depth valley / summit                 | cm     | yes                |
+| Snow depth mid-mountain                    | cm     | no                 |
+| New snow 24h / 7 days, season snowfall     | cm     | yes                |
+| New snow 48h / 72h                         | cm     | no                 |
+| Snow forecast 7 days (attribute `daily`)   | cm     | yes                |
+| Snow forecast 14 days (Pro only)           | cm     | no                 |
+| Lifts open / runs open (attribute `total`) | –      | yes                |
+| Terrain open                               | %      | no                 |
+| Temperature valley / summit                | °C     | yes                |
+| Temperature mid-mountain                   | °C     | no                 |
+| Weather, snow quality                      | text   | yes                |
+| Avalanche danger level (1–5)               | –      | yes                |
+| Forecast confidence (low / medium / high)  | –      | yes                |
+| Resort image                               | image  | yes                |
+| Webcam _name_ (first three)                | image  | yes                |
+| Further webcams                            | image  | no                 |
+| Season opening / closing, last updated     | date   | yes (diagnostic)   |
+
+`unknown` means SnowSure has no value — for example no lift report, or no current avalanche bulletin. A missing bulletin is never a low danger rating.
+
+## Card
+
+```yaml
+type: custom:snowsure-card
+device: <device id of the resort> # picked in the visual editor
+title: Zermatt # optional
+show_score: true
+show_image: true # resort photo as header background
+show_weather: true
+show_stats: true
+stats: # tiles, in this order
+  - depth_base
+  - depth_summit
+  - snowfall_24h
+  - snowfall_7d
+  - snowfall_season
+  - snow_quality
+  - runs_open
+  - lifts_open
+show_forecast: true
+forecast_days: 7 # 1–14
+forecast_band: mid # base, mid or summit; unset = SnowSure's forecast point
+show_avalanche: true
+show_webcams: true # enabled webcam entities, up to six
+```
+
+Available tiles: `depth_base`, `depth_mid`, `depth_summit`, `snowfall_24h`, `snowfall_7d`, `snowfall_season`, `forecast_7d`, `runs_open`, `lifts_open`, `temperature_base`, `temperature_summit`, `snow_quality`.
+
+SnowSure's daily forecast is for one point, usually mid-mountain. A switch under the bars shows the snowfall at valley, mid or summit (each with its height); `forecast_band` picks where it starts. SnowSure has one temperature series only, so the temperature lines do not change with it.
+
+Weather, snow quality and avalanche levels are translated by the card; SnowSure delivers them in English. Webcams and the resort photo load through Home Assistant's image proxy, so the browser makes no third-party requests.
+
+The trail map (a PDF from SnowSure) opens in a dialog over the dashboard; ctrl/cmd-click opens it in a new tab instead. Android's WebView, and so the Android companion app, cannot show PDFs inline — use the new-tab button in the dialog there.
+
+Everything can be set in the visual editor. The card is also offered in the card picker for SnowSure entities.
+
+## Development
+
+See [GEMINI.md](GEMINI.md).

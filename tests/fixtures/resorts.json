@@ -1,0 +1,69 @@
+{
+  "meta": {
+    "source": "SnowSure",
+    "total": 10,
+    "count": 10
+  },
+  "data": [
+    {
+      "name": "Alyeska Resort",
+      "slug": "alyeska-resort",
+      "country": "United States",
+      "region": "North America"
+    },
+    {
+      "name": "Aspen Mountain",
+      "slug": "aspen-mountain",
+      "country": "United States",
+      "region": "North America"
+    },
+    {
+      "name": "Garmisch Classic",
+      "slug": "garmisch-classic",
+      "country": "Germany",
+      "region": "Europe"
+    },
+    {
+      "name": "Matterhorn Ski Paradise",
+      "slug": "matterhorn-ski-paradise",
+      "country": "Switzerland",
+      "region": "Europe"
+    },
+    {
+      "name": "Oberstdorf",
+      "slug": "oberstdorf",
+      "country": "Germany",
+      "region": "Europe"
+    },
+    {
+      "name": "Spitzingsee - Tegernsee",
+      "slug": "spitzingsee-tegernsee",
+      "country": "Germany",
+      "region": "Europe"
+    },
+    {
+      "name": "Sudelfeld",
+      "slug": "sudelfeld",
+      "country": "Germany",
+      "region": "Europe"
+    },
+    {
+      "name": "Wendelstein",
+      "slug": "wendelstein",
+      "country": "Germany",
+      "region": "Europe"
+    },
+    {
+      "name": "Zugspitze (DE)",
+      "slug": "zugspitze-germany",
+      "country": "Germany",
+      "region": "Europe"
+    },
+    {
+      "name": "Broken row",
+      "slug": "../etc/passwd",
+      "country": "Nowhere",
+      "region": "x"
+    }
+  ]
+}

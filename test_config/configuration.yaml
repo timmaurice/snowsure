@@ -1,0 +1,7 @@
+# Local test instance for the SnowSure integration (docker compose up -d -> http://localhost:8138)
+default_config:
+
+logger:
+  default: info
+  logs:
+    custom_components.snowsure: debug

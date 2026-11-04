@@ -1,0 +1,163 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "SnowSure",
+        "description": "SnowSure's read API is public, so the API key is optional. Enter a key only if you have one for SnowSure Pro (unlocks the 14-day forecast). Details: {developers_url}",
+        "data": {
+          "api_key": "API key (optional)"
+        },
+        "data_description": {
+          "api_key": "Sent as a bearer token. Leave empty for the free 7-day forecast."
+        }
+      },
+      "country": {
+        "title": "Select country",
+        "description": "Choose the country of the ski resort.",
+        "data": {
+          "country": "Country"
+        }
+      },
+      "resort": {
+        "title": "Select resort",
+        "description": "Choose the ski resort in {country}.",
+        "data": {
+          "resort": "Resort"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Update SnowSure API key",
+        "description": "SnowSure rejected the API key for {resort}. Enter a new one, or leave the field empty to use the public API. Details: {developers_url}",
+        "data": {
+          "api_key": "API key (optional)"
+        }
+      },
+      "reconfigure": {
+        "title": "Change SnowSure API key",
+        "description": "Add, replace or remove the API key for {resort}. Leave the field empty to use the public API. Details: {developers_url}",
+        "data": {
+          "api_key": "API key (optional)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach snowsure.ai. Please try again later.",
+      "invalid_auth": "SnowSure rejected the API key.",
+      "no_resorts": "SnowSure returned no resorts.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "This resort is already configured.",
+      "reauth_successful": "The API key was updated.",
+      "reconfigure_successful": "The API key was updated."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Update interval",
+        "description": "How often SnowSure is polled. Forecasts are refreshed hourly, so 30 minutes is plenty.",
+        "data": {
+          "scan_interval_minutes": "Update interval (minutes)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "open": {
+        "name": "Open"
+      }
+    },
+    "image": {
+      "resort_image": {
+        "name": "Resort image"
+      },
+      "webcam": {
+        "name": "Webcam {name}"
+      },
+      "trail_map": {
+        "name": "Trail map {name}"
+      }
+    },
+    "sensor": {
+      "score": {
+        "name": "SnowSure score"
+      },
+      "depth_base": {
+        "name": "Snow depth valley"
+      },
+      "depth_mid": {
+        "name": "Snow depth mid-mountain"
+      },
+      "depth_summit": {
+        "name": "Snow depth summit"
+      },
+      "snowfall_24h": {
+        "name": "New snow 24h"
+      },
+      "snowfall_48h": {
+        "name": "New snow 48h"
+      },
+      "snowfall_72h": {
+        "name": "New snow 72h"
+      },
+      "snowfall_7d": {
+        "name": "New snow 7 days"
+      },
+      "snowfall_season": {
+        "name": "Season snowfall"
+      },
+      "forecast_7d": {
+        "name": "Snow forecast 7 days"
+      },
+      "forecast_14d": {
+        "name": "Snow forecast 14 days"
+      },
+      "lifts_open": {
+        "name": "Lifts open"
+      },
+      "runs_open": {
+        "name": "Runs open"
+      },
+      "terrain_open": {
+        "name": "Terrain open"
+      },
+      "temperature_base": {
+        "name": "Temperature valley"
+      },
+      "temperature_mid": {
+        "name": "Temperature mid-mountain"
+      },
+      "temperature_summit": {
+        "name": "Temperature summit"
+      },
+      "weather": {
+        "name": "Weather"
+      },
+      "snow_quality": {
+        "name": "Snow quality"
+      },
+      "avalanche_level": {
+        "name": "Avalanche danger level"
+      },
+      "season_opening": {
+        "name": "Season opening"
+      },
+      "season_closing": {
+        "name": "Season closing"
+      },
+      "updated_at": {
+        "name": "Last updated"
+      },
+      "forecast_confidence": {
+        "name": "Forecast confidence",
+        "state": {
+          "low": "Low",
+          "medium": "Medium",
+          "high": "High"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.1.0",
+  "schema": "https://www.snowsure.ai/.well-known/schemas/resort-avalanche-v1.json",
+  "meta": {
+    "source": "SnowSure",
+    "slug": "aspen-mountain",
+    "generatedAt": "2026-11-04T15:57:48.929Z",
+    "coverage": "bulletin",
+    "coverageDetail": "Relaying the current bulletin for this resort’s forecast zone.",
+    "issuer": "Colorado Avalanche Information Center",
+    "link": "https://avalanche.state.co.us/",
+    "relayed": true,
+    "disclaimer": "SnowSure relays the official avalanche bulletin and does not issue avalanche forecasts. Read the full bulletin at the issuer’s link and make your own terrain decisions. Not a substitute for avalanche education, equipment, or local knowledge."
+  },
+  "data": {
+    "slug": "aspen-mountain",
+    "source": "US",
+    "zoneName": "CAIC zone",
+    "issuer": "Colorado Avalanche Information Center",
+    "link": "https://avalanche.state.co.us/",
+    "dangerRating": 2,
+    "dangerLabel": "Moderate",
+    "travelAdvice": "Heightened avalanche conditions on specific terrain features. Evaluate snow and terrain carefully; identify features of concern.",
+    "validUntil": "2026-11-04T23:30:00",
+    "offSeason": false
+  }
+}

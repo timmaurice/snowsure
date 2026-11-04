@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.1.0",
+  "schema": "https://www.snowsure.ai/.well-known/schemas/resort-avalanche-v1.json",
+  "meta": {
+    "source": "SnowSure",
+    "slug": "matterhorn-ski-paradise",
+    "generatedAt": "2026-11-04T15:55:25.862Z",
+    "coverage": "no_current_bulletin",
+    "coverageDetail": "The warning service is publishing no bulletins right now — it is outside the forecast season, or the service could not be reached. This is not an indication that avalanche danger is low.",
+    "issuer": "SLF (WSL Institute for Snow and Avalanche Research)",
+    "link": "https://www.slf.ch/en/avalanche-bulletin-and-snow-situation.html",
+    "relayed": true,
+    "disclaimer": "SnowSure relays the official avalanche bulletin and does not issue avalanche forecasts. Read the full bulletin at the issuer’s link and make your own terrain decisions. Not a substitute for avalanche education, equipment, or local knowledge."
+  },
+  "data": null
+}

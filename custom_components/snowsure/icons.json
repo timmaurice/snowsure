@@ -1,0 +1,90 @@
+{
+  "entity": {
+    "binary_sensor": {
+      "open": {
+        "default": "mdi:ski",
+        "state": {
+          "off": "mdi:ski-off"
+        }
+      }
+    },
+    "image": {
+      "resort_image": {
+        "default": "mdi:image-filter-hdr"
+      },
+      "webcam": {
+        "default": "mdi:webcam"
+      },
+      "trail_map": {
+        "default": "mdi:map"
+      }
+    },
+    "sensor": {
+      "score": {
+        "default": "mdi:snowflake-check"
+      },
+      "depth_base": {
+        "default": "mdi:arrow-collapse-down"
+      },
+      "depth_mid": {
+        "default": "mdi:arrow-collapse-vertical"
+      },
+      "depth_summit": {
+        "default": "mdi:image-filter-hdr"
+      },
+      "snowfall_24h": {
+        "default": "mdi:weather-snowy"
+      },
+      "snowfall_48h": {
+        "default": "mdi:weather-snowy"
+      },
+      "snowfall_72h": {
+        "default": "mdi:weather-snowy"
+      },
+      "snowfall_7d": {
+        "default": "mdi:weather-snowy-heavy"
+      },
+      "snowfall_season": {
+        "default": "mdi:snowflake"
+      },
+      "forecast_7d": {
+        "default": "mdi:calendar-week"
+      },
+      "forecast_14d": {
+        "default": "mdi:calendar-range"
+      },
+      "lifts_open": {
+        "default": "mdi:gondola"
+      },
+      "runs_open": {
+        "default": "mdi:ski"
+      },
+      "terrain_open": {
+        "default": "mdi:terrain"
+      },
+      "weather": {
+        "default": "mdi:weather-partly-snowy"
+      },
+      "snow_quality": {
+        "default": "mdi:snowflake-variant"
+      },
+      "avalanche_level": {
+        "default": "mdi:alert-octagon"
+      },
+      "season_opening": {
+        "default": "mdi:calendar-start"
+      },
+      "season_closing": {
+        "default": "mdi:calendar-end"
+      },
+      "forecast_confidence": {
+        "default": "mdi:chart-bell-curve",
+        "state": {
+          "low": "mdi:gauge-low",
+          "medium": "mdi:gauge",
+          "high": "mdi:gauge-full"
+        }
+      }
+    }
+  }
+}
