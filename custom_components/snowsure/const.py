@@ -22,3 +22,15 @@ CONF_SCAN_INTERVAL_MINUTES = "scan_interval_minutes"
 DEFAULT_SCAN_INTERVAL_MINUTES = 30
 MIN_SCAN_INTERVAL_MINUTES = 15
 MAX_SCAN_INTERVAL_MINUTES = 360
+
+# Powder alarm: on when a day in the next POWDER_DAYS forecasts at least the
+# threshold at the chosen height. Today and tomorrow, 15 cm, mid-mountain (the
+# height SnowSure's own headline forecast uses).
+CONF_POWDER_THRESHOLD_CM = "powder_threshold_cm"
+CONF_POWDER_DAYS = "powder_days"
+CONF_POWDER_BAND = "powder_band"
+DEFAULT_POWDER_THRESHOLD_CM = 15
+DEFAULT_POWDER_DAYS = 2
+DEFAULT_POWDER_BAND = "mid"
+POWDER_BANDS = ("base", "mid", "summit")
+MAX_POWDER_DAYS = 7

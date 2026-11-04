@@ -25,13 +25,14 @@ _Settings → Devices & services → Add integration → SnowSure_
 1. **API key (optional).** SnowSure's read API is public, so the field can stay empty. A key is sent as a bearer token and only matters for SnowSure Pro, which extends the forecast from 7 to 14 days.
 2. **Country**, then **resort**. Each resort is its own entry and device.
 
-Change the key later with _Reconfigure_; change the update interval (default 30 min) with _Configure_.
+Change the key later with _Reconfigure_; change the update interval (default 30 min) and the powder alarm with _Configure_.
 
 ## Entities
 
 | Entity                                     | Unit   | Enabled by default |
 | ------------------------------------------ | ------ | ------------------ |
 | Open                                       | on/off | yes                |
+| Powder alarm                               | on/off | yes                |
 | SnowSure score                             | 0–100  | yes                |
 | Snow depth valley / summit                 | cm     | yes                |
 | Snow depth mid-mountain                    | cm     | no                 |
@@ -48,8 +49,26 @@ Change the key later with _Reconfigure_; change the update interval (default 30 
 | Forecast confidence (low / medium / high)  | –      | yes                |
 | Resort image                               | image  | yes                |
 | Webcam _name_ (first three)                | image  | yes                |
+| Trail map _name_                           | image  | yes                |
 | Further webcams                            | image  | no                 |
 | Season opening / closing, last updated     | date   | yes (diagnostic)   |
+
+### Powder alarm
+
+On while a day in the look-ahead window forecasts at least the threshold of new snow at the chosen height. Defaults: 15 cm, today and tomorrow, mid-mountain; set all three under _Configure_. The attributes name the first such day (`date`, `snowfall`) and the biggest day in the window (`max_snowfall`), so a notification needs no template:
+
+```yaml
+triggers:
+  - trigger: state
+    entity_id: binary_sensor.matterhorn_ski_paradise_powder_alarm
+    to: "on"
+actions:
+  - action: notify.mobile_app_phone
+    data:
+      message: >-
+        Powder: {{ state_attr(trigger.entity_id, 'snowfall') }} cm
+        on {{ state_attr(trigger.entity_id, 'date') }}
+```
 
 `unknown` means SnowSure has no value — for example no lift report, or no current avalanche bulletin. A missing bulletin is never a low danger rating.
 

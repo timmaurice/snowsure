@@ -55,10 +55,13 @@
   "options": {
     "step": {
       "init": {
-        "title": "Aktualisierungsintervall",
-        "description": "Wie oft SnowSure abgefragt wird. Prognosen werden stündlich aktualisiert, 30 Minuten reichen also völlig.",
+        "title": "Optionen",
+        "description": "Wie oft SnowSure abgefragt wird (Prognosen werden stündlich aktualisiert, 30 Minuten reichen) und wann der Powder-Alarm angeht.",
         "data": {
-          "scan_interval_minutes": "Aktualisierungsintervall (Minuten)"
+          "scan_interval_minutes": "Aktualisierungsintervall (Minuten)",
+          "powder_threshold_cm": "Powder-Alarm: Neuschnee ab",
+          "powder_days": "Powder-Alarm: Tage voraus (1 = heute)",
+          "powder_band": "Powder-Alarm: Höhe"
         }
       }
     }
@@ -67,6 +70,9 @@
     "binary_sensor": {
       "open": {
         "name": "Geöffnet"
+      },
+      "powder_alarm": {
+        "name": "Powder-Alarm"
       }
     },
     "image": {
@@ -157,6 +163,15 @@
           "medium": "Mittel",
           "high": "Hoch"
         }
+      }
+    }
+  },
+  "selector": {
+    "powder_band": {
+      "options": {
+        "base": "Tal",
+        "mid": "Bergmitte",
+        "summit": "Berg"
       }
     }
   }

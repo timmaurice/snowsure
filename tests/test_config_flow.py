@@ -11,6 +11,9 @@ from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClien
 
 from custom_components.snowsure.const import (
     CONF_COUNTRY,
+    CONF_POWDER_BAND,
+    CONF_POWDER_DAYS,
+    CONF_POWDER_THRESHOLD_CM,
     CONF_RESORT,
     CONF_RESORT_NAME,
     CONF_SCAN_INTERVAL_MINUTES,
@@ -134,8 +137,21 @@ async def test_options_flow(hass: HomeAssistant, mock_api: AiohttpClientMocker, 
 
     result = await hass.config_entries.options.async_init(mock_entry.entry_id)
     assert result["step_id"] == "init"
-    result = await hass.config_entries.options.async_configure(result["flow_id"], {CONF_SCAN_INTERVAL_MINUTES: 60})
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"],
+        {
+            CONF_SCAN_INTERVAL_MINUTES: 60,
+            CONF_POWDER_THRESHOLD_CM: 20,
+            CONF_POWDER_DAYS: 3,
+            CONF_POWDER_BAND: "summit",
+        },
+    )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     await hass.async_block_till_done()
-    assert mock_entry.options == {CONF_SCAN_INTERVAL_MINUTES: 60}
+    assert mock_entry.options == {
+        CONF_SCAN_INTERVAL_MINUTES: 60,
+        CONF_POWDER_THRESHOLD_CM: 20.0,
+        CONF_POWDER_DAYS: 3,
+        CONF_POWDER_BAND: "summit",
+    }
     assert mock_entry.runtime_data.update_interval.total_seconds() == 3600

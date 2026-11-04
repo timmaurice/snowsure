@@ -13,7 +13,14 @@ from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 
-from custom_components.snowsure.const import CONF_SCAN_INTERVAL_MINUTES, DOMAIN
+from custom_components.snowsure.binary_sensor import powder_outlook
+from custom_components.snowsure.const import (
+    CONF_POWDER_BAND,
+    CONF_POWDER_DAYS,
+    CONF_POWDER_THRESHOLD_CM,
+    CONF_SCAN_INTERVAL_MINUTES,
+    DOMAIN,
+)
 from custom_components.snowsure.coordinator import async_scan_interval
 from custom_components.snowsure.diagnostics import async_get_config_entry_diagnostics
 from custom_components.snowsure.sensor import SENSORS
@@ -208,3 +215,42 @@ async def test_forecast_confidence_sensor(
     assert state.state == "low"
     assert state.attributes["options"] == ["low", "medium", "high"]
     assert state.attributes["week2"] == "medium"
+
+
+async def test_powder_alarm_defaults_off(
+    hass: HomeAssistant, mock_api: AiohttpClientMocker, mock_entry: MockConfigEntry
+) -> None:
+    # Defaults: 15 cm at mid-mountain, today and tomorrow (0.5 and 0.3 cm).
+    await _setup(hass, mock_entry)
+    state = hass.states.get(_entity_id(hass, "binary_sensor", "powder_alarm"))
+    assert state.state == "off"
+    assert state.attributes["band"] == "mid"
+    assert state.attributes["elevation"] == 2723
+    assert state.attributes["date"] is None
+    assert state.attributes["max_snowfall"] == 0.5
+
+
+async def test_powder_alarm_follows_the_options(
+    hass: HomeAssistant, mock_api: AiohttpClientMocker, mock_entry: MockConfigEntry
+) -> None:
+    entry = MockConfigEntry(
+        domain=DOMAIN,
+        title=mock_entry.title,
+        unique_id=mock_entry.unique_id,
+        data=mock_entry.data,
+        options={CONF_POWDER_THRESHOLD_CM: 10, CONF_POWDER_DAYS: 3, CONF_POWDER_BAND: "summit"},
+    )
+    await _setup(hass, entry)
+    state = hass.states.get(_entity_id(hass, "binary_sensor", "powder_alarm"))
+    assert state.state == STATE_ON
+    assert state.attributes["date"] == "2026-11-06"
+    assert state.attributes["snowfall"] == 11.7
+    assert state.attributes["elevation"] == 3883
+
+
+def test_powder_outlook_falls_back_to_the_forecast_point() -> None:
+    daily = [{"date": "d1", "snowfall": 3}, {"date": "d2", "snowfall": 20, "snowfall_summit": None}]
+    checked, first = powder_outlook(daily, 15, 2, "summit")
+    assert [d["snowfall"] for d in checked] == [3, 20]
+    assert first == {"date": "d2", "snowfall": 20}
+    assert powder_outlook(None, 15, 2, "mid") == ([], None)

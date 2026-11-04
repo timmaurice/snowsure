@@ -26,13 +26,21 @@ from homeassistant.helpers.selector import (
 from .api import ResortSummary, SnowsureAuthError, SnowsureClient, SnowsureError
 from .const import (
     CONF_COUNTRY,
+    CONF_POWDER_BAND,
+    CONF_POWDER_DAYS,
+    CONF_POWDER_THRESHOLD_CM,
     CONF_RESORT,
     CONF_RESORT_NAME,
     CONF_SCAN_INTERVAL_MINUTES,
+    DEFAULT_POWDER_BAND,
+    DEFAULT_POWDER_DAYS,
+    DEFAULT_POWDER_THRESHOLD_CM,
     DEFAULT_SCAN_INTERVAL_MINUTES,
     DOMAIN,
+    MAX_POWDER_DAYS,
     MAX_SCAN_INTERVAL_MINUTES,
     MIN_SCAN_INTERVAL_MINUTES,
+    POWDER_BANDS,
 )
 
 _API_KEY_SELECTOR = TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD))
@@ -191,7 +199,7 @@ class SnowsureConfigFlow(ConfigFlow, domain=DOMAIN):
 
 
 class SnowsureOptionsFlow(OptionsFlowWithReload):
-    """Poll interval only; it reloads the entry itself after saving.
+    """Poll interval and powder alarm; it reloads the entry itself after saving.
 
     The API key changes the setup itself, so it lives in reconfigure. A
     different resort is a different entry: the slug is the unique_id, and
@@ -201,15 +209,23 @@ class SnowsureOptionsFlow(OptionsFlowWithReload):
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         if user_input is not None:
             return self.async_create_entry(
-                data={CONF_SCAN_INTERVAL_MINUTES: int(user_input[CONF_SCAN_INTERVAL_MINUTES])}
+                data={
+                    CONF_SCAN_INTERVAL_MINUTES: int(user_input[CONF_SCAN_INTERVAL_MINUTES]),
+                    CONF_POWDER_THRESHOLD_CM: float(user_input[CONF_POWDER_THRESHOLD_CM]),
+                    CONF_POWDER_DAYS: int(user_input[CONF_POWDER_DAYS]),
+                    CONF_POWDER_BAND: user_input[CONF_POWDER_BAND],
+                }
             )
 
-        current = self.config_entry.options.get(CONF_SCAN_INTERVAL_MINUTES, DEFAULT_SCAN_INTERVAL_MINUTES)
+        options = self.config_entry.options
         return self.async_show_form(
             step_id="init",
             data_schema=vol.Schema(
                 {
-                    vol.Required(CONF_SCAN_INTERVAL_MINUTES, default=current): NumberSelector(
+                    vol.Required(
+                        CONF_SCAN_INTERVAL_MINUTES,
+                        default=options.get(CONF_SCAN_INTERVAL_MINUTES, DEFAULT_SCAN_INTERVAL_MINUTES),
+                    ): NumberSelector(
                         NumberSelectorConfig(
                             min=MIN_SCAN_INTERVAL_MINUTES,
                             max=MAX_SCAN_INTERVAL_MINUTES,
@@ -217,7 +233,29 @@ class SnowsureOptionsFlow(OptionsFlowWithReload):
                             mode=NumberSelectorMode.BOX,
                             unit_of_measurement="min",
                         )
-                    )
+                    ),
+                    vol.Required(
+                        CONF_POWDER_THRESHOLD_CM,
+                        default=options.get(CONF_POWDER_THRESHOLD_CM, DEFAULT_POWDER_THRESHOLD_CM),
+                    ): NumberSelector(
+                        NumberSelectorConfig(
+                            min=1, max=100, step=1, mode=NumberSelectorMode.BOX, unit_of_measurement="cm"
+                        )
+                    ),
+                    vol.Required(
+                        CONF_POWDER_DAYS, default=options.get(CONF_POWDER_DAYS, DEFAULT_POWDER_DAYS)
+                    ): NumberSelector(
+                        NumberSelectorConfig(min=1, max=MAX_POWDER_DAYS, step=1, mode=NumberSelectorMode.SLIDER)
+                    ),
+                    vol.Required(
+                        CONF_POWDER_BAND, default=options.get(CONF_POWDER_BAND, DEFAULT_POWDER_BAND)
+                    ): SelectSelector(
+                        SelectSelectorConfig(
+                            options=list(POWDER_BANDS),
+                            mode=SelectSelectorMode.DROPDOWN,
+                            translation_key="powder_band",
+                        )
+                    ),
                 }
             ),
         )

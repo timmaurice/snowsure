@@ -1,19 +1,31 @@
-"""Binary sensor: is the resort open today?"""
+"""Binary sensors: is the resort open today, and is a powder day coming?"""
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import Any
 
 from homeassistant.components.binary_sensor import BinarySensorEntity, BinarySensorEntityDescription
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
-from .coordinator import SnowsureConfigEntry
+from .const import (
+    CONF_POWDER_BAND,
+    CONF_POWDER_DAYS,
+    CONF_POWDER_THRESHOLD_CM,
+    DEFAULT_POWDER_BAND,
+    DEFAULT_POWDER_DAYS,
+    DEFAULT_POWDER_THRESHOLD_CM,
+    MAX_POWDER_DAYS,
+    POWDER_BANDS,
+)
+from .coordinator import SnowsureConfigEntry, SnowsureCoordinator
 from .entity import SnowsureEntity
 
 PARALLEL_UPDATES = 0
 
 OPEN_DESCRIPTION = BinarySensorEntityDescription(key="open", translation_key="open")
+POWDER_DESCRIPTION = BinarySensorEntityDescription(key="powder_alarm", translation_key="powder_alarm")
 
 
 async def async_setup_entry(
@@ -21,7 +33,12 @@ async def async_setup_entry(
     entry: SnowsureConfigEntry,
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
-    async_add_entities([SnowsureOpenSensor(entry.runtime_data, OPEN_DESCRIPTION)])
+    async_add_entities(
+        [
+            SnowsureOpenSensor(entry.runtime_data, OPEN_DESCRIPTION),
+            SnowsurePowderAlarm(entry.runtime_data, POWDER_DESCRIPTION, entry.options),
+        ]
+    )
 
 
 class SnowsureOpenSensor(SnowsureEntity, BinarySensorEntity):
@@ -44,3 +61,73 @@ class SnowsureOpenSensor(SnowsureEntity, BinarySensorEntity):
             "website": data.get("website"),
             "trail_map": data.get("trail_map"),
         }
+
+
+def powder_outlook(
+    daily: list[dict[str, Any]] | None, threshold: float, days: int, band: str
+) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+    """The days checked and the first of them that reaches ``threshold`` cm.
+
+    Each day uses the snowfall at ``band`` and falls back to the forecast
+    point's value when SnowSure sent no bands.
+    """
+    checked: list[dict[str, Any]] = []
+    for day in (daily or [])[:days]:
+        amount = day.get(f"snowfall_{band}")
+        if amount is None:
+            amount = day.get("snowfall")
+        checked.append({"date": day.get("date"), "snowfall": amount})
+    first = next((day for day in checked if day["snowfall"] is not None and day["snowfall"] >= threshold), None)
+    return checked, first
+
+
+class SnowsurePowderAlarm(SnowsureEntity, BinarySensorEntity):
+    """On while a day in the look-ahead window forecasts enough new snow.
+
+    Threshold, window and height come from the options, so an automation needs
+    no template: "when the powder alarm turns on, notify me".
+    """
+
+    def __init__(
+        self,
+        coordinator: SnowsureCoordinator,
+        description: BinarySensorEntityDescription,
+        options: Mapping[str, Any],
+    ) -> None:
+        super().__init__(coordinator, description)
+        self._threshold = _option_float(options.get(CONF_POWDER_THRESHOLD_CM), DEFAULT_POWDER_THRESHOLD_CM)
+        days = int(_option_float(options.get(CONF_POWDER_DAYS), DEFAULT_POWDER_DAYS))
+        self._days = days if 1 <= days <= MAX_POWDER_DAYS else DEFAULT_POWDER_DAYS
+        band = options.get(CONF_POWDER_BAND)
+        self._band = band if band in POWDER_BANDS else DEFAULT_POWDER_BAND
+
+    def _outlook(self) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
+        return powder_outlook(self.coordinator.data.get("forecast_daily"), self._threshold, self._days, self._band)
+
+    @property
+    def is_on(self) -> bool | None:
+        checked, first = self._outlook()
+        if not checked:
+            return None
+        return first is not None
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        checked, first = self._outlook()
+        elevations = self.coordinator.data.get("forecast_band_elevations") or {}
+        return {
+            "threshold_cm": self._threshold,
+            "days": self._days,
+            "band": self._band,
+            "elevation": elevations.get(self._band),
+            "date": first["date"] if first else None,
+            "snowfall": first["snowfall"] if first else None,
+            "max_snowfall": max((d["snowfall"] for d in checked if d["snowfall"] is not None), default=None),
+        }
+
+
+def _option_float(value: Any, default: float) -> float:
+    try:
+        return float(value)
+    except TypeError, ValueError:
+        return default

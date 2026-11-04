@@ -55,10 +55,13 @@
   "options": {
     "step": {
       "init": {
-        "title": "Update interval",
-        "description": "How often SnowSure is polled. Forecasts are refreshed hourly, so 30 minutes is plenty.",
+        "title": "Options",
+        "description": "How often SnowSure is polled (forecasts refresh hourly, 30 minutes is plenty) and when the powder alarm turns on.",
         "data": {
-          "scan_interval_minutes": "Update interval (minutes)"
+          "scan_interval_minutes": "Update interval (minutes)",
+          "powder_threshold_cm": "Powder alarm: new snow from",
+          "powder_days": "Powder alarm: days ahead (1 = today)",
+          "powder_band": "Powder alarm: height"
         }
       }
     }
@@ -67,6 +70,9 @@
     "binary_sensor": {
       "open": {
         "name": "Open"
+      },
+      "powder_alarm": {
+        "name": "Powder alarm"
       }
     },
     "image": {
@@ -157,6 +163,15 @@
           "medium": "Medium",
           "high": "High"
         }
+      }
+    }
+  },
+  "selector": {
+    "powder_band": {
+      "options": {
+        "base": "Valley",
+        "mid": "Mid-mountain",
+        "summit": "Summit"
       }
     }
   }
