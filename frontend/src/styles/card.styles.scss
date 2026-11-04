@@ -5,12 +5,78 @@
 ha-card {
   height: 100%;
   box-sizing: border-box;
+  // The layout follows the card's own width, not the screen's: a section
+  // column on a desktop is as narrow as a phone.
+  container: card / inline-size;
 }
 
 .card-content {
   display: flex;
   flex-direction: column;
   gap: 16px;
+}
+
+// Groups that move as one in the wide layout; inside, the same spacing.
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.forecast-block {
+  container: forecast / inline-size;
+}
+
+.block:empty {
+  display: none;
+}
+
+// Wide card (a section spanning two columns, a panel): weather, tiles and
+// avalanche on the left, the forecast on the right, webcams and footer below.
+@container card (min-width: 640px) {
+  .card-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    grid-template-areas:
+      'weather forecast'
+      'stats forecast'
+      'avalanche forecast'
+      'webcams webcams'
+      'footer footer';
+    grid-template-rows: auto auto 1fr auto auto;
+    column-gap: 24px;
+    row-gap: 16px;
+    align-items: start;
+  }
+
+  .weather {
+    grid-area: weather;
+  }
+
+  .stats {
+    grid-area: stats;
+  }
+
+  .forecast-block {
+    grid-area: forecast;
+  }
+
+  .avalanche {
+    grid-area: avalanche;
+  }
+
+  .webcams-block {
+    grid-area: webcams;
+  }
+
+  .footer {
+    grid-area: footer;
+  }
+
+  .header.with-image {
+    min-height: 160px;
+  }
 }
 
 .hint {
@@ -211,8 +277,9 @@ button {
 }
 
 .stats {
+  container: stats / inline-size;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  grid-template-columns: repeat(var(--stat-columns, 4), minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -249,6 +316,45 @@ button {
 .stat-label {
   font-size: 0.75rem;
   color: var(--secondary-text-color);
+  hyphens: auto;
+  overflow-wrap: anywhere;
+}
+
+// Narrow tile grid (a section column on a desktop, the left half of a wide
+// card): smaller tiles so four fit in a row.
+@container stats (max-width: 400px) {
+  .stats > .stat {
+    padding: 6px 2px;
+    border-radius: 10px;
+
+    ha-icon,
+    .depth-icon {
+      --mdc-icon-size: 18px;
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  .stat-value {
+    font-size: 0.92rem;
+  }
+
+  .stat-label {
+    font-size: 0.68rem;
+    line-height: 1.2;
+  }
+
+  .stat-extra {
+    font-size: 0.62rem;
+  }
+}
+
+// Narrow forecast: the band switch stays on one line, heights in the tooltip.
+@container forecast (max-width: 420px) {
+  .band-label-text,
+  .band-height {
+    display: none;
+  }
 }
 
 .stat-extra {
@@ -394,8 +500,11 @@ button {
   }
 }
 
+// Fixed height: a band without snow (all amounts empty) must not make the
+// card jump when the switch changes.
 .amount {
-  min-height: 1.3em;
+  height: 1.3em;
+  line-height: 1.3em;
   padding-top: 4px;
   font-weight: 500;
   color: var(--info-color, #039be5);
@@ -462,11 +571,12 @@ button {
   }
 }
 
-// One row: up to three webcams share the width; more scroll sideways.
+// One row of thirds, however many there are: one webcam must not grow into a
+// poster. More than three scroll sideways.
 .webcams {
   display: grid;
   grid-auto-flow: column;
-  grid-auto-columns: minmax(calc((100% - 16px) / 3), 1fr);
+  grid-auto-columns: calc((100% - 16px) / 3);
   gap: 8px;
   overflow-x: auto;
   scroll-snap-type: x mandatory;

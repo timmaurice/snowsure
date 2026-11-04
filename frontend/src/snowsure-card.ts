@@ -56,6 +56,16 @@ const STAT_ICONS: Record<StatKey, string> = {
   snow_quality: 'mdi:snowflake-variant',
 };
 
+/**
+ * Columns for the tile grid, so rows come out even: 6 tiles as 3 + 3 rather
+ * than 4 + 2, 8 as 4 + 4 rather than 3 + 3 + 2.
+ */
+export function statColumns(tiles: number): number {
+  if (tiles <= 4) return Math.max(tiles, 1);
+  if (tiles === 5 || tiles === 6 || tiles === 9) return 3;
+  return 4;
+}
+
 /** Temperature colour scale in °C, cold to warm, for the forecast lines. */
 const TEMPERATURE_COLORS: [number, string][] = [
   [-20, '#7c4dff'],
@@ -221,9 +231,9 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
         <div class="card-content">
           ${c.show_weather ? this._renderWeather(resort) : nothing}
           ${c.show_stats ? this._renderStats(resort) : nothing}
-          ${c.show_forecast ? this._renderForecast(resort) : nothing}
+          ${c.show_forecast ? html`<div class="block forecast-block">${this._renderForecast(resort)}</div>` : nothing}
           ${c.show_avalanche ? this._renderAvalanche(resort) : nothing}
-          ${c.show_webcams ? this._renderWebcams(resort) : nothing}
+          ${c.show_webcams ? html`<div class="block webcams-block">${this._renderWebcams(resort)}</div>` : nothing}
           ${this._renderFooter(device?.configuration_url, resort)}
         </div>
         ${this._trailMap ? this._renderTrailMap(name, resort, this._trailMap) : nothing}
@@ -469,7 +479,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     const tiles = (this._config!.stats ?? DEFAULT_STATS).filter((key) => resort.byKey[key]);
     if (tiles.length === 0) return nothing;
     return html`
-      <div class="stats">
+      <div class="stats" style="--stat-columns: ${statColumns(tiles.length)}">
         ${tiles.map((key) => {
           const entity = resort.byKey[key];
           const vsAverage = key === 'depth_base' ? toNumber(entity?.attributes.vs_average_pct) : null;
@@ -599,12 +609,16 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
         : `${formatNumber(meters, hass, { maximumFractionDigits: 0 })} m`;
     return html`
       <div class="band-switch" role="radiogroup" aria-label=${localize(hass, 'card.snowfall_at')}>
-        <span class="band-label"><ha-icon icon="mdi:snowflake"></ha-icon>${localize(hass, 'card.snowfall_at')}</span>
+        <span class="band-label" title=${localize(hass, 'card.snowfall_at')}
+          ><ha-icon icon="mdi:snowflake"></ha-icon
+          ><span class="band-label-text">${localize(hass, 'card.snowfall_at')}</span></span
+        >
         ${bands.map(
           (band) => html`
             <button
               role="radio"
               class="band ${band === active ? 'active' : ''}"
+              title=${`${localize(hass, `card.band.${band}`)} ${height(elevations[band]!)}`}
               aria-checked=${band === active ? 'true' : 'false'}
               @click=${() => (this._band = band)}
             >

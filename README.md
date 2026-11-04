@@ -106,6 +106,8 @@ Weather, snow quality and avalanche levels are translated by the card; SnowSure 
 
 The trail map (a PDF from SnowSure) opens in a dialog over the dashboard; ctrl/cmd-click opens it in a new tab instead. Android's WebView, and so the Android companion app, cannot show PDFs inline — use the new-tab button in the dialog there.
 
+The card follows its own width. In a normal section column it stacks everything and shrinks the tiles; from 640 px (a section spanning two columns, or a panel view) it switches to two columns: weather, tiles and avalanche on the left, the forecast on the right, webcams below.
+
 Everything can be set in the visual editor. The card is also offered in the card picker for SnowSure entities.
 
 ## Development

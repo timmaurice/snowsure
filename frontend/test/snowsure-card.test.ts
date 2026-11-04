@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { SnowsureCard, temperatureColor } from '../src/snowsure-card';
+import { SnowsureCard, statColumns, temperatureColor } from '../src/snowsure-card';
 import { HomeAssistant, SnowsureCardConfig } from '../src/types';
 import { DEVICE, makeHass } from './fixtures';
 
@@ -91,6 +91,23 @@ describe('render', () => {
       'svg',
       'ha-icon',
     ]);
+  });
+
+  it('picks tile columns so the rows come out even', async () => {
+    expect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12].map(statColumns)).toEqual([1, 2, 3, 4, 3, 3, 4, 4, 3, 4, 4]);
+    const card = await mount({ device: DEVICE });
+    const stats = root(card).querySelector<HTMLElement>('.stats')!;
+    // Six tiles in the fixture (no season or 7-day snowfall entity): 3 + 3.
+    expect(stats.style.getPropertyValue('--stat-columns')).toBe('3');
+  });
+
+  it('groups the forecast and the webcams for the wide layout', async () => {
+    const card = await mount({ device: DEVICE });
+    expect(root(card).querySelector('.forecast-block .forecast')).not.toBeNull();
+    expect(root(card).querySelector('.webcams-block .webcams')).not.toBeNull();
+    const hidden = await mount({ device: DEVICE, show_forecast: false, show_webcams: false });
+    expect(root(hidden).querySelector('.forecast-block')).toBeNull();
+    expect(root(hidden).querySelector('.webcams-block')).toBeNull();
   });
 
   it('renders the default tiles, with open/total for lifts and runs', async () => {
