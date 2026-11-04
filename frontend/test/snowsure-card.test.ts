@@ -363,6 +363,46 @@ describe('render', () => {
     expect(text(card, '.section-title .secondary')[0]).toBe('2.9 in in 3 days');
   });
 
+  it('marks an avalanche bulletin whose validity ran out', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(new Date('2026-11-04T12:00:00'));
+      let card = await mount({ device: DEVICE });
+      expect(root(card).querySelector('.avalanche.expired')).toBeNull();
+      expect(text(card, '.avalanche .secondary')[0]).toMatch(/^valid until/);
+
+      vi.setSystemTime(new Date('2026-11-05T08:00:00'));
+      card = await mount({ device: DEVICE });
+      expect(root(card).querySelector('.avalanche.expired')).not.toBeNull();
+      expect(text(card, '.avalanche .secondary')[0]).toMatch(/^expired .*, no newer bulletin yet$/);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("marks SnowSure's first forecast day as today, whatever the viewer's clock says", async () => {
+    const card = await mount({ device: DEVICE, forecast_days: 3 });
+    expect(text(card, '.day.today .weekday')).toEqual(['Today']);
+    expect(root(card).querySelector('.day.today.first-forecast')).not.toBeNull();
+  });
+
+  it('draws the temperature curve without overshooting its points', async () => {
+    const hass = makeHass();
+    const forecast = hass.states['sensor.matterhorn_forecast'];
+    const daily = (forecast.attributes.daily as Record<string, unknown>[]).map((day, i) => ({
+      ...day,
+      temp_max: [0, -10, 0, 0][i] ?? 0,
+    }));
+    forecast.attributes = { ...forecast.attributes, daily };
+    const card = await mount({ device: DEVICE, forecast_days: 4, history_days: 0 }, hass);
+    const d = root(card).querySelector('.temp-line.max')!.getAttribute('d')!;
+    const ys = [...d.matchAll(/[\d.]+ ([\d.]+)/g)].map((m) => Number(m[1]));
+    const tops = [...root(card).querySelectorAll<HTMLElement>('.temp-dot.max')].map((dot) => parseFloat(dot.style.top));
+    // Every control point stays within the band the dots span.
+    expect(Math.min(...ys)).toBeGreaterThanOrEqual(Math.min(...tops) - 0.001);
+    expect(Math.max(...ys)).toBeLessThanOrEqual(Math.max(...tops) + 0.001);
+  });
+
   it('shows the avalanche level and hides sections that are switched off', async () => {
     let card = await mount({ device: DEVICE });
     expect(text(card, '.level')).toEqual(['2']);

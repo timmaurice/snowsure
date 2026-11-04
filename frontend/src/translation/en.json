@@ -13,6 +13,7 @@
     "avalanche": "Avalanche danger",
     "avalanche_level": "Level {level}",
     "avalanche_valid_until": "valid until {date}",
+    "avalanche_expired": "expired {date}, no newer bulletin yet",
     "no_bulletin": "No current avalanche bulletin",
     "attribution": "Data by SnowSure.ai",
     "select_resort": "Select a SnowSure resort in the card editor.",

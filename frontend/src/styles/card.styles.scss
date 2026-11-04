@@ -44,13 +44,22 @@ button {
     margin-bottom: 0;
     color: #fff;
     background:
-      linear-gradient(to bottom, rgba(0, 0, 0, 0.15), rgba(0, 0, 0, 0.65)),
+      linear-gradient(to bottom, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.2) 45%, rgba(0, 0, 0, 0.7)),
       var(--hero) center / cover no-repeat;
 
     .tagline,
     .season,
     .score-rating {
       color: rgba(255, 255, 255, 0.85);
+    }
+
+    // Bright snow behind white text: a soft shadow keeps it readable.
+    .name,
+    .tagline,
+    .season,
+    .score-value,
+    .score-rating {
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
     }
 
     .score {
@@ -63,7 +72,8 @@ button {
     }
 
     .trend {
-      background: rgba(0, 0, 0, 0.55);
+      background: #1c1c1c;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.35);
     }
   }
 }
@@ -151,11 +161,19 @@ button {
 
 .trend {
   position: absolute;
-  bottom: -10px;
+  bottom: -6px;
   right: -6px;
-  --mdc-icon-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  box-sizing: border-box;
   border-radius: 50%;
+  --mdc-icon-size: 16px;
   background: var(--card-background-color, #fff);
+  // A ring in the card colour separates the badge from the score ring.
+  box-shadow: 0 0 0 2px var(--card-background-color, #fff);
   color: var(--secondary-text-color);
 
   &.improving {
@@ -439,7 +457,13 @@ button {
   font-size: 0.72rem;
   font-weight: 500;
   white-space: nowrap;
+  // Pulled towards the text colour: yellow and cyan stay readable on a light
+  // card, and a halo lifts the label off the bars behind it.
   color: var(--temp-color);
+  color: color-mix(in srgb, var(--temp-color) 70%, var(--primary-text-color));
+  text-shadow:
+    0 0 2px var(--card-background-color, #fff),
+    0 0 4px var(--card-background-color, #fff);
 
   &.max {
     transform: translate(-50%, calc(-100% - 5px));
@@ -454,6 +478,13 @@ button {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 8px;
+}
+
+// An odd number of webcams would leave a hole in the last row: the first one
+// gets the full width instead.
+.webcam:first-child:nth-last-child(odd):not(:only-child) {
+  grid-column: 1 / -1;
+  aspect-ratio: 21 / 9;
 }
 
 .webcam {
@@ -514,6 +545,14 @@ button {
   background: var(--level-color);
   color: #000;
   font-weight: 700;
+}
+
+.avalanche.expired .level {
+  opacity: 0.5;
+}
+
+.secondary.expired {
+  color: var(--warning-color, #ffa600);
 }
 
 .avalanche-text {

@@ -543,7 +543,6 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     const columns = past.length + days.length;
     // A floor keeps a 0.3 cm drizzle from filling the whole bar.
     const scale = Math.max(...amounts, ...pastAmounts, 5);
-    const today = new Date().toLocaleDateString('sv');
     const amountText = (amount: number) =>
       amount > 0 ? formatNumber(snow(amount), hass, { maximumFractionDigits: inches || snow(amount) < 1 ? 1 : 0 }) : '';
     const confidenceLabel = isAvailable(confidence) ? confidence.state : undefined;
@@ -586,7 +585,9 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
           ]
             .filter(Boolean)
             .join(' · ');
-          const isToday = day.date === today;
+          // SnowSure's first forecast day is the resort's today; the viewer's
+          // clock can be a day ahead (Europe looking at Colorado).
+          const isToday = index === 0;
           const classes = ['day', isToday ? 'today' : '', index === 0 && past.length > 0 ? 'first-forecast' : '']
             .filter(Boolean)
             .join(' ');
@@ -672,13 +673,21 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
         .map((value, index) => (value === null ? null : { x: (index + 0.5) * 100, y: y(value) }))
         .filter((point): point is { x: number; y: number } => point !== null);
       if (known.length < 2) return '';
-      // Catmull-Rom through the points, as cubic Béziers.
+      // Monotone cubic (Fritsch–Carlson) through the points: smooth, but it never
+      // swings beyond its neighbours, so the curve shows no temperature the
+      // forecast does not have.
+      const slopes = known.slice(1).map((p, i) => (p.y - known[i].y) / (p.x - known[i].x));
+      const tangents = known.map((_, i) => {
+        if (i === 0) return slopes[0];
+        if (i === known.length - 1) return slopes[i - 1];
+        const [a, b] = [slopes[i - 1], slopes[i]];
+        return a * b <= 0 ? 0 : (2 * a * b) / (a + b);
+      });
       let d = `M${known[0].x} ${known[0].y}`;
       for (let i = 0; i < known.length - 1; i++) {
-        const [p0, p1, p2, p3] = [known[i - 1] ?? known[i], known[i], known[i + 1], known[i + 2] ?? known[i + 1]];
-        const c1 = { x: p1.x + (p2.x - p0.x) / 6, y: p1.y + (p2.y - p0.y) / 6 };
-        const c2 = { x: p2.x - (p3.x - p1.x) / 6, y: p2.y - (p3.y - p1.y) / 6 };
-        d += ` C${c1.x} ${c1.y} ${c2.x} ${c2.y} ${p2.x} ${p2.y}`;
+        const [p1, p2] = [known[i], known[i + 1]];
+        const third = (p2.x - p1.x) / 3;
+        d += ` C${p1.x + third} ${p1.y + tangents[i] * third} ${p2.x - third} ${p2.y - tangents[i + 1] * third} ${p2.x} ${p2.y}`;
       }
       return d;
     };
@@ -732,9 +741,11 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     const label =
       tryLocalize(hass, `card.avalanche_levels.${level}`) ?? localize(hass, 'card.avalanche_level', { level });
     const validUntil = entity.attributes.valid_until as string | undefined;
+    // The bulletin stays until the next one is published; say so once it ran out.
+    const expired = Boolean(validUntil) && new Date(validUntil!).getTime() < Date.now();
     const link = entity.attributes.link as string | undefined;
     return html`
-      <button class="avalanche" @click=${() => this._moreInfo(entity)}>
+      <button class="avalanche ${expired ? 'expired' : ''}" @click=${() => this._moreInfo(entity)}>
         <span class="level" style="--level-color: ${AVALANCHE_COLORS[level] ?? 'var(--disabled-color)'}"
           >${formatNumber(level, hass)}</span
         >
@@ -742,8 +753,10 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
           <span class="avalanche-title">${localize(hass, 'card.avalanche')}: ${label}</span>
           ${
             validUntil
-              ? html`<span class="secondary"
-                  >${localize(hass, 'card.avalanche_valid_until', { date: formatDate(validUntil, hass) })}</span
+              ? html`<span class="secondary ${expired ? 'expired' : ''}"
+                  >${localize(hass, expired ? 'card.avalanche_expired' : 'card.avalanche_valid_until', {
+                    date: formatDate(validUntil, hass),
+                  })}</span
                 >`
               : nothing
           }

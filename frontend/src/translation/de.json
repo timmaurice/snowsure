@@ -13,6 +13,7 @@
     "avalanche": "Lawinengefahr",
     "avalanche_level": "Stufe {level}",
     "avalanche_valid_until": "gültig bis {date}",
+    "avalanche_expired": "abgelaufen {date}, noch kein neuer Bericht",
     "no_bulletin": "Kein aktueller Lawinenlagebericht",
     "attribution": "Daten von SnowSure.ai",
     "select_resort": "Wähle im Karten-Editor ein SnowSure-Skigebiet.",
