@@ -136,6 +136,13 @@ class SnowsureClient:
             raise SnowsureError(f"SnowSure returned no resort data for {slug}")
         return data
 
+    async def async_get_snowfall_history(self, slug: str) -> dict[str, Any]:
+        """Return the season's snowfall ledger (``meta`` + ``data``) without past seasons."""
+        payload = await self._get(f"/resorts/{validate_slug(slug)}/snowfall-history", params={"pastSeasons": "0"})
+        if not isinstance(payload, dict):
+            raise SnowsureError(f"SnowSure returned no snowfall history for {slug}")
+        return payload
+
     async def async_get_avalanche(self, slug: str) -> dict[str, Any]:
         """Return the avalanche envelope (``meta`` + ``data``) for a resort."""
         payload = await self._get(f"/resorts/{validate_slug(slug)}/avalanche")

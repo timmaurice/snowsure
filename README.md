@@ -61,7 +61,7 @@ On while a day in the look-ahead window forecasts at least the threshold of new 
 triggers:
   - trigger: state
     entity_id: binary_sensor.matterhorn_ski_paradise_powder_alarm
-    to: "on"
+    to: 'on'
 actions:
   - action: notify.mobile_app_phone
     data:
@@ -93,6 +93,7 @@ stats: # tiles, in this order
   - lifts_open
 show_forecast: true
 forecast_days: 7 # 1–14
+history_days: 3 # 0–7 past days left of today
 forecast_band: mid # base, mid or summit; unset = SnowSure's forecast point
 show_avalanche: true
 show_webcams: true # enabled webcam entities, up to six
@@ -100,7 +101,7 @@ show_webcams: true # enabled webcam entities, up to six
 
 Available tiles: `depth_base`, `depth_mid`, `depth_summit`, `snowfall_24h`, `snowfall_7d`, `snowfall_season`, `forecast_7d`, `runs_open`, `lifts_open`, `temperature_base`, `temperature_summit`, `snow_quality`.
 
-SnowSure's daily forecast is for one point, usually mid-mountain. A switch under the bars shows the snowfall at valley, mid or summit (each with its height); `forecast_band` picks where it starts. SnowSure has one temperature series only, so the temperature lines do not change with it.
+SnowSure's daily forecast is for one point, usually mid-mountain. Past days (grey) are SnowSure's modelled snowfall at mid-mountain from its season ledger, fetched every three hours. A switch under the bars shows the snowfall at valley, mid or summit (each with its height); `forecast_band` picks where it starts. SnowSure has one temperature series only, so the temperature lines do not change with it.
 
 Weather, snow quality and avalanche levels are translated by the card; SnowSure delivers them in English. Webcams and the resort photo load through Home Assistant's image proxy, so the browser makes no third-party requests.
 

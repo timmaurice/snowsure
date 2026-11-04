@@ -4,6 +4,8 @@ export const ELEMENT_NAME = 'snowsure-card';
 export const EDITOR_ELEMENT_NAME = `${ELEMENT_NAME}-editor`;
 export const MAX_FORECAST_DAYS = 14;
 export const MAX_WEBCAMS = 6;
+/** Past days the forecast chart can show; the integration keeps the last 14. */
+export const MAX_HISTORY_DAYS = 7;
 /** Valley to summit, the order of the band switch. */
 export const FORECAST_BANDS: ForecastBand[] = ['base', 'mid', 'summit'];
 
@@ -42,6 +44,7 @@ export const DEFAULTS = {
   show_stats: true,
   show_forecast: true,
   forecast_days: 7,
+  history_days: 3,
   show_avalanche: true,
   show_webcams: true,
 } satisfies Partial<SnowsureCardConfig>;

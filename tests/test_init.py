@@ -25,7 +25,7 @@ from custom_components.snowsure.coordinator import async_scan_interval
 from custom_components.snowsure.diagnostics import async_get_config_entry_diagnostics
 from custom_components.snowsure.sensor import SENSORS
 
-from .conftest import AVALANCHE_URL, RESORT_URL, SLUG, load_fixture
+from .conftest import AVALANCHE_URL, HISTORY_URL, RESORT_URL, SLUG, load_fixture
 
 
 def _entity_id(hass: HomeAssistant, platform: str, key: str) -> str:
@@ -102,6 +102,7 @@ async def test_avalanche_failure_is_not_fatal(
 ) -> None:
     aioclient_mock.get(RESORT_URL, json=load_fixture("resort_detail.json"))
     aioclient_mock.get(AVALANCHE_URL, status=500)
+    aioclient_mock.get(HISTORY_URL, json=load_fixture("snowfall_history.json"))
     await _setup(hass, mock_entry)
     assert mock_entry.state is ConfigEntryState.LOADED
     assert hass.states.get(_entity_id(hass, "sensor", "avalanche_level")).state == STATE_UNKNOWN
@@ -254,3 +255,28 @@ def test_powder_outlook_falls_back_to_the_forecast_point() -> None:
     assert [d["snowfall"] for d in checked] == [3, 20]
     assert first == {"date": "d2", "snowfall": 20}
     assert powder_outlook(None, 15, 2, "mid") == ([], None)
+
+
+async def test_snowfall_history_is_an_attribute_and_cached(
+    hass: HomeAssistant, mock_api: AiohttpClientMocker, mock_entry: MockConfigEntry
+) -> None:
+    await _setup(hass, mock_entry)
+    state = hass.states.get(_entity_id(hass, "sensor", "snowfall_7d"))
+    assert state.attributes["daily"][-1] == {"date": "2026-11-03", "snowfall": 0.6}
+    calls = sum(1 for call in mock_api.mock_calls if str(call[1]).startswith(HISTORY_URL))
+    await mock_entry.runtime_data.async_refresh()
+    await hass.async_block_till_done()
+    # Fetched at most every few hours, not on every poll.
+    assert sum(1 for call in mock_api.mock_calls if str(call[1]).startswith(HISTORY_URL)) == calls
+
+
+async def test_snowfall_history_failure_is_not_fatal(
+    hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, mock_entry: MockConfigEntry
+) -> None:
+    aioclient_mock.get(RESORT_URL, json=load_fixture("resort_detail.json"))
+    aioclient_mock.get(AVALANCHE_URL, json=load_fixture("avalanche_bulletin.json"))
+    aioclient_mock.get(HISTORY_URL, status=500)
+    await _setup(hass, mock_entry)
+    state = hass.states.get(_entity_id(hass, "sensor", "snowfall_7d"))
+    assert state.attributes["daily"] is None
+    assert mock_entry.state is ConfigEntryState.LOADED

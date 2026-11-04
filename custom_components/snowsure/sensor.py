@@ -105,7 +105,13 @@ SENSORS: tuple[SnowsureSensorEntityDescription, ...] = (
     _depth("snowfall_24h", "snowfall_24h", precision=1),
     _depth("snowfall_48h", "snowfall_48h", precision=1, entity_registry_enabled_default=False),
     _depth("snowfall_72h", "snowfall_72h", precision=1, entity_registry_enabled_default=False),
-    _depth("snowfall_7d", "snowfall_7d", precision=1),
+    _depth(
+        "snowfall_7d",
+        "snowfall_7d",
+        precision=1,
+        # SnowSure's modelled snowfall per past day (cm), for the card's chart.
+        attrs_fn=lambda d: {"daily": d.get("snowfall_history")},
+    ),
     _depth("snowfall_season", "snowfall_season"),
     _depth(
         "forecast_7d",

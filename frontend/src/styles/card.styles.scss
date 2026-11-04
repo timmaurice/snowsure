@@ -365,6 +365,29 @@ button {
   border-radius: 4px 4px 0 0;
 }
 
+// Past days: what fell, quieter than the forecast; today gets a soft panel.
+.bar.past {
+  background: rgba(var(--rgb-primary-text-color, 255, 255, 255), 0.14);
+}
+
+.amount.past {
+  color: var(--secondary-text-color);
+}
+
+.day.first-forecast {
+  border-left: 1px dashed rgba(127, 127, 127, 0.45);
+}
+
+.day.today {
+  border-radius: 8px;
+  background: rgba(var(--rgb-info-color, 3, 155, 229), 0.08);
+
+  .weekday {
+    color: var(--info-color, #039be5);
+    font-weight: 600;
+  }
+}
+
 .amount {
   min-height: 1.3em;
   padding-top: 4px;

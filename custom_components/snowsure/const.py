@@ -17,7 +17,7 @@ CONF_SCAN_INTERVAL_MINUTES = "scan_interval_minutes"
 
 # SnowSure ingests forecasts hourly and resort reports a few times a day, so a
 # half-hour poll is fresh enough. The public budget is 120 requests per minute
-# per IP and endpoint; one refresh costs two requests, so even the lower bound
+# per IP and endpoint; one refresh costs two requests (three when the snowfall history is due), so even the lower bound
 # stays far away from it.
 DEFAULT_SCAN_INTERVAL_MINUTES = 30
 MIN_SCAN_INTERVAL_MINUTES = 15

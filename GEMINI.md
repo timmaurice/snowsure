@@ -10,7 +10,7 @@ One HACS integration (`custom_components/snowsure`) that bundles its own Lovelac
 
 SnowSure public API, `https://www.snowsure.ai/api/v1` (OpenAPI: `https://www.snowsure.ai/openapi.json`). Reads need no authentication; budget 120 requests/min per IP and endpoint. An optional key is sent as `Authorization: Bearer …` and only unlocks Pro entitlements (14-day forecast). Every display of the data must credit "Data by SnowSure.ai" with a link — entities carry `attribution`, the card renders the footer link.
 
-One refresh = two requests: `GET /resorts/{slug}` (detail, includes the conditions envelope) and `GET /resorts/{slug}/avalanche` (optional, failure is not fatal). The config flow reads `GET /resorts?limit=1000&sort=name` once (~1 MB).
+One refresh = two requests: `GET /resorts/{slug}` (detail, includes the conditions envelope and `forecast.bands` with valley/mid/summit snowfall) and `GET /resorts/{slug}/avalanche` (optional, failure is not fatal). Every three hours a third one, `GET /resorts/{slug}/snowfall-history?pastSeasons=0` (~60 KB, optional), feeds the past days of the card's chart through the `daily` attribute of the 7-day new snow sensor. The config flow reads `GET /resorts?limit=1000&sort=name` once (~1 MB).
 
 ## Layout
 
@@ -19,7 +19,8 @@ One refresh = two requests: `GET /resorts/{slug}` (detail, includes the conditio
 - `coordinator.py` – `SnowsureCoordinator`, `entry.runtime_data`; auth errors -> reauth
 - `config_flow.py` – user (optional key) -> country -> resort; reauth and reconfigure for the key; `OptionsFlowWithReload` for the interval. No update listener (conflicts with `async_update_reload_and_abort`).
 - `sensor.py` / `binary_sensor.py` / `entity.py` – one service device per resort, `translation_key` for every entity, unique_id `<slug>_<key>`
-- `image.py` – resort photo and webcams (first three enabled). `ImageEntity` never drops its cached download on its own, so webcams clear `_cached_image` on every refresh. Webcam types `image`/`panomax`/`skaping` have a live JPEG in `url`; the others only a `thumbnailUrl`; YouTube is skipped
+- `binary_sensor.py` – open, and the powder alarm (threshold, days ahead and height are options)
+- `image.py` – resort photo, webcams (first three enabled) and trail maps (SnowSure's WebP previews of the PDFs, shown in the card's dialog). `ImageEntity` never drops its cached download on its own, so webcams clear `_cached_image` on every refresh. Webcam types `image`/`panomax`/`skaping` have a live JPEG in `url`; the others only a `thumbnailUrl`; YouTube is skipped
 - `frontend/src` – card (`snowsure-card.ts`), editor (`editor.ts`, `ha-form`), entity lookup by `translation_key` (`entities.ts`), locale-aware formatting (`format.ts`), weather/snow-quality translation by text (`weather.ts`; SnowSure's WMO code often contradicts its own text, the text is authoritative)
 
 ## Commands

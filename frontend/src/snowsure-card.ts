@@ -18,6 +18,7 @@ import {
   ELEMENT_NAME,
   MAX_FORECAST_DAYS,
   FORECAST_BANDS,
+  MAX_HISTORY_DAYS,
   MAX_WEBCAMS,
   STAT_KEYS,
 } from './defaults';
@@ -144,6 +145,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
   public setConfig(config: SnowsureCardConfig): void {
     if (!config || typeof config !== 'object') throw new Error('Invalid configuration');
     const days = toNumber(config.forecast_days);
+    const history = toNumber(config.history_days);
     const stats = Array.isArray(config.stats)
       ? config.stats.filter((key): key is StatKey => STAT_KEYS.includes(key))
       : DEFAULT_STATS;
@@ -153,6 +155,8 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
       stats,
       forecast_days:
         days === null ? DEFAULTS.forecast_days : Math.min(Math.max(Math.round(days), 1), MAX_FORECAST_DAYS),
+      history_days:
+        history === null ? DEFAULTS.history_days : Math.min(Math.max(Math.round(history), 0), MAX_HISTORY_DAYS),
       forecast_band: FORECAST_BANDS.includes(config.forecast_band as ForecastBand) ? config.forecast_band : undefined,
     };
     this._band = undefined;
@@ -525,8 +529,23 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
         0,
     );
     const total = amounts.reduce((sum, amount) => sum + amount, 0);
+
+    // Past days come from SnowSure's snowfall ledger (modelled, mid-mountain),
+    // on the 7-day new snow sensor. Only days before the forecast's first day.
+    const ledger = resort.byKey.snowfall_7d?.attributes.daily;
+    const pastDays = Math.max(this._config!.history_days ?? 0, 0);
+    const ledgerDays = (Array.isArray(ledger) ? (ledger as { date: string; snowfall: unknown }[]) : []).filter(
+      (day) => typeof day?.date === 'string' && day.date < days[0].date,
+    );
+    // slice(-0) would keep everything.
+    const past = pastDays > 0 ? ledgerDays.slice(-pastDays) : [];
+    const pastAmounts = past.map((day) => toNumber(day.snowfall) ?? 0);
+    const columns = past.length + days.length;
     // A floor keeps a 0.3 cm drizzle from filling the whole bar.
-    const scale = Math.max(...amounts, 5);
+    const scale = Math.max(...amounts, ...pastAmounts, 5);
+    const today = new Date().toLocaleDateString('sv');
+    const amountText = (amount: number) =>
+      amount > 0 ? formatNumber(snow(amount), hass, { maximumFractionDigits: inches || snow(amount) < 1 ? 1 : 0 }) : '';
     const confidenceLabel = isAvailable(confidence) ? confidence.state : undefined;
 
     return html`
@@ -546,7 +565,18 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
             : nothing
         }
       </div>
-      <button class="forecast" style="--days: ${days.length}" @click=${() => this._moreInfo(forecast)}>
+      <button class="forecast" style="--days: ${columns}" @click=${() => this._moreInfo(forecast)}>
+        ${past.map(
+          (day, index) => html`
+            <div class="day past" title=${localize(hass, 'card.history_tooltip')}>
+              <span class="weekday">${formatWeekday(day.date, hass)}</span>
+              <div class="bar-track">
+                <div class="bar past" style="height: ${Math.round((pastAmounts[index] / scale) * 100)}%"></div>
+              </div>
+              <span class="amount past">${amountText(pastAmounts[index])}</span>
+            </div>
+          `,
+        )}
         ${days.map((day, index) => {
           const amount = amounts[index];
           const freezing = toNumber(day.freezing_level);
@@ -556,23 +586,21 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
           ]
             .filter(Boolean)
             .join(' · ');
+          const isToday = day.date === today;
+          const classes = ['day', isToday ? 'today' : '', index === 0 && past.length > 0 ? 'first-forecast' : '']
+            .filter(Boolean)
+            .join(' ');
           return html`
-            <div class="day" title=${tooltip}>
-              <span class="weekday">${formatWeekday(day.date, hass)}</span>
+            <div class=${classes} title=${tooltip}>
+              <span class="weekday">${isToday ? localize(hass, 'card.today') : formatWeekday(day.date, hass)}</span>
               <div class="bar-track">
                 <div class="bar" style="height: ${Math.round((amount / scale) * 100)}%"></div>
               </div>
-              <span class="amount"
-                >${
-                  amount > 0
-                    ? formatNumber(snow(amount), hass, { maximumFractionDigits: inches || snow(amount) < 1 ? 1 : 0 })
-                    : ''
-                }</span
-              >
+              <span class="amount">${amountText(amount)}</span>
             </div>
           `;
         })}
-        ${this._renderTemperatureChart(days, temp)}
+        ${this._renderTemperatureChart(days, temp, past.length / columns)}
       </button>
       ${bands.length > 1 ? this._renderBandSwitch(bands, band, elevations, inches) : nothing}
     `;
@@ -623,6 +651,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
   private _renderTemperatureChart(
     days: ForecastDay[],
     temp: (celsius: number) => number,
+    offset = 0,
   ): TemplateResult | typeof nothing {
     const hass = this.hass!;
     // Positions and colours work in °C; only the labels follow the user's unit.
@@ -674,7 +703,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
       });
 
     return html`
-      <div class="temp-chart" aria-hidden="true">
+      <div class="temp-chart" aria-hidden="true" style="left: ${offset * 100}%">
         <svg viewBox="0 0 ${days.length * 100} 100" preserveAspectRatio="none">
           ${svg`<defs>
               <linearGradient id="temp-gradient" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="100">

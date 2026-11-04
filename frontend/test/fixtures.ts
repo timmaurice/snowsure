@@ -62,6 +62,20 @@ export function makeHass(overrides: Partial<HomeAssistant> = {}): HomeAssistant 
         band_elevations: { base: 1562, mid: 2723, summit: 3883 },
       }),
     ],
+    [
+      'sensor.matterhorn_snow_7d',
+      'snowfall_7d',
+      entity('sensor.matterhorn_snow_7d', '6.6', {
+        unit_of_measurement: 'cm',
+        daily: [
+          { date: '2026-10-31', snowfall: 1.2 },
+          { date: '2026-11-01', snowfall: 0 },
+          { date: '2026-11-02', snowfall: 3.4 },
+          { date: '2026-11-03', snowfall: 0.6 },
+          { date: '2026-11-04', snowfall: 9 },
+        ],
+      }),
+    ],
     ['sensor.matterhorn_lifts', 'lifts_open', entity('sensor.matterhorn_lifts', 'unknown', { total: 37 })],
     [
       'sensor.matterhorn_temp_summit',

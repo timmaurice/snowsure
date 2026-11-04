@@ -7,6 +7,7 @@ import {
   EDITOR_ELEMENT_NAME,
   FORECAST_BANDS,
   MAX_FORECAST_DAYS,
+  MAX_HISTORY_DAYS,
   STAT_KEYS,
   withoutDefaults,
 } from './defaults';
@@ -61,6 +62,10 @@ export class SnowsureCardEditor extends LitElement implements LovelaceCardEditor
           {
             name: 'forecast_days',
             selector: { number: { min: 1, max: MAX_FORECAST_DAYS, step: 1, mode: 'slider' } },
+          },
+          {
+            name: 'history_days',
+            selector: { number: { min: 0, max: MAX_HISTORY_DAYS, step: 1, mode: 'slider' } },
           },
           {
             name: 'forecast_band',
