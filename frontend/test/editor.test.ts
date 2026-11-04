@@ -58,3 +58,16 @@ it('offers every tile with a translated label', async () => {
   expect(options).toHaveLength(12);
   expect(options.every((option) => option.label !== `card.${option.value}`)).toBe(true);
 });
+
+it('shows section options only while their section is on', async () => {
+  const names = (editor: Awaited<ReturnType<typeof mount>>) =>
+    (editor.schema()[2].schema ?? []).map((item) => item.name);
+  const on = await mount({});
+  expect(names(on)).toEqual(expect.arrayContaining(['stats', 'forecast_days', 'forecast_band']));
+
+  const off = await mount({ show_forecast: false, show_stats: false });
+  expect(names(off)).not.toContain('forecast_days');
+  expect(names(off)).not.toContain('forecast_band');
+  expect(names(off)).not.toContain('stats');
+  expect(names(off)).toContain('show_forecast');
+});

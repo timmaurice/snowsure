@@ -73,10 +73,6 @@ ha-card {
   .footer {
     grid-area: footer;
   }
-
-  .header.with-image {
-    min-height: 160px;
-  }
 }
 
 .hint {
@@ -104,8 +100,12 @@ button {
   border-radius: var(--ha-card-border-radius, 12px) var(--ha-card-border-radius, 12px) 0 0;
 
   // The resort photo, darkened at the bottom so white text stays readable.
+  // Fixed height (name at most two lines, tagline one) so cards side by side
+  // line up.
   &.with-image {
-    min-height: 120px;
+    height: 152px;
+    box-sizing: border-box;
+    overflow: hidden;
     padding-bottom: 16px;
     margin-bottom: 0;
     color: #fff;
@@ -169,11 +169,21 @@ button {
   font-weight: 500;
   line-height: 1.3;
   overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
 }
 
 .tagline {
   color: var(--secondary-text-color);
   font-size: 0.9rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  overflow: hidden;
 }
 
 .chip {
@@ -363,16 +373,21 @@ button {
   opacity: 0.8;
 }
 
+// One line, always: a long total gives way (ellipsis) before the chip wraps.
 .section-title {
   display: flex;
-  flex-wrap: wrap;
   align-items: baseline;
-  gap: 4px 12px;
+  gap: 12px;
   font-weight: 500;
   margin-bottom: -8px;
+  white-space: nowrap;
+  min-width: 0;
 
   .secondary {
     font-weight: 400;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 
@@ -599,6 +614,17 @@ button {
   }
 }
 
+.webcam-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--secondary-text-color);
+  cursor: default;
+}
+
 .webcam-name {
   position: absolute;
   left: 0;
@@ -613,11 +639,13 @@ button {
   text-overflow: ellipsis;
 }
 
+// Same height with or without a bulletin: two lines, the second one clipped.
 .avalanche {
   display: flex;
   align-items: center;
   gap: 12px;
   width: 100%;
+  min-height: 40px;
 
   &.none {
     gap: 8px;
@@ -652,9 +680,16 @@ button {
   color: var(--warning-color, #ffa600);
 }
 
+.avalanche-text .secondary {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .avalanche-text {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .secondary {

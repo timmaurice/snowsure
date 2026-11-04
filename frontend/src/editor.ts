@@ -32,49 +32,58 @@ export class SnowsureCardEditor extends LitElement implements LovelaceCardEditor
     this._config = { ...DEFAULTS, stats: DEFAULT_STATS, ...config };
   }
 
-  /** Built per render so the expandable's title follows the user's language. */
+  /**
+   * Built per render: the expandable's title follows the user's language, and
+   * options that belong to a section only show while that section is on.
+   */
   public schema(): SchemaItem[] {
     const hass = this.hass;
+    const c = { ...DEFAULTS, ...this._config };
+    const display: SchemaItem[] = [
+      { name: 'show_score', selector: { boolean: {} } },
+      { name: 'show_image', selector: { boolean: {} } },
+      { name: 'show_weather', selector: { boolean: {} } },
+      { name: 'show_stats', selector: { boolean: {} } },
+    ];
+    if (c.show_stats) {
+      display.push({
+        name: 'stats',
+        selector: {
+          select: {
+            multiple: true,
+            reorder: true,
+            mode: 'dropdown',
+            options: STAT_KEYS.map((key) => ({ value: key, label: localize(hass, `card.${key}`) })),
+          },
+        },
+      });
+    }
+    display.push({ name: 'show_forecast', selector: { boolean: {} } });
+    if (c.show_forecast) {
+      display.push(
+        {
+          name: 'forecast_days',
+          selector: { number: { min: 1, max: MAX_FORECAST_DAYS, step: 1, mode: 'slider' } },
+        },
+        {
+          name: 'forecast_band',
+          selector: {
+            select: {
+              mode: 'dropdown',
+              options: FORECAST_BANDS.map((band) => ({ value: band, label: localize(hass, `card.band.${band}`) })),
+            },
+          },
+        },
+      );
+    }
+    display.push(
+      { name: 'show_avalanche', selector: { boolean: {} } },
+      { name: 'show_webcams', selector: { boolean: {} } },
+    );
     return [
       { name: 'device', selector: { device: { filter: [{ integration: 'snowsure' }] } } },
       { name: 'title', selector: { text: {} } },
-      {
-        type: 'expandable',
-        title: localize(hass, 'editor.display'),
-        schema: [
-          { name: 'show_score', selector: { boolean: {} } },
-          { name: 'show_image', selector: { boolean: {} } },
-          { name: 'show_weather', selector: { boolean: {} } },
-          { name: 'show_stats', selector: { boolean: {} } },
-          {
-            name: 'stats',
-            selector: {
-              select: {
-                multiple: true,
-                reorder: true,
-                mode: 'dropdown',
-                options: STAT_KEYS.map((key) => ({ value: key, label: localize(hass, `card.${key}`) })),
-              },
-            },
-          },
-          { name: 'show_forecast', selector: { boolean: {} } },
-          {
-            name: 'forecast_days',
-            selector: { number: { min: 1, max: MAX_FORECAST_DAYS, step: 1, mode: 'slider' } },
-          },
-          {
-            name: 'forecast_band',
-            selector: {
-              select: {
-                mode: 'dropdown',
-                options: FORECAST_BANDS.map((band) => ({ value: band, label: localize(hass, `card.band.${band}`) })),
-              },
-            },
-          },
-          { name: 'show_avalanche', selector: { boolean: {} } },
-          { name: 'show_webcams', selector: { boolean: {} } },
-        ],
-      },
+      { type: 'expandable', title: localize(hass, 'editor.display'), schema: display },
     ];
   }
 

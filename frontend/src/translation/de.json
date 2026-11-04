@@ -43,6 +43,7 @@
     "zoom_in": "Zum Vergrößern klicken",
     "zoom_out": "Zum Verkleinern klicken",
     "webcams": "Webcams",
+    "no_webcams": "Keine Webcams",
     "trend": {
       "improving": "steigend",
       "stable": "stabil",
@@ -50,7 +51,7 @@
     },
     "confidence": {
       "low": "Unsicher",
-      "medium": "Mittlere Verlässlichkeit",
+      "medium": "Mäßig sicher",
       "high": "Verlässlich"
     },
     "avalanche_levels": {

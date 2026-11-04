@@ -489,13 +489,17 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
               <span class="stat-value">${this._statValue(key, entity)}</span>
               <span class="stat-label">${localize(hass, `card.${key}`)}</span>
               ${
-                vsAverage !== null
-                  ? html`<span class="stat-extra"
-                      >${localize(hass, 'card.vs_average', {
-                        pct: formatNumber(vsAverage, hass, { maximumFractionDigits: 0 }),
-                      })}</span
-                    >`
-                  : nothing
+                // Every tile keeps the extra line, empty or not, so cards
+                // side by side come out the same height.
+                html`<span class="stat-extra"
+                  >${
+                    vsAverage !== null
+                      ? localize(hass, 'card.vs_average', {
+                          pct: formatNumber(vsAverage, hass, { maximumFractionDigits: 0 }),
+                        })
+                      : '\u00a0'
+                  }</span
+                >`
               }
             </button>
           `;
@@ -769,10 +773,18 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     const cams = resort.webcams
       .filter((cam) => isAvailable(cam) && cam.attributes.entity_picture)
       .slice(0, MAX_WEBCAMS);
-    if (cams.length === 0) return nothing;
+    // Without webcams the row stays, as one muted tile: cards side by side
+    // keep the same height.
     return html`
       <div class="section-title"><span>${localize(hass, 'card.webcams')}</span></div>
       <div class="webcams">
+        ${
+          cams.length === 0
+            ? html`<div class="webcam webcam-empty">
+                <ha-icon icon="mdi:webcam-off"></ha-icon><span>${localize(hass, 'card.no_webcams')}</span>
+              </div>`
+            : nothing
+        }
         ${cams.map(
           (cam) => html`
             <button class="webcam" @click=${() => this._moreInfo(cam)}>
