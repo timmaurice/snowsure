@@ -55,7 +55,7 @@
     "step": {
       "init": {
         "title": "Options",
-        "description": "How often SnowSure is polled (forecasts update hourly, 30 minutes is plenty), when the powder alarm goes on, and which webcams (up to {max_webcams}) become entities.",
+        "description": "How often SnowSure is polled (forecasts update hourly, 30 minutes is plenty), when the powder alarm goes on, and which webcams become entities.",
         "data": {
           "scan_interval_minutes": "Update interval (minutes)",
           "powder_threshold_cm": "Powder alarm: new snow from",
@@ -64,12 +64,13 @@
           "webcams": "Webcams"
         },
         "data_description": {
-          "webcams": "Up to {max_webcams}; each one is an image entity that reloads its picture on every update. The card shows these."
+          "webcams": "{max_webcams} or fewer recommended: each one is an image entity that downloads its picture on every update. The card shows all picked webcams."
         }
+      },
+      "many_webcams": {
+        "title": "Many webcams",
+        "description": "You picked {count} webcams. Each one downloads its picture on every update, so more than {max_webcams} means noticeably more traffic and a long webcam row on the card. Submit to keep all {count}, or close this dialog and open the options again to pick fewer."
       }
-    },
-    "error": {
-      "too_many_webcams": "Pick at most {max_webcams} webcams."
     }
   },
   "entity": {

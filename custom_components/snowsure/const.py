@@ -36,7 +36,8 @@ POWDER_BANDS = ("base", "mid", "summit")
 MAX_POWDER_DAYS = 7
 
 # Webcams: the entry creates entities for the ones picked in the options (by
-# webcam key, see webcam_key), at most MAX_WEBCAMS; without a pick the first
-# ones in SnowSure's order. Resorts list up to a dozen.
+# webcam key, see webcam_key); without a pick the first RECOMMENDED_WEBCAMS in
+# SnowSure's order. Resorts list up to a dozen; picking more than the
+# recommendation is allowed after a warning (each one is a download per refresh).
 CONF_WEBCAMS = "webcams"
-MAX_WEBCAMS = 3
+RECOMMENDED_WEBCAMS = 3

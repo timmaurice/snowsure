@@ -40,9 +40,9 @@ from .const import (
     DOMAIN,
     MAX_POWDER_DAYS,
     MAX_SCAN_INTERVAL_MINUTES,
-    MAX_WEBCAMS,
     MIN_SCAN_INTERVAL_MINUTES,
     POWDER_BANDS,
+    RECOMMENDED_WEBCAMS,
 )
 from .parser import picked_webcams, webcam_key
 
@@ -209,26 +209,27 @@ class SnowsureOptionsFlow(OptionsFlowWithReload):
     swapping it under existing entities would splice two resorts' history.
     """
 
+    _pending: dict[str, Any]
+
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         cams = self._webcams()
-        errors: dict[str, str] = {}
         if user_input is not None:
             picked = user_input.get(CONF_WEBCAMS)
-            if picked is not None and len(picked) > MAX_WEBCAMS:
-                errors[CONF_WEBCAMS] = "too_many_webcams"
-            else:
-                data: dict[str, Any] = {
-                    CONF_SCAN_INTERVAL_MINUTES: int(user_input[CONF_SCAN_INTERVAL_MINUTES]),
-                    CONF_POWDER_THRESHOLD_CM: float(user_input[CONF_POWDER_THRESHOLD_CM]),
-                    CONF_POWDER_DAYS: int(user_input[CONF_POWDER_DAYS]),
-                    CONF_POWDER_BAND: user_input[CONF_POWDER_BAND],
-                }
-                if picked is not None:
-                    # Keep SnowSure's order, whatever order they were ticked in.
-                    data[CONF_WEBCAMS] = [key for key, _ in cams if key in picked]
-                elif CONF_WEBCAMS in self.config_entry.options:
-                    data[CONF_WEBCAMS] = self.config_entry.options[CONF_WEBCAMS]
-                return self.async_create_entry(data=data)
+            data: dict[str, Any] = {
+                CONF_SCAN_INTERVAL_MINUTES: int(user_input[CONF_SCAN_INTERVAL_MINUTES]),
+                CONF_POWDER_THRESHOLD_CM: float(user_input[CONF_POWDER_THRESHOLD_CM]),
+                CONF_POWDER_DAYS: int(user_input[CONF_POWDER_DAYS]),
+                CONF_POWDER_BAND: user_input[CONF_POWDER_BAND],
+            }
+            if picked is not None:
+                # Keep SnowSure's order, whatever order they were ticked in.
+                data[CONF_WEBCAMS] = [key for key, _ in cams if key in picked]
+            elif CONF_WEBCAMS in self.config_entry.options:
+                data[CONF_WEBCAMS] = self.config_entry.options[CONF_WEBCAMS]
+            if len(data.get(CONF_WEBCAMS, [])) > RECOMMENDED_WEBCAMS:
+                self._pending = data
+                return await self.async_step_many_webcams()
+            return self.async_create_entry(data=data)
 
         options = {**self.config_entry.options, **(user_input or {})}
         webcam_field: dict[Any, Any] = {}
@@ -248,8 +249,7 @@ class SnowsureOptionsFlow(OptionsFlowWithReload):
             )
         return self.async_show_form(
             step_id="init",
-            errors=errors,
-            description_placeholders={"max_webcams": str(MAX_WEBCAMS)},
+            description_placeholders={"max_webcams": str(RECOMMENDED_WEBCAMS)},
             data_schema=vol.Schema(
                 {
                     vol.Required(
@@ -289,6 +289,18 @@ class SnowsureOptionsFlow(OptionsFlowWithReload):
                     **webcam_field,
                 }
             ),
+        )
+
+    async def async_step_many_webcams(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """A warning, not a limit: more webcams mean more downloads per refresh."""
+        if user_input is not None:
+            return self.async_create_entry(data=self._pending)
+        return self.async_show_form(
+            step_id="many_webcams",
+            description_placeholders={
+                "count": str(len(self._pending[CONF_WEBCAMS])),
+                "max_webcams": str(RECOMMENDED_WEBCAMS),
+            },
         )
 
     def _webcams(self) -> list[tuple[str, str]]:

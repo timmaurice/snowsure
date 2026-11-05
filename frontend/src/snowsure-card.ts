@@ -18,7 +18,6 @@ import {
   ELEMENT_NAME,
   MAX_FORECAST_DAYS,
   FORECAST_BANDS,
-  MAX_WEBCAMS,
   STAT_KEYS,
 } from './defaults';
 import { ResortEntities, isAvailable, resortEntities, snowsureDevices } from './entities';
@@ -971,9 +970,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
    */
   private _renderWebcams(resort: ResortEntities): TemplateResult | typeof nothing {
     const hass = this.hass!;
-    const cams = resort.webcams
-      .filter((cam) => isAvailable(cam) && cam.attributes.entity_picture)
-      .slice(0, MAX_WEBCAMS);
+    const cams = resort.webcams.filter((cam) => isAvailable(cam) && cam.attributes.entity_picture);
     // Without webcams the row stays, as one muted tile: cards side by side
     // keep the same height.
     return html`

@@ -131,7 +131,7 @@
       "more": "Avalanches and webcams",
       "webcams": "Webcams"
     },
-    "webcams_helper": "Which webcams the card shows (up to three) is set in the integration options: Settings → Devices & services → SnowSure → Configure.",
+    "webcams_helper": "Which webcams the card shows is set in the integration options: Settings → Devices & services → SnowSure → Configure.",
     "show_mountain": "Mountain with snow depth and 0 °C line"
   }
 }

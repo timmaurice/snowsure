@@ -6,6 +6,7 @@ from homeassistant import config_entries
 from homeassistant.const import CONF_API_KEY
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowResultType
+from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 from pytest_homeassistant_custom_component.test_util.aiohttp import AiohttpClientMocker
 
@@ -160,7 +161,7 @@ async def test_options_flow(hass: HomeAssistant, mock_api: AiohttpClientMocker, 
     assert mock_entry.runtime_data.update_interval.total_seconds() == 3600
 
 
-async def test_options_flow_picks_up_to_three_webcams(
+async def test_options_flow_webcams_warns_above_three(
     hass: HomeAssistant, mock_api: AiohttpClientMocker, mock_entry: MockConfigEntry
 ) -> None:
     mock_entry.add_to_hass(hass)
@@ -178,14 +179,32 @@ async def test_options_flow_picks_up_to_three_webcams(
     assert [option["label"] for option in options][:2] == ["Matterhorn Glacier Paradise (3883m)", "Hohtälli (3273m)"]
     assert len(options) == 5
 
-    four = ["wolf_creek_style", "rothorn_3104m", "gornergrat_3135m", "hohtalli_3273m"]
-    result = await hass.config_entries.options.async_configure(result["flow_id"], {**base, CONF_WEBCAMS: four})
-    assert result["type"] is FlowResultType.FORM
-    assert result["errors"] == {CONF_WEBCAMS: "too_many_webcams"}
-
+    # Up to three: saved straight away, in SnowSure's order.
     result = await hass.config_entries.options.async_configure(
         result["flow_id"], {**base, CONF_WEBCAMS: ["wolf_creek_style", "rothorn_3104m"]}
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
-    # SnowSure's order, not the order they were ticked in.
     assert mock_entry.options[CONF_WEBCAMS] == ["rothorn_3104m", "wolf_creek_style"]
+    await hass.async_block_till_done()
+
+    # More: a warning first, then all of them.
+    four = ["wolf_creek_style", "rothorn_3104m", "gornergrat_3135m", "hohtalli_3273m"]
+    result = await hass.config_entries.options.async_init(mock_entry.entry_id)
+    result = await hass.config_entries.options.async_configure(result["flow_id"], {**base, CONF_WEBCAMS: four})
+    assert result["type"] is FlowResultType.FORM
+    assert result["step_id"] == "many_webcams"
+    assert result["description_placeholders"] == {"count": "4", "max_webcams": "3"}
+    result = await hass.config_entries.options.async_configure(result["flow_id"], {})
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    assert mock_entry.options[CONF_WEBCAMS] == [
+        "hohtalli_3273m",
+        "gornergrat_3135m",
+        "rothorn_3104m",
+        "wolf_creek_style",
+    ]
+    await hass.async_block_till_done()
+
+    registry = er.async_get(hass)
+    webcams = [e for e in er.async_entries_for_config_entry(registry, mock_entry.entry_id) if "_webcam_" in e.unique_id]
+    assert len(webcams) == 4
+    assert all(e.disabled_by is None for e in webcams)

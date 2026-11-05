@@ -29,32 +29,32 @@ Change the key later with _Reconfigure_; change the update interval (default 30 
 
 ## Entities
 
-| Entity                                                                      | Unit   | Enabled by default |
-| --------------------------------------------------------------------------- | ------ | ------------------ |
-| Open                                                                        | on/off | yes                |
-| Powder alarm                                                                | on/off | yes                |
-| SnowSure score                                                              | 0–100  | yes                |
-| Snow depth valley / summit                                                  | cm     | yes                |
-| Snow depth mid-mountain                                                     | cm     | no                 |
-| New snow 24h / 7 days, season snowfall                                      | cm     | yes                |
-| New snow 48h / 72h                                                          | cm     | no                 |
-| Snow forecast 7 days (attribute `daily`)                                    | cm     | yes                |
-| Snow forecast 14 days (Pro only)                                            | cm     | no                 |
-| Lifts open / runs open (attribute `total`)                                  | –      | yes                |
-| Terrain open                                                                | %      | no                 |
-| Temperature valley / summit                                                 | °C     | yes                |
-| Temperature mid-mountain                                                    | °C     | no                 |
-| Weather, snow quality                                                       | text   | yes                |
-| Avalanche danger level (1–5)                                                | –      | yes                |
-| Forecast confidence (low / medium / high)                                   | –      | yes                |
-| Resort image                                                                | image  | yes                |
-| Webcam _name_ (picked in the options, up to three; default the first three) | image  | yes                |
-| Trail map _name_                                                            | image  | yes                |
-| Season opening / closing, last updated                                      | date   | yes (diagnostic)   |
+| Entity                                                         | Unit   | Enabled by default |
+| -------------------------------------------------------------- | ------ | ------------------ |
+| Open                                                           | on/off | yes                |
+| Powder alarm                                                   | on/off | yes                |
+| SnowSure score                                                 | 0–100  | yes                |
+| Snow depth valley / summit                                     | cm     | yes                |
+| Snow depth mid-mountain                                        | cm     | no                 |
+| New snow 24h / 7 days, season snowfall                         | cm     | yes                |
+| New snow 48h / 72h                                             | cm     | no                 |
+| Snow forecast 7 days (attribute `daily`)                       | cm     | yes                |
+| Snow forecast 14 days (Pro only)                               | cm     | no                 |
+| Lifts open / runs open (attribute `total`)                     | –      | yes                |
+| Terrain open                                                   | %      | no                 |
+| Temperature valley / summit                                    | °C     | yes                |
+| Temperature mid-mountain                                       | °C     | no                 |
+| Weather, snow quality                                          | text   | yes                |
+| Avalanche danger level (1–5)                                   | –      | yes                |
+| Forecast confidence (low / medium / high)                      | –      | yes                |
+| Resort image                                                   | image  | yes                |
+| Webcam _name_ (picked in the options; default the first three) | image  | yes                |
+| Trail map _name_                                               | image  | yes                |
+| Season opening / closing, last updated                         | date   | yes (diagnostic)   |
 
 ### Webcams
 
-Resorts list up to a dozen webcams. The integration options (Settings → Devices & services → SnowSure → Configure) list them all; tick up to three. Only those become entities, so each refresh downloads at most three pictures; the card shows them.
+Resorts list up to a dozen webcams. The integration options (Settings → Devices & services → SnowSure → Configure) list them all; tick the ones you want (more than three asks for a confirmation, since each one downloads its picture on every refresh). Only the ticked ones become entities, all enabled; the card shows them all.
 
 ### Powder alarm
 
@@ -99,7 +99,7 @@ show_forecast: true
 forecast_days: 7 # 1–14
 forecast_band: mid # base, mid or summit; unset = SnowSure's forecast point
 show_avalanche: true
-show_webcams: true # the webcams picked in the integration options (up to three)
+show_webcams: true # the webcams picked in the integration options
 ```
 
 Available tiles: `depth_base`, `depth_mid`, `depth_summit`, `snowfall_24h`, `snowfall_7d`, `snowfall_season`, `forecast_7d`, `runs_open`, `lifts_open`, `temperature_base`, `temperature_summit`, `snow_quality`.

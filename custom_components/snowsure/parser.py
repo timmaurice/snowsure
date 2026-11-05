@@ -15,7 +15,7 @@ from typing import Any
 
 from homeassistant.util import slugify
 
-from .const import BASE_URL, MAX_WEBCAMS
+from .const import BASE_URL, RECOMMENDED_WEBCAMS
 
 # The daily forecast is exposed as an attribute, so only what the card and
 # templates need survives - one day of the raw payload has ~20 fields.
@@ -319,7 +319,7 @@ def webcam_key(name: str) -> str:
 
 
 def picked_webcams(option: Any, cams: list[dict[str, Any]]) -> set[str]:
-    """The webcam keys to create: the option's (at most MAX_WEBCAMS), else the first ones."""
+    """The webcam keys to create: the option's, else the first RECOMMENDED_WEBCAMS."""
     if isinstance(option, list):
         return {key for key in option if isinstance(key, str)}
-    return {webcam_key(cam["name"]) for cam in cams[:MAX_WEBCAMS]}
+    return {webcam_key(cam["name"]) for cam in cams[:RECOMMENDED_WEBCAMS]}

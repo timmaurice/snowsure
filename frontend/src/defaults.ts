@@ -3,7 +3,6 @@ import { ForecastBand, SnowsureCardConfig, StatKey } from './types';
 export const ELEMENT_NAME = 'snowsure-card';
 export const EDITOR_ELEMENT_NAME = `${ELEMENT_NAME}-editor`;
 export const MAX_FORECAST_DAYS = 14;
-export const MAX_WEBCAMS = 3;
 /** Valley to summit, the order of the band switch. */
 export const FORECAST_BANDS: ForecastBand[] = ['base', 'mid', 'summit'];
 

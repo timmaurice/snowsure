@@ -55,7 +55,7 @@
     "step": {
       "init": {
         "title": "Optionen",
-        "description": "Wie oft SnowSure abgefragt wird (Prognosen werden stündlich aktualisiert, 30 Minuten reichen), wann der Powder-Alarm angeht und welche Webcams (bis zu {max_webcams}) als Entitäten angelegt werden.",
+        "description": "Wie oft SnowSure abgefragt wird (Prognosen werden stündlich aktualisiert, 30 Minuten reichen), wann der Powder-Alarm angeht und welche Webcams als Entitäten angelegt werden.",
         "data": {
           "scan_interval_minutes": "Aktualisierungsintervall (Minuten)",
           "powder_threshold_cm": "Powder-Alarm: Neuschnee ab",
@@ -64,12 +64,13 @@
           "webcams": "Webcams"
         },
         "data_description": {
-          "webcams": "Bis zu {max_webcams}; jede ist eine Bild-Entität, die ihr Bild bei jeder Aktualisierung neu lädt. Die Karte zeigt diese."
+          "webcams": "Empfohlen: höchstens {max_webcams}. Jede ist eine Bild-Entität, die ihr Bild bei jeder Aktualisierung neu lädt. Die Karte zeigt alle ausgewählten Webcams."
         }
+      },
+      "many_webcams": {
+        "title": "Viele Webcams",
+        "description": "Du hast {count} Webcams ausgewählt. Jede lädt ihr Bild bei jeder Aktualisierung neu, mehr als {max_webcams} bedeuten also spürbar mehr Datenverkehr und eine lange Webcam-Reihe in der Karte. Mit „Absenden“ bleiben alle {count} aktiv; zum Ändern den Dialog schließen und die Optionen neu öffnen."
       }
-    },
-    "error": {
-      "too_many_webcams": "Höchstens {max_webcams} Webcams auswählen."
     }
   },
   "entity": {
