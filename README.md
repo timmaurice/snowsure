@@ -176,6 +176,8 @@ band: summit # optional: base, mid or summit; unset = each resort's forecast poi
 
 All data comes from the [SnowSure](https://www.snowsure.ai) public API and is shown with the credit "Data by SnowSure.ai", as SnowSure's terms require.
 
+Each resort refreshes every 30 minutes by default (15–360 in the options). A refresh asks for the resort, its avalanche bulletin, the forecast trend and the snowpack. SnowSure's bluebird list covers all resorts and is fetched once for all of them. Without access to a resort's snowpack model, the integration asks for it only once a day.
+
 ## Development
 
 <details>
