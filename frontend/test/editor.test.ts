@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import '../src/editor';
 import type { SnowsureCardEditor } from '../src/editor';
-import { SnowsureCardConfig } from '../src/types';
+import { HomeAssistant, SnowsureCardConfig } from '../src/types';
 import { DEVICE, makeHass } from './fixtures';
 
 async function mount(config: Partial<SnowsureCardConfig>): Promise<SnowsureCardEditor> {
@@ -70,10 +70,26 @@ it('groups the options by part of the card, in the card order', async () => {
     'Header, weather and mountain',
     'Tiles',
     'Snow forecast',
-    'Avalanches and webcams',
+    'Webcams',
   ]);
   expect(sections.every((item) => item.icon?.startsWith('mdi:'))).toBe(true);
   expect(sections[2].schema!.map((item) => item.name)).toEqual(['show_forecast', 'forecast_days', 'forecast_band']);
+});
+
+it('puts the avalanche switch with the mountain, which shows the level', async () => {
+  const names = (editor: Mounted, index: number) =>
+    editor
+      .schema()
+      .filter((item) => item.type === 'expandable')
+      [index].schema!.map((item) => item.name);
+  const on = await mount({ device: DEVICE });
+  expect(names(on, 0)).toEqual(['show_score', 'show_image', 'show_weather', 'show_mountain', 'show_avalanche']);
+  expect(names(on, 3)).toEqual(['show_webcams', 'webcams']);
+
+  const off = await mount({ device: DEVICE, show_mountain: false });
+  expect(names(off, 0)).not.toContain('show_avalanche');
+  expect(names(off, 3)).toEqual(['show_avalanche', 'show_webcams', 'webcams']);
+  expect(off.schema()[5].title).toBe('Avalanches and webcams');
 });
 
 it('shows section options only while their section is on', async () => {
@@ -148,4 +164,47 @@ it('offers the resort webcams by name and drops an empty pick', async () => {
     .shadowRoot!.querySelector('ha-form')!
     .dispatchEvent(new CustomEvent('value-changed', { detail: { value: { webcams: [] } } }));
   expect(listener.mock.calls[0][0].detail.config).toEqual({ type: 'custom:snowsure-card', device: DEVICE });
+});
+
+it('offers the disabled webcams from the registry and enables one when picked', async () => {
+  const registry = [
+    ['image.matterhorn_webcam_a', 'Webcam Glacier Paradise', null],
+    ['image.matterhorn_webcam_b', 'Webcam Gornergrat', null],
+    ['image.matterhorn_webcam_c', 'Webcam Rothorn (3104m)', 'integration'],
+    ['image.elsewhere_webcam', 'Webcam Elsewhere', null],
+  ].map(([entity_id, original_name, disabled_by], index) => ({
+    entity_id,
+    original_name,
+    disabled_by,
+    name: null,
+    platform: 'snowsure',
+    translation_key: 'webcam',
+    device_id: index === 3 ? 'device-other' : DEVICE,
+  }));
+  const callWS = vi.fn(async (message: Record<string, unknown>) =>
+    message.type === 'config/entity_registry/list' ? registry : {},
+  );
+  const editor = document.createElement('snowsure-card-editor') as SnowsureCardEditor;
+  editor.setConfig({ type: 'custom:snowsure-card', device: DEVICE });
+  editor.hass = { ...makeHass(), callWS } as unknown as HomeAssistant;
+  document.body.appendChild(editor);
+  await editor.updateComplete;
+  await vi.waitFor(() => expect(options(editor, 'webcams')).toHaveLength(3));
+  expect(options(editor, 'webcams')).toEqual([
+    { value: 'image.matterhorn_webcam_a', label: 'Glacier Paradise' },
+    { value: 'image.matterhorn_webcam_b', label: 'Gornergrat' },
+    { value: 'image.matterhorn_webcam_c', label: 'Rothorn (3104m) · disabled' },
+  ]);
+
+  editor
+    .shadowRoot!.querySelector('ha-form')!
+    .dispatchEvent(new CustomEvent('value-changed', { detail: { value: { webcams: ['image.matterhorn_webcam_c'] } } }));
+  await vi.waitFor(() =>
+    expect(callWS).toHaveBeenCalledWith({
+      type: 'config/entity_registry/update',
+      entity_id: 'image.matterhorn_webcam_c',
+      disabled_by: null,
+    }),
+  );
+  await vi.waitFor(() => expect(options(editor, 'webcams')[2].label).toBe('Rothorn (3104m)'));
 });

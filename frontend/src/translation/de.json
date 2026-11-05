@@ -128,10 +128,13 @@
       "header": "Kopf, Wetter und Berg",
       "stats": "Kacheln",
       "forecast": "Schneeprognose",
-      "more": "Lawinen und Webcams"
+      "more": "Lawinen und Webcams",
+      "webcams": "Webcams"
     },
     "webcams": "Webcams",
-    "webcams_helper": "Leer zeigt die aktivierten Webcams, höchstens sechs. Weitere lassen sich beim Gerät des Skigebiets aktivieren.",
-    "show_mountain": "Berg mit Schneehöhen und 0-Grad-Grenze"
+    "webcams_helper": "Leer zeigt die aktivierten Webcams, höchstens sechs.",
+    "show_mountain": "Berg mit Schneehöhen und 0-Grad-Grenze",
+    "webcam_disabled": "{name} · deaktiviert",
+    "webcams_helper_disabled": "Leer zeigt die aktivierten Webcams, höchstens sechs. Eine deaktivierte Webcam wird beim Auswählen aktiviert und erscheint nach etwa 30 Sekunden."
   }
 }

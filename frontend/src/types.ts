@@ -48,6 +48,7 @@ export interface HomeAssistant {
   language: string;
   locale?: FrontendLocaleData;
   localize?: (key: string, ...args: unknown[]) => string;
+  callWS?: <T = unknown>(message: Record<string, unknown>) => Promise<T>;
 }
 
 export interface LovelaceCardConfig {
