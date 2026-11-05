@@ -102,7 +102,10 @@
       "spring": "Spring snow",
       "crud": "Crud",
       "variable": "Variable"
-    }
+    },
+    "freezing_level": "0 °C · {elevation}",
+    "freezing_below": "0 °C below the valley",
+    "freezing_above": "0 °C above the summit"
   },
   "editor": {
     "device": "Resort",
@@ -120,12 +123,13 @@
     "band_auto": "Automatic (SnowSure forecast point)",
     "band_auto_named": "Automatic ({band})",
     "section": {
-      "header": "Header and weather",
+      "header": "Header, weather and mountain",
       "stats": "Tiles",
       "forecast": "Snow forecast",
       "more": "Avalanches and webcams"
     },
     "webcams": "Webcams",
-    "webcams_helper": "Empty shows the enabled webcams, up to six. More can be enabled on the resort's device."
+    "webcams_helper": "Empty shows the enabled webcams, up to six. More can be enabled on the resort's device.",
+    "show_mountain": "Mountain with snow depth and 0 °C line"
   }
 }

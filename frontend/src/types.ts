@@ -87,6 +87,8 @@ export interface SnowsureCardConfig extends LovelaceCardConfig {
   show_score?: boolean;
   show_image?: boolean;
   show_weather?: boolean;
+  /** Mountain picture with snow depth, temperature and the 0 °C line; replaces those tiles. */
+  show_mountain?: boolean;
   show_stats?: boolean;
   /** Tiles in the stats grid, in this order. */
   stats?: StatKey[];

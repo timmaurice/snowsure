@@ -84,7 +84,11 @@ describe('render', () => {
   });
 
   it('draws its own depth icons and keeps MDI icons for the other tiles', async () => {
-    const card = await mount({ device: DEVICE, stats: ['depth_base', 'depth_summit', 'runs_open'] });
+    const card = await mount({
+      device: DEVICE,
+      show_mountain: false,
+      stats: ['depth_base', 'depth_summit', 'runs_open'],
+    });
     const tiles = [...root(card).querySelectorAll('.stat')];
     expect(tiles.map((tile) => (tile.querySelector('svg.depth-icon') ? 'svg' : 'ha-icon'))).toEqual([
       'svg',
@@ -95,7 +99,7 @@ describe('render', () => {
 
   it('picks tile columns so the rows come out even', async () => {
     expect([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12].map(statColumns)).toEqual([1, 2, 3, 4, 3, 3, 4, 4, 3, 4, 4]);
-    const card = await mount({ device: DEVICE });
+    const card = await mount({ device: DEVICE, show_mountain: false });
     const stats = root(card).querySelector<HTMLElement>('.stats')!;
     // Six tiles in the fixture (no season or 7-day snowfall entity): 3 + 3.
     expect(stats.style.getPropertyValue('--stat-columns')).toBe('3');
@@ -118,7 +122,7 @@ describe('render', () => {
   });
 
   it('renders the default tiles, with open/total for lifts and runs', async () => {
-    const card = await mount({ device: DEVICE });
+    const card = await mount({ device: DEVICE, show_mountain: false });
     expect(text(card, '.stat-label')).toEqual([
       'Valley',
       'Summit',
@@ -138,12 +142,15 @@ describe('render', () => {
   });
 
   it('puts the depth against the average under the valley tile', async () => {
-    const card = await mount({ device: DEVICE });
+    const card = await mount({ device: DEVICE, show_mountain: false });
     expect(text(card, '.stat-extra')).toEqual(['10% of avg']);
   });
 
   it('shows translated weather with valley and summit temperatures', async () => {
-    const card = await mount({ device: DEVICE }, makeHass({ locale: { language: 'de', number_format: 'language' } }));
+    const card = await mount(
+      { device: DEVICE, show_mountain: false },
+      makeHass({ locale: { language: 'de', number_format: 'language' } }),
+    );
     expect(text(card, '.weather-text')).toEqual(['Leichter Schneefall']);
     expect(text(card, '.weather-temps')[0]).toBe('Tal 1° Berg -13°');
     const icon = root(card).querySelector('.weather ha-icon') as unknown as { icon: string };
@@ -291,7 +298,7 @@ describe('render', () => {
     const hass = makeHass();
     hass.entities['sensor.matterhorn_new_snow_24h'].display_precision = 0;
     delete hass.entities['sensor.matterhorn_depth_summit'].display_precision;
-    const card = await mount({ device: DEVICE }, hass);
+    const card = await mount({ device: DEVICE, show_mountain: false }, hass);
     expect(text(card, '.stat-value')).toContain('2 cm');
     // Without a precision the state's own decimals count, at most one.
     expect(text(card, '.stat-value')).toContain('78.0 cm');
@@ -451,7 +458,7 @@ describe('render', () => {
   });
 
   it('opens more-info on a stat tile', async () => {
-    const card = await mount({ device: DEVICE });
+    const card = await mount({ device: DEVICE, show_mountain: false });
     const listener = vi.fn();
     card.addEventListener('hass-more-info', listener);
     root(card).querySelector<HTMLButtonElement>('.stat')!.click();
@@ -465,5 +472,49 @@ describe('render', () => {
     // EAWS name from the card's translation, not SnowSure's English label.
     expect(text(card, '.avalanche-title')).toEqual(['Lawinengefahr: Mäßig']);
     expect(text(card, '.stat-label')).toContain('Pisten offen');
+  });
+});
+
+describe('mountain', () => {
+  it('shows depth, temperature and height at valley and summit, and the 0 °C line', async () => {
+    const card = await mount({ device: DEVICE });
+    expect(text(card, '.mountain-label.summit')).toEqual(['Summit · 3,883 m 78 cm -13°']);
+    expect(text(card, '.mountain-label.valley')).toEqual(['Valley · 1,562 m 31 cm 1° 10% of avg']);
+    expect(text(card, '.freezing-label')).toEqual(['0 °C · 1,770 m']);
+    expect(root(card).querySelector('.freezing-line')).not.toBeNull();
+    expect(root(card).querySelector('.mountain-snow')).not.toBeNull();
+  });
+
+  it('takes the depths and temperatures out of the tiles and the weather row', async () => {
+    const card = await mount({ device: DEVICE });
+    expect(text(card, '.stat-label')).not.toContain('Valley');
+    expect(text(card, '.stat-label')).not.toContain('Summit');
+    expect(text(card, '.weather-temps')).toEqual(['']);
+
+    const off = await mount({ device: DEVICE, show_mountain: false });
+    expect(root(off).querySelector('.mountain')).toBeNull();
+    expect(text(off, '.stat-label')).toContain('Valley');
+  });
+
+  it('says when the whole mountain is above freezing, and leaves out unknown depths', async () => {
+    const hass = makeHass();
+    hass.states['sensor.matterhorn_temp_valley'].state = '10.4';
+    hass.states['sensor.matterhorn_temp_summit'].state = '6';
+    hass.states['sensor.matterhorn_depth_valley'].state = 'unknown';
+    hass.states['sensor.matterhorn_depth_summit'].state = 'unknown';
+    const card = await mount({ device: DEVICE }, hass);
+    expect(text(card, '.freezing-label')).toEqual(['0 °C above the summit']);
+    expect(root(card).querySelector('.freezing-line')).toBeNull();
+    expect(root(card).querySelector('.mountain-snow')).toBeNull();
+    expect(text(card, '.mountain-label.summit')).toEqual(['Summit · 3,883 m 6°']);
+  });
+
+  it('keeps the tiles when the heights are unknown', async () => {
+    const hass = makeHass();
+    const forecast = Object.values(hass.states).find((state) => state.attributes.band_elevations)!;
+    forecast.attributes = { ...forecast.attributes, band_elevations: {} };
+    const card = await mount({ device: DEVICE }, hass);
+    expect(root(card).querySelector('.mountain')).toBeNull();
+    expect(text(card, '.stat-label')).toContain('Valley');
   });
 });

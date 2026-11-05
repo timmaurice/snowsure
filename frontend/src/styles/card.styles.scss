@@ -42,9 +42,10 @@ ha-card {
       'weather forecast'
       'stats forecast'
       'avalanche forecast'
+      'mountain mountain'
       'webcams webcams'
       'footer footer';
-    grid-template-rows: auto auto 1fr auto auto;
+    grid-template-rows: auto auto 1fr auto auto auto;
     column-gap: 24px;
     row-gap: 16px;
     align-items: start;
@@ -64,6 +65,10 @@ ha-card {
 
   .avalanche {
     grid-area: avalanche;
+  }
+
+  .mountain {
+    grid-area: mountain;
   }
 
   .webcams-block {
@@ -843,4 +848,148 @@ dialog.trail-map {
   &:focus-visible {
     background: rgba(127, 127, 127, 0.15);
   }
+}
+
+/* Mountain picture: the SVG stretches, the labels sit at the same percentages. */
+.mountain {
+  position: relative;
+  height: 200px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, #4a8fd4 30%, transparent),
+    color-mix(in srgb, #4a8fd4 6%, transparent)
+  );
+  --mountain-text: var(--primary-text-color);
+  --mountain-halo: var(--card-background-color, var(--ha-card-background, #fff));
+}
+
+.mountain-art {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.mountain-back {
+  fill: color-mix(in srgb, #6f8fb8 30%, transparent);
+}
+
+.mountain-rock {
+  fill: #8796ab;
+}
+
+.mountain-snow {
+  fill: #f7faff;
+}
+
+.mountain-shadow {
+  fill: rgba(44, 92, 160, 0.22);
+}
+
+.mountain-edge {
+  fill: none;
+  stroke: color-mix(in srgb, #3c4d66 45%, transparent);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.mountain-dot {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border-radius: 50%;
+  background: var(--primary-color);
+  box-shadow: 0 0 0 2px var(--mountain-halo);
+}
+
+.freezing-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1.5px dashed #2f80d1;
+  opacity: 0.8;
+}
+
+.freezing-label {
+  position: absolute;
+  right: 8px;
+  top: 8px;
+  transform: translateY(-50%);
+  padding: 2px 8px;
+  border: none;
+  border-radius: 10px;
+  background: #2f80d1;
+  color: #fff;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.freezing-label.above,
+.freezing-label.below {
+  transform: none;
+}
+
+.freezing-label.below {
+  top: auto;
+  bottom: 8px;
+}
+
+.mountain-label {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--mountain-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  text-shadow:
+    0 0 3px var(--mountain-halo),
+    0 0 6px var(--mountain-halo);
+}
+
+.mountain-label.summit,
+.mountain-label.mid {
+  align-items: flex-end;
+  text-align: right;
+  transform: translateY(-30%);
+}
+
+.mountain-place {
+  font-size: 0.75rem;
+  color: var(--secondary-text-color);
+  white-space: nowrap;
+}
+
+.mountain-value {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.mountain-temp {
+  padding: 0 6px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-shadow: none;
+  color: color-mix(in srgb, var(--temp-color) 70%, #000);
+  background: color-mix(in srgb, var(--temp-color) 22%, var(--mountain-halo));
+}
+
+.mountain-extra {
+  font-size: 0.75rem;
+  color: var(--secondary-text-color);
 }

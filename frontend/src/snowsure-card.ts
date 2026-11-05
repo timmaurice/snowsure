@@ -27,6 +27,19 @@ import { localize, tryLocalize } from './localize';
 import { snowQualityText, weatherIcon, weatherText } from './weather';
 import { fireEvent } from './utils';
 import { customStatIcon } from './icons';
+import {
+  BACK_RANGE_PATH,
+  MOUNTAIN_PATH,
+  PEAK_X,
+  PEAK_Y,
+  SHADOW_PATH,
+  VALLEY_X,
+  VALLEY_Y,
+  elevationY,
+  freezingLevel,
+  ridgeX,
+  snowPath,
+} from './mountain';
 import styles from './styles/card.styles.scss';
 
 const SNOWSURE_URL = 'https://www.snowsure.ai';
@@ -103,6 +116,9 @@ const TREND_ICONS: Record<string, string> = {
 };
 
 const CM_PER_INCH = 2.54;
+
+/** What the mountain picture shows, so tiles and the weather row leave it out while it is on. */
+const MOUNTAIN_STATS: StatKey[] = ['depth_base', 'depth_mid', 'depth_summit', 'temperature_base', 'temperature_summit'];
 
 declare global {
   interface Window {
@@ -228,12 +244,13 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     }
 
     const c = this._config;
+    const mountain = c.show_mountain ? this._renderMountain(resort) : nothing;
     return html`
       <ha-card>
         ${this._renderHeader(name, resort)}
         <div class="card-content">
-          ${c.show_weather ? this._renderWeather(resort) : nothing}
-          ${c.show_stats ? this._renderStats(resort) : nothing}
+          ${c.show_weather ? this._renderWeather(resort, mountain !== nothing) : nothing} ${mountain}
+          ${c.show_stats ? this._renderStats(resort, mountain !== nothing) : nothing}
           ${c.show_forecast ? html`<div class="block forecast-block">${this._renderForecast(resort)}</div>` : nothing}
           ${c.show_avalanche ? this._renderAvalanche(resort) : nothing}
           ${c.show_webcams ? html`<div class="block webcams-block">${this._renderWebcams(resort)}</div>` : nothing}
@@ -450,7 +467,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     `;
   }
 
-  private _renderWeather(resort: ResortEntities): TemplateResult | typeof nothing {
+  private _renderWeather(resort: ResortEntities, onMountain = false): TemplateResult | typeof nothing {
     const hass = this.hass!;
     const { weather, temperature_base: valley, temperature_summit: summit } = resort.byKey;
     if (!isAvailable(weather) && !isAvailable(valley) && !isAvailable(summit)) return nothing;
@@ -463,11 +480,20 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
       <button class="weather" @click=${() => this._moreInfo(weather ?? summit)}>
         <ha-icon .icon=${weatherIcon(isAvailable(weather) ? weather.state : undefined)}></ha-icon>
         <span class="weather-text">${isAvailable(weather) ? weatherText(hass, weather.state) : ''}</span>
-        <span class="weather-temps">
-          ${valley ? html`<span>${localize(hass, 'card.valley')} ${temp(valley)}</span>` : nothing}
-          ${summit ? html`<span>${localize(hass, 'card.summit')} ${temp(summit)}</span>` : nothing}
-        </span>
+        <span class="weather-temps"> ${onMountain ? nothing : this._weatherTemps(valley, summit, temp)} </span>
       </button>
+    `;
+  }
+
+  private _weatherTemps(
+    valley: HassEntity | undefined,
+    summit: HassEntity | undefined,
+    temp: (entity: HassEntity | undefined) => string,
+  ): TemplateResult {
+    const hass = this.hass!;
+    return html`
+      ${valley ? html`<span>${localize(hass, 'card.valley')} ${temp(valley)}</span>` : nothing}
+      ${summit ? html`<span>${localize(hass, 'card.summit')} ${temp(summit)}</span>` : nothing}
     `;
   }
 
@@ -477,9 +503,11 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     return this._value(entity);
   }
 
-  private _renderStats(resort: ResortEntities): TemplateResult | typeof nothing {
+  private _renderStats(resort: ResortEntities, onMountain = false): TemplateResult | typeof nothing {
     const hass = this.hass!;
-    const tiles = (this._config!.stats ?? DEFAULT_STATS).filter((key) => resort.byKey[key]);
+    const tiles = (this._config!.stats ?? DEFAULT_STATS).filter(
+      (key) => resort.byKey[key] && !(onMountain && MOUNTAIN_STATS.includes(key)),
+    );
     if (tiles.length === 0) return nothing;
     return html`
       <div class="stats" style="--stat-columns: ${statColumns(tiles.length)}">
@@ -763,6 +791,139 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
             : nothing
         }
       </button>
+    `;
+  }
+
+  /**
+   * A mountain with the valley and summit (and mid, if SnowSure has it): snow
+   * depth, temperature and height at each, and the 0 °C line across it.
+   * Needs both heights; without them the tiles and the weather row keep the
+   * numbers.
+   */
+  private _renderMountain(resort: ResortEntities): TemplateResult | typeof nothing {
+    const hass = this.hass!;
+    const { depth_base, depth_mid, depth_summit, temperature_base, temperature_summit, forecast_7d } = resort.byKey;
+    const bands = (forecast_7d?.attributes.band_elevations ?? {}) as Record<string, unknown>;
+    const height = (entity: HassEntity | undefined, band: ForecastBand) =>
+      toNumber(entity?.attributes.elevation) ?? toNumber(bands[band]);
+    const valley = height(depth_base, 'base');
+    const top = height(depth_summit, 'summit');
+    if (valley === null || top === null || top <= valley) return nothing;
+    const mid = height(depth_mid, 'mid');
+
+    const celsius = (entity: HassEntity | undefined) => {
+      const value = isAvailable(entity) ? toNumber(entity.state) : null;
+      if (value === null) return null;
+      return entity!.attributes.unit_of_measurement === '°F' ? ((value - 32) * 5) / 9 : value;
+    };
+    const depth = (entity: HassEntity | undefined) => (isAvailable(entity) ? toNumber(entity.state) : null);
+    const metres = (value: number) => `${formatNumber(value, hass, { maximumFractionDigits: 0 })} m`;
+    const y = (elevation: number) => elevationY(elevation, valley, top);
+
+    const today = (forecast_7d?.attributes.daily as ForecastDay[] | undefined)?.[0];
+    const zero = freezingLevel(
+      { elevation: valley, celsius: celsius(temperature_base) },
+      { elevation: top, celsius: celsius(temperature_summit) },
+      toNumber(today?.freezing_level),
+    );
+
+    // Snow down to the lowest point that reports any.
+    const snowLine =
+      (depth(depth_base) ?? 0) > 0
+        ? 101
+        : mid !== null && (depth(depth_mid) ?? 0) > 0
+          ? y(mid) + 3
+          : (depth(depth_summit) ?? 0) > 0
+            ? PEAK_Y + (VALLEY_Y - PEAK_Y) * 0.35
+            : null;
+
+    const tempChip = (entity: HassEntity | undefined) => {
+      const value = isAvailable(entity) ? toNumber(entity.state) : null;
+      if (value === null) return nothing;
+      const shown = Math.abs(value) < 0.5 ? 0 : value;
+      return html`<span class="mountain-temp" style="--temp-color: ${temperatureColor(celsius(entity)!)}"
+        >${formatNumber(shown, hass, { maximumFractionDigits: 0 })}°</span
+      >`;
+    };
+    const vsAverage = toNumber(depth_base?.attributes.vs_average_pct);
+
+    return html`
+      <div class="block mountain">
+        <svg class="mountain-art" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <clipPath id="mountain-clip"><path d=${MOUNTAIN_PATH}></path></clipPath>
+          </defs>
+          <path class="mountain-back" d=${BACK_RANGE_PATH}></path>
+          <path class="mountain-rock" d=${MOUNTAIN_PATH}></path>
+          ${snowLine === null ? nothing : svg`<path class="mountain-snow" clip-path="url(#mountain-clip)" d=${snowPath(snowLine)}></path>`}
+          <path class="mountain-shadow" d=${SHADOW_PATH}></path>
+          <path class="mountain-edge" d=${MOUNTAIN_PATH}></path>
+        </svg>
+        ${
+          zero?.kind === 'between' || zero?.kind === 'forecast'
+            ? html`<div class="freezing-line" style="top: ${y(zero.elevation)}%"></div>`
+            : nothing
+        }
+        ${
+          zero
+            ? html`<button
+                class="freezing-label ${zero.kind}"
+                style=${zero.kind === 'between' || zero.kind === 'forecast' ? `top: ${y(zero.elevation)}%` : ''}
+                @click=${() => this._moreInfo(temperature_summit ?? forecast_7d)}
+              >
+                ${
+                  zero.kind === 'between' || zero.kind === 'forecast'
+                    ? localize(hass, 'card.freezing_level', { elevation: metres(zero.elevation) })
+                    : localize(hass, `card.freezing_${zero.kind}`)
+                }
+              </button>`
+            : nothing
+        }
+        <span class="mountain-dot" style="left: ${PEAK_X}%; top: ${PEAK_Y}%"></span>
+        <span class="mountain-dot" style="left: ${VALLEY_X}%; top: ${VALLEY_Y}%"></span>
+        ${
+          mid !== null && depth_mid
+            ? html`<span class="mountain-dot" style="left: ${ridgeX(y(mid))}%; top: ${y(mid)}%"></span>
+                <button
+                  class="mountain-label mid"
+                  style="right: ${100 - ridgeX(y(mid)) + 3}%; top: ${y(mid)}%"
+                  @click=${() => this._moreInfo(depth_mid)}
+                >
+                  <span class="mountain-place">${localize(hass, 'card.band.mid')} · ${metres(mid)}</span>
+                  <span class="mountain-value">${this._value(depth_mid)}</span>
+                </button>`
+            : nothing
+        }
+        <button
+          class="mountain-label summit"
+          style="right: ${100 - PEAK_X + 4}%; top: ${PEAK_Y}%"
+          @click=${() => this._moreInfo(depth_summit)}
+        >
+          <span class="mountain-place">${localize(hass, 'card.summit')} · ${metres(top)}</span>
+          <span class="mountain-value"
+            >${isAvailable(depth_summit) ? this._value(depth_summit) : nothing} ${tempChip(temperature_summit)}</span
+          >
+        </button>
+        <button
+          class="mountain-label valley"
+          style="left: 3%; bottom: ${100 - VALLEY_Y + 5}%"
+          @click=${() => this._moreInfo(depth_base)}
+        >
+          <span class="mountain-place">${localize(hass, 'card.valley')} · ${metres(valley)}</span>
+          <span class="mountain-value"
+            >${isAvailable(depth_base) ? this._value(depth_base) : nothing} ${tempChip(temperature_base)}</span
+          >
+          ${
+            vsAverage !== null
+              ? html`<span class="mountain-extra"
+                  >${localize(hass, 'card.vs_average', {
+                    pct: formatNumber(vsAverage, hass, { maximumFractionDigits: 0 }),
+                  })}</span
+                >`
+              : nothing
+          }
+        </button>
+      </div>
     `;
   }
 

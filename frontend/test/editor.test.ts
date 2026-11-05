@@ -67,7 +67,7 @@ it('groups the options by part of the card, in the card order', async () => {
   const editor = await mount({ device: DEVICE });
   const sections = editor.schema().filter((item) => item.type === 'expandable');
   expect(sections.map((item) => item.title)).toEqual([
-    'Header and weather',
+    'Header, weather and mountain',
     'Tiles',
     'Snow forecast',
     'Avalanches and webcams',

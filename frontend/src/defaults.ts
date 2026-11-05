@@ -39,6 +39,7 @@ export const DEFAULTS = {
   show_score: true,
   show_image: true,
   show_weather: true,
+  show_mountain: true,
   show_stats: true,
   show_forecast: true,
   forecast_days: 7,

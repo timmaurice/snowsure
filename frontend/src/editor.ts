@@ -132,7 +132,12 @@ export class SnowsureCardEditor extends LitElement implements LovelaceCardEditor
     return [
       { name: 'device', selector: { device: { filter: [{ integration: 'snowsure' }] } } },
       { name: 'title', selector: { text: {} } },
-      section('header', 'mdi:image-filter-hdr', [toggle('show_score'), toggle('show_image'), toggle('show_weather')]),
+      section('header', 'mdi:image-filter-hdr', [
+        toggle('show_score'),
+        toggle('show_image'),
+        toggle('show_weather'),
+        toggle('show_mountain'),
+      ]),
       section('stats', 'mdi:view-grid-outline', stats),
       section('forecast', 'mdi:weather-snowy-heavy', forecast),
       section('more', 'mdi:webcam', more),

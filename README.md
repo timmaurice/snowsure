@@ -81,6 +81,7 @@ title: Zermatt # optional
 show_score: true
 show_image: true # resort photo as header background
 show_weather: true
+show_mountain: true # mountain with snow depth, temperature and the 0 °C line
 show_stats: true
 stats: # tiles, in this order
   - depth_base
