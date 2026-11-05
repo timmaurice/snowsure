@@ -26,3 +26,7 @@ yarn.lock
 .vscode/
 .claude/
 CLAUDE.md
+
+# Playwright
+test-results/
+playwright-report/

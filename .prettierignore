@@ -15,3 +15,9 @@ venv
 
 # Local, gitignored editor settings - not the repository's to format
 .claude/
+
+# Playwright: tokens and reports
+test/e2e/.auth.json
+test/e2e/.storage-state.json
+test-results
+playwright-report
