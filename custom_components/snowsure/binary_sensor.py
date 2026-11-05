@@ -99,11 +99,7 @@ class SnowsurePowderAlarm(SnowsureEntity, BinarySensorEntity):
         options: Mapping[str, Any],
     ) -> None:
         super().__init__(coordinator, description)
-        self._threshold = _option_float(options.get(CONF_POWDER_THRESHOLD_CM), DEFAULT_POWDER_THRESHOLD_CM)
-        days = int(_option_float(options.get(CONF_POWDER_DAYS), DEFAULT_POWDER_DAYS))
-        self._days = days if 1 <= days <= MAX_POWDER_DAYS else DEFAULT_POWDER_DAYS
-        band = options.get(CONF_POWDER_BAND)
-        self._band = band if band in POWDER_BANDS else DEFAULT_POWDER_BAND
+        self._threshold, self._days, self._band = powder_settings(options)
 
     def _outlook(self) -> tuple[list[dict[str, Any]], dict[str, Any] | None]:
         return powder_outlook(self.coordinator.data.get("forecast_daily"), self._threshold, self._days, self._band)
@@ -128,6 +124,18 @@ class SnowsurePowderAlarm(SnowsureEntity, BinarySensorEntity):
             "snowfall": first["snowfall"] if first else None,
             "max_snowfall": max((d["snowfall"] for d in checked if d["snowfall"] is not None), default=None),
         }
+
+
+def powder_settings(options: Mapping[str, Any]) -> tuple[float, int, str]:
+    """Threshold (cm), days ahead and height of the powder alarm, defaults for anything invalid."""
+    threshold = _option_float(options.get(CONF_POWDER_THRESHOLD_CM), DEFAULT_POWDER_THRESHOLD_CM)
+    days = int(_option_float(options.get(CONF_POWDER_DAYS), DEFAULT_POWDER_DAYS))
+    band = options.get(CONF_POWDER_BAND)
+    return (
+        threshold,
+        days if 1 <= days <= MAX_POWDER_DAYS else DEFAULT_POWDER_DAYS,
+        band if band in POWDER_BANDS else DEFAULT_POWDER_BAND,
+    )
 
 
 def _option_float(value: Any, default: float) -> float:

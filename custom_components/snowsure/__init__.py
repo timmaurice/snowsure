@@ -19,7 +19,13 @@ from .coordinator import SnowsureConfigEntry, SnowsureCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS: list[Platform] = [Platform.BINARY_SENSOR, Platform.IMAGE, Platform.SENSOR, Platform.WEATHER]
+PLATFORMS: list[Platform] = [
+    Platform.BINARY_SENSOR,
+    Platform.CALENDAR,
+    Platform.IMAGE,
+    Platform.SENSOR,
+    Platform.WEATHER,
+]
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 # The Lovelace card is built from frontend/ into this package and served by the

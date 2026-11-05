@@ -171,6 +171,11 @@
           "high": "Hoch"
         }
       }
+    },
+    "calendar": {
+      "calendar": {
+        "name": "Schneekalender"
+      }
     }
   },
   "selector": {

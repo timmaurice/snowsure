@@ -91,6 +91,11 @@
           "high": "mdi:gauge-full"
         }
       }
+    },
+    "calendar": {
+      "calendar": {
+        "default": "mdi:calendar-star"
+      }
     }
   }
 }
