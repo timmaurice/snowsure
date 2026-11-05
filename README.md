@@ -9,7 +9,7 @@
 
 This custom integration for Home Assistant fetches ski resort data from [SnowSure](https://www.snowsure.ai): snow depth, new snow, a 7-day forecast, the SnowSure score, lifts and runs, and the official avalanche bulletin. **It comes bundled with a Lovelace card** — no separate frontend install needed.
 
-<img src="https://raw.githubusercontent.com/timmaurice/snowsure/main/image.png" alt="SnowSure card for Hintertux Glacier: header with the resort photo, open status and score, a mountain with snow depth and temperature at valley and summit, the 0 °C line and the avalanche danger diamond, tiles for new snow, season, snow quality, 11 of 32 runs and 14 of 20 lifts open, a 7-day forecast with snowfall bars and temperature curves, and three webcams" width="500">
+<img src="https://raw.githubusercontent.com/timmaurice/snowsure/main/image.png" alt="SnowSure card for Wolf Creek Ski Area: header with the resort photo, open status and an excellent score, a mountain with snow depth and temperature at valley and summit and the avalanche danger diamond at level 2, tiles for new snow, season, snow quality, 43 of 144 runs and 3 of 11 lifts open, a 7-day forecast with temperature curves, and three webcams" width="500">
 
 ## Features
 
