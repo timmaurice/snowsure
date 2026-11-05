@@ -162,7 +162,7 @@ band: summit # optional: base, mid or summit; unset = each resort's forecast poi
 
 ## Data Source
 
-All data comes from the [SnowSure](https://www.snowsure.ai) public API and is shown with the credit "Data by SnowSure.ai", as SnowSure's terms require. Avalanche danger icons by the [European Avalanche Warning Services (EAWS)](https://www.avalanches.org/downloads/), with colour and number in the lower half as on [lawinen.report](https://lawinen.report/education/danger-scale).
+All data comes from the [SnowSure](https://www.snowsure.ai) public API and is shown with the credit "Data by SnowSure.ai", as SnowSure's terms require.
 
 ## Development
 
@@ -215,6 +215,10 @@ The container sets `SNOWSURE_DEMO=1`: the resort list then also offers **Kaiserb
 When you're done, run `docker compose down` to stop the environment. Your configuration persists in the `test_config/` folder between runs.
 
 </details>
+
+## Credits
+
+Data by [SnowSure.ai](https://www.snowsure.ai). Avalanche danger icons by the [European Avalanche Warning Services (EAWS)](https://www.avalanches.org/downloads/), with colour and number in the lower half as on [lawinen.report](https://lawinen.report/education/danger-scale).
 
 ## Contributions
 
