@@ -33,7 +33,7 @@ _TEXT = {
         "closing": "{resort}: Saisonende",
         "powder": "{resort}: Powder-Tag, {amount} cm Neuschnee",
         "powder_detail": "SnowSure-Prognose auf {elevation}, Schwelle {threshold} cm.",
-        "bluebird": "{resort}: Bluebird-Tag",
+        "bluebird": "{resort}: Kaiserwetter",
         "bluebird_detail": "Sonne nach {amount} cm Neuschnee.",
     },
 }

@@ -42,6 +42,18 @@ describe('localize', () => {
       'Nass',
       'Firn',
     ]);
+    // The snowpack model's fixed set (OpenAPI SnowpackPayload.snowQuality.label).
+    const snowpack = ['dry_powder', 'soft', 'packed', 'wind_affected', 'crust', 'wet', 'spring', 'no_snow'];
+    expect(snowpack.map((label) => snowQualityText(hass('de'), label))).toEqual([
+      'Pulverschnee',
+      'Weich',
+      'Gepresst',
+      'Windgepresst',
+      'Harsch',
+      'Nass',
+      'Firn',
+      'Kein Schnee',
+    ]);
     expect(snowQualityText(hass('de'), 'something new')).toBe('something new');
   });
 

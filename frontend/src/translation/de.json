@@ -96,7 +96,12 @@
       "dense": "Dicht",
       "icy": "Eisig",
       "wet": "Nass",
-      "spring": "Firn"
+      "spring": "Firn",
+      "dry_powder": "Pulverschnee",
+      "soft": "Weich",
+      "wind_affected": "Windgepresst",
+      "crust": "Harsch",
+      "no_snow": "Kein Schnee"
     },
     "freezing_level": "0 °C · {elevation}",
     "freezing_below": "0 °C unter dem Tal",

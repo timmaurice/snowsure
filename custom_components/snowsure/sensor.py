@@ -179,7 +179,13 @@ SENSORS: tuple[SnowsureSensorEntityDescription, ...] = (
         key="snow_quality",
         translation_key="snow_quality",
         value_fn=_key("snow_quality"),
-        attrs_fn=lambda d: {"description": d.get("snow_quality_description")},
+        attrs_fn=lambda d: {
+            "description": d.get("snow_quality_description"),
+            # "snowpack": SnowSure's snowpack model (mid, flat); "conditions": the resort report.
+            "source": d.get("snow_quality_source"),
+            "confidence": d.get("snow_quality_confidence"),
+            "band": d.get("snow_quality_band"),
+        },
     ),
     SnowsureSensorEntityDescription(
         key="avalanche_level",

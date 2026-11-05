@@ -1,0 +1,16 @@
+{
+  "data": {
+    "locked": false,
+    "modeled": true,
+    "beta": true,
+    "resort": "matterhorn-ski-paradise",
+    "snowQuality": {
+      "label": "soft",
+      "reasonKey": "settled",
+      "reason": "Settled powder, no fresh snow on record",
+      "band": "mid",
+      "aspect": "flat",
+      "confidence": "low"
+    }
+  }
+}

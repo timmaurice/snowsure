@@ -26,7 +26,7 @@ from custom_components.snowsure.coordinator import async_scan_interval
 from custom_components.snowsure.diagnostics import async_get_config_entry_diagnostics
 from custom_components.snowsure.sensor import SENSORS
 
-from .conftest import AVALANCHE_URL, BLUEBIRD_URL, RESORT_URL, RUNS_URL, SLUG, load_fixture
+from .conftest import AVALANCHE_URL, BLUEBIRD_URL, RESORT_URL, RUNS_URL, SLUG, SNOWPACK_URL, load_fixture
 
 
 def _entity_id(hass: HomeAssistant, platform: str, key: str) -> str:
@@ -110,6 +110,7 @@ async def test_avalanche_failure_is_not_fatal(
     aioclient_mock.get(AVALANCHE_URL, status=500)
     aioclient_mock.get(RUNS_URL, status=500)
     aioclient_mock.get(BLUEBIRD_URL, status=500)
+    aioclient_mock.get(SNOWPACK_URL, status=500)
     await _setup(hass, mock_entry)
     assert mock_entry.state is ConfigEntryState.LOADED
     assert hass.states.get(_entity_id(hass, "sensor", "avalanche_level")).state == STATE_UNKNOWN

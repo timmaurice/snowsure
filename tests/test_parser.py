@@ -182,3 +182,18 @@ def test_forecast_change_from_the_runs() -> None:
     data = parse_resort(_detail(), forecast_runs=runs)
     assert (data["forecast_change_24h"], data["forecast_change_48h"]) == (4.2, -5.1)
     assert parse_resort(_detail())["forecast_change_24h"] is None
+
+
+def test_snow_quality_prefers_the_snowpack_model() -> None:
+    snowpack = load_fixture("snowpack.json")["data"]
+    data = parse_resort(_detail(), snowpack=snowpack)
+    assert (data["snow_quality"], data["snow_quality_source"], data["snow_quality_confidence"]) == (
+        "soft",
+        "snowpack",
+        "low",
+    )
+    assert data["snow_quality_description"] == "Settled powder, no fresh snow on record"
+    # Locked (no access to the resort): the resort report's label stays.
+    locked = parse_resort(_detail(), snowpack={"locked": True, "snowQuality": None})
+    assert locked["snow_quality_source"] in ("conditions", None)
+    assert locked["snow_quality"] == parse_resort(_detail())["snow_quality"]

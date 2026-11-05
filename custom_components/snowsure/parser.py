@@ -87,6 +87,7 @@ def parse_resort(
     *,
     forecast_runs: dict[str, Any] | None = None,
     bluebird: list[dict[str, Any]] | None = None,
+    snowpack: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Build the coordinator payload from the detail and the optional extra responses."""
     conditions = _dict(_dict(detail.get("conditions")).get("data"))
@@ -204,8 +205,7 @@ def parse_resort(
         "temperature_base": temperature_at("base"),
         "temperature_mid": temperature_at("mid"),
         "temperature_summit": temperature_at("summit"),
-        "snow_quality": _str(snow_quality.get("label")),
-        "snow_quality_description": _str(snow_quality.get("description")),
+        **_snow_quality(snow_quality, snowpack),
         "updated_at": _str(_dict(detail.get("liveData")).get("asOf")) or _str(current.get("lastUpdated")),
         # Forecast confidence (week 1, and week 2 where the horizon reaches it)
         **parse_confidence(forecast),
@@ -393,3 +393,23 @@ def bluebird_days(
         found.setdefault(date, {"date": date, "fresh_snow": prediction.get("snowfall"), "source": "snowsure"})
         found[date]["confidence"] = prediction.get("confidence")
     return sorted(found.values(), key=lambda row: row["date"])
+
+
+def _snow_quality(conditions: dict[str, Any], snowpack: dict[str, Any] | None) -> dict[str, Any]:
+    """The snowpack model's label (a fixed set) when SnowSure shares it, else the conditions' label."""
+    model = _dict(_dict(snowpack).get("snowQuality"))
+    if not _dict(snowpack).get("locked") and _str(model.get("label")):
+        return {
+            "snow_quality": _str(model.get("label")),
+            "snow_quality_description": _str(model.get("reason")),
+            "snow_quality_source": "snowpack",
+            "snow_quality_confidence": _str(model.get("confidence")),
+            "snow_quality_band": _str(model.get("band")),
+        }
+    return {
+        "snow_quality": _str(conditions.get("label")),
+        "snow_quality_description": _str(conditions.get("description")),
+        "snow_quality_source": "conditions" if conditions.get("label") else None,
+        "snow_quality_confidence": None,
+        "snow_quality_band": None,
+    }

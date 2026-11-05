@@ -96,7 +96,12 @@
       "dense": "Dense",
       "icy": "Icy",
       "wet": "Wet",
-      "spring": "Spring snow"
+      "spring": "Spring snow",
+      "dry_powder": "Dry powder",
+      "soft": "Soft",
+      "wind_affected": "Wind-affected",
+      "crust": "Crust",
+      "no_snow": "No snow"
     },
     "freezing_level": "0 °C · {elevation}",
     "freezing_below": "0 °C below the valley",

@@ -151,6 +151,14 @@ class SnowsureClient:
             raise SnowsureError(f"SnowSure returned no forecast runs for {slug}")
         return data
 
+    async def async_get_snowpack(self, slug: str) -> dict[str, Any]:
+        """Return the snowpack model payload (``locked`` without access to the resort)."""
+        payload = await self._get(f"/resorts/{validate_slug(slug)}/snowpack", params={"band": "mid", "aspect": "flat"})
+        data = payload.get("data", payload) if isinstance(payload, dict) else None
+        if not isinstance(data, dict):
+            raise SnowsureError(f"SnowSure returned no snowpack for {slug}")
+        return data
+
     async def async_get_bluebird_predictions(self) -> list[dict[str, Any]]:
         """SnowSure's predicted bluebird days, for all resorts (a short list)."""
         payload = await self._get("/bluebird-predictions")

@@ -99,4 +99,11 @@ class SnowsureCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             _LOGGER.debug("Bluebird predictions unavailable: %s", err)
             bluebird = None
 
-        return parse_resort(detail, avalanche, forecast_runs=runs, bluebird=bluebird)
+        # The snowpack model's surface label; locked for resorts the key does not cover.
+        try:
+            snowpack: dict[str, Any] | None = await self.client.async_get_snowpack(self.slug)
+        except SnowsureError as err:
+            _LOGGER.debug("Snowpack for %s unavailable: %s", self.slug, err)
+            snowpack = None
+
+        return parse_resort(detail, avalanche, forecast_runs=runs, bluebird=bluebird, snowpack=snowpack)
