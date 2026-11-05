@@ -288,3 +288,27 @@ async def test_webcams_follow_the_options_pick(
     assert webcams == ["webcam_matterhorn_glacier_paradise_3883m", "webcam_rothorn_3104m"]
     assert registry.async_get(old.entity_id).disabled_by is None
     assert registry.async_get(stale.entity_id) is None
+
+
+async def test_repicked_webcam_comes_back_enabled(
+    hass: HomeAssistant, mock_api: AiohttpClientMocker, mock_entry: MockConfigEntry
+) -> None:
+    """Home Assistant restores a removed entity's disabled_by; a pick must override it."""
+    mock_entry.add_to_hass(hass)
+    registry = er.async_get(hass)
+    old = registry.async_get_or_create(
+        "image",
+        DOMAIN,
+        f"{SLUG}_webcam_rothorn_3104m",
+        config_entry=mock_entry,
+        suggested_object_id="matterhorn_rothorn",
+        disabled_by=er.RegistryEntryDisabler.INTEGRATION,
+    )
+    registry.async_remove(old.entity_id)
+    hass.config_entries.async_update_entry(mock_entry, options={CONF_WEBCAMS: ["rothorn_3104m"]})
+    await _setup(hass, mock_entry)
+
+    entity_id = registry.async_get_entity_id("image", DOMAIN, f"{SLUG}_webcam_rothorn_3104m")
+    assert entity_id == old.entity_id
+    assert registry.async_get(entity_id).disabled_by is None
+    assert hass.states.get(entity_id) is not None

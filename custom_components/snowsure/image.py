@@ -11,7 +11,7 @@ from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util import dt as dt_util
 from homeassistant.util import slugify
 
-from .const import CONF_WEBCAMS
+from .const import CONF_WEBCAMS, DOMAIN
 from .coordinator import SnowsureConfigEntry, SnowsureCoordinator
 from .entity import SnowsureEntity
 from .parser import picked_webcams, webcam_key
@@ -50,20 +50,27 @@ async def async_setup_entry(
 
 
 def _forget_unpicked_webcams(hass: HomeAssistant, entry: SnowsureConfigEntry, picked: set[str]) -> None:
-    """Drop registry entries of webcams no longer picked; enable picked ones that were switched off.
+    """Drop registry entries of webcams no longer picked; make sure every picked one is enabled.
 
-    Older versions created every webcam and disabled all but the first three,
-    so a pick in the options may land on a disabled entry.
+    A picked webcam can be disabled in two ways: older versions created every
+    webcam and disabled all but the first three, and Home Assistant restores
+    a removed entity with its old disabled_by when it comes back. So restore
+    picked ones from the deleted entities here and enable them before the
+    platform adds them.
     """
     registry = er.async_get(hass)
     prefix = f"{entry.unique_id}_webcam_"
     for reg in er.async_entries_for_config_entry(registry, entry.entry_id):
-        if reg.domain != "image" or not reg.unique_id.startswith(prefix):
-            continue
-        if reg.unique_id.removeprefix(prefix) not in picked:
+        is_webcam = reg.domain == "image" and reg.unique_id.startswith(prefix)
+        if is_webcam and reg.unique_id.removeprefix(prefix) not in picked:
             registry.async_remove(reg.entity_id)
-        elif reg.disabled_by is not None:
-            registry.async_update_entity(reg.entity_id, disabled_by=None)
+    for key in picked:
+        unique_id = f"{prefix}{key}"
+        entity_id = registry.async_get_entity_id("image", DOMAIN, unique_id)
+        if entity_id is None and ("image", DOMAIN, unique_id) in registry.deleted_entities:
+            entity_id = registry.async_get_or_create("image", DOMAIN, unique_id, config_entry=entry).entity_id
+        if entity_id is not None and (reg := registry.async_get(entity_id)) and reg.disabled_by is not None:
+            registry.async_update_entity(entity_id, disabled_by=None)
 
 
 class SnowsureImageBase(SnowsureEntity, ImageEntity):

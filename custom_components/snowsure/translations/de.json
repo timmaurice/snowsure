@@ -69,7 +69,7 @@
       },
       "many_webcams": {
         "title": "Viele Webcams",
-        "description": "Du hast {count} Webcams ausgewählt. Jede lädt ihr Bild bei jeder Aktualisierung neu, mehr als {max_webcams} bedeuten also spürbar mehr Datenverkehr und eine lange Webcam-Reihe in der Karte. Mit „Absenden“ bleiben alle {count} aktiv; zum Ändern den Dialog schließen und die Optionen neu öffnen."
+        "description": "Du hast {count} Webcams ausgewählt. Jede lädt ihr Bild bei jeder Aktualisierung neu, mehr als {max_webcams} bedeuten also spürbar mehr Datenverkehr und eine lange Webcam-Reihe in der Karte. Bestätigen, um alle {count} zu behalten; zum Ändern den Dialog schließen und die Optionen neu öffnen."
       }
     }
   },
