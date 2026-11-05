@@ -35,6 +35,7 @@ import {
   VALLEY_X,
   VALLEY_Y,
   elevationY,
+  FreezingLevel,
   freezingLevel,
   ridgeX,
   snowPath,
@@ -129,6 +130,8 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
   @state() private _config?: SnowsureCardConfig;
   /** Band picked on the card itself; wins over the configured one until the config changes. */
   @state() private _band?: ForecastBand;
+  /** Forecast day the mountain shows (index into the forecast); unset is now. */
+  @state() private _day?: number;
   /** The trail map dialog, while it is open: which map, and whether it is zoomed. */
   @state() private _trailMap?: { index: number; zoom: boolean };
   /** Where the user clicked to zoom (0..1 of the image), to scroll there afterwards. */
@@ -173,6 +176,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
       forecast_band: FORECAST_BANDS.includes(config.forecast_band as ForecastBand) ? config.forecast_band : undefined,
     };
     this._band = undefined;
+    this._day = undefined;
   }
 
   /** Masonry needs a number; a rough count of the sections that are switched on. */
@@ -239,7 +243,11 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
         <div class="card-content">
           ${c.show_weather ? this._renderWeather(resort, mountain !== nothing) : nothing} ${mountain}
           ${c.show_stats ? this._renderStats(resort, mountain !== nothing) : nothing}
-          ${c.show_forecast ? html`<div class="block forecast-block">${this._renderForecast(resort)}</div>` : nothing}
+          ${
+            c.show_forecast
+              ? html`<div class="block forecast-block">${this._renderForecast(resort, mountain !== nothing)}</div>`
+              : nothing
+          }
           ${c.show_avalanche && mountain === nothing ? this._renderAvalanche(resort) : nothing}
           ${c.show_webcams ? html`<div class="block webcams-block">${this._renderWebcams(resort)}</div>` : nothing}
           ${this._renderFooter(device?.configuration_url, resort)}
@@ -523,7 +531,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     `;
   }
 
-  private _renderForecast(resort: ResortEntities): TemplateResult | typeof nothing {
+  private _renderForecast(resort: ResortEntities, pickDays = false): TemplateResult | typeof nothing {
     const hass = this.hass!;
     const { forecast_7d: forecast, temperature_summit: summit, forecast_confidence: confidence } = resort.byKey;
     const daily = (forecast?.attributes.daily as ForecastDay[] | undefined) ?? [];
@@ -575,7 +583,12 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
             : nothing
         }
       </div>
-      <button class="forecast" style="--days: ${days.length}" @click=${() => this._moreInfo(forecast)}>
+      <button
+        class="forecast ${pickDays ? 'pick-days' : ''}"
+        style="--days: ${days.length}"
+        title=${pickDays ? localize(hass, 'card.pick_day') : ''}
+        @click=${(ev: Event) => this._forecastClick(ev, forecast, pickDays)}
+      >
         ${days.map((day, index) => {
           const amount = amounts[index];
           const freezing = toNumber(day.freezing_level);
@@ -589,7 +602,11 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
           // clock can be a day ahead (Europe looking at Colorado).
           const isToday = index === 0;
           return html`
-            <div class="day ${isToday ? 'today' : ''}" title=${tooltip}>
+            <div
+              class="day ${isToday ? 'today' : ''} ${pickDays && this._day === index ? 'picked' : ''}"
+              data-index=${index}
+              title=${tooltip}
+            >
               <span class="weekday">${isToday ? localize(hass, 'card.today') : formatWeekday(day.date, hass)}</span>
               <div class="bar-track">
                 <div class="bar" style="height: ${Math.round((amount / scale) * 100)}%"></div>
@@ -608,6 +625,21 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
       </button>
       ${bands.length > 1 ? this._renderBandSwitch(bands, band, elevations, inches) : nothing}
     `;
+  }
+
+  /**
+   * With the mountain on, a day in the forecast shows that day on the
+   * mountain (a second tap goes back to now); elsewhere the forecast opens
+   * the sensor's more-info.
+   */
+  private _forecastClick(ev: Event, forecast: HassEntity | undefined, pickDays: boolean): void {
+    const day = (ev.target as HTMLElement | null)?.closest?.('.day') as HTMLElement | null;
+    if (!pickDays || !day) {
+      this._moreInfo(forecast);
+      return;
+    }
+    const index = Number(day.dataset.index);
+    this._day = this._day === index ? undefined : index;
   }
 
   /**
@@ -817,12 +849,31 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     const metres = (value: number) => `${formatNumber(value, hass, { maximumFractionDigits: 0 })} m`;
     const y = (elevation: number) => elevationY(elevation, valley, top);
 
-    const today = (forecast_7d?.attributes.daily as ForecastDay[] | undefined)?.[0];
-    const zero = freezingLevel(
-      { elevation: valley, celsius: celsius(temperature_base) },
-      { elevation: top, celsius: celsius(temperature_summit) },
-      toNumber(today?.freezing_level),
-    );
+    const daily = (forecast_7d?.attributes.daily as ForecastDay[] | undefined) ?? [];
+    // A picked forecast day: snowfall per height and that day's freezing level.
+    const day = this._day !== undefined ? daily[this._day] : undefined;
+    const dayZero = (): FreezingLevel | null => {
+      const metresAt = toNumber(day?.freezing_level);
+      if (metresAt === null) return null;
+      if (metresAt >= top) return { kind: 'above' };
+      if (metresAt <= valley) return { kind: 'below' };
+      return { kind: 'forecast', elevation: Math.round(metresAt / 10) * 10 };
+    };
+    const zero = day
+      ? dayZero()
+      : freezingLevel(
+          { elevation: valley, celsius: celsius(temperature_base) },
+          { elevation: top, celsius: celsius(temperature_summit) },
+          toNumber(daily[0]?.freezing_level),
+        );
+    const inches = forecast_7d?.attributes.unit_of_measurement === 'in';
+    const point = (forecast_7d?.attributes.point_band as ForecastBand | undefined) ?? 'mid';
+    const snowfall = (band: ForecastBand) => {
+      const cm = toNumber(day?.[`snowfall_${band}`]) ?? (band === point ? toNumber(day?.snowfall) : null);
+      if (cm === null) return '–';
+      const value = inches ? cm / CM_PER_INCH : cm;
+      return `+${formatNumber(value, hass, { maximumFractionDigits: inches || value < 1 ? 1 : 0 })} ${inches ? 'in' : 'cm'}`;
+    };
 
     // Snow down to the lowest point that reports any.
     const snowLine =
@@ -845,7 +896,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     const vsAverage = toNumber(depth_base?.attributes.vs_average_pct);
 
     return html`
-      <div class="block mountain">
+      <div class="block mountain ${day ? 'day-view' : ''}">
         <svg class="mountain-art" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           <defs>
             <clipPath id="mountain-clip"><path d=${MOUNTAIN_PATH}></path></clipPath>
@@ -864,7 +915,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
         ${
           zero
             ? html`<button
-                class="freezing-label ${zero.kind}"
+                class="freezing-label is-${zero.kind}"
                 style=${zero.kind === 'between' || zero.kind === 'forecast' ? `top: ${y(zero.elevation)}%` : ''}
                 @click=${() => this._moreInfo(temperature_summit ?? forecast_7d)}
               >
@@ -876,11 +927,17 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
               </button>`
             : nothing
         }
-        ${this._config!.show_avalanche ? this._renderMountainAvalanche(resort.byKey.avalanche_level) : nothing}
+        ${
+          day
+            ? this._renderMountainDay(day, temperature_summit?.attributes.unit_of_measurement === '°F')
+            : this._config!.show_avalanche
+              ? this._renderMountainAvalanche(resort.byKey.avalanche_level)
+              : nothing
+        }
         <span class="mountain-dot" style="left: ${PEAK_X}%; top: ${PEAK_Y}%"></span>
         <span class="mountain-dot" style="left: ${VALLEY_X}%; top: ${VALLEY_Y}%"></span>
         ${
-          mid !== null && depth_mid
+          mid !== null && (day ? day.snowfall_mid !== undefined && day.snowfall_mid !== null : depth_mid)
             ? html`<span class="mountain-dot" style="left: ${ridgeX(y(mid))}%; top: ${y(mid)}%"></span>
                 <button
                   class="mountain-label mid"
@@ -888,7 +945,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
                   @click=${() => this._moreInfo(depth_mid)}
                 >
                   <span class="mountain-place">${localize(hass, 'card.band.mid')} · ${metres(mid)}</span>
-                  <span class="mountain-value">${this._value(depth_mid)}</span>
+                  <span class="mountain-value">${day ? snowfall('mid') : this._value(depth_mid)}</span>
                 </button>`
             : nothing
         }
@@ -899,7 +956,12 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
         >
           <span class="mountain-place">${localize(hass, 'card.summit')} · ${metres(top)}</span>
           <span class="mountain-value"
-            >${isAvailable(depth_summit) ? this._value(depth_summit) : nothing} ${tempChip(temperature_summit)}</span
+            >${
+              day
+                ? snowfall('summit')
+                : html`${isAvailable(depth_summit) ? this._value(depth_summit) : nothing}
+                  ${tempChip(temperature_summit)}`
+            }</span
           >
         </button>
         <button
@@ -909,10 +971,14 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
         >
           <span class="mountain-place">${localize(hass, 'card.valley')} · ${metres(valley)}</span>
           <span class="mountain-value"
-            >${isAvailable(depth_base) ? this._value(depth_base) : nothing} ${tempChip(temperature_base)}</span
+            >${
+              day
+                ? snowfall('base')
+                : html`${isAvailable(depth_base) ? this._value(depth_base) : nothing} ${tempChip(temperature_base)}`
+            }</span
           >
           ${
-            vsAverage !== null
+            vsAverage !== null && !day
               ? html`<span class="mountain-extra"
                   >${localize(hass, 'card.vs_average', {
                     pct: formatNumber(vsAverage, hass, { maximumFractionDigits: 0 }),
@@ -923,6 +989,33 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
         </button>
       </div>
     `;
+  }
+
+  /** The picked forecast day in the top left corner, with its temperatures; a tap goes back to now. */
+  private _renderMountainDay(day: ForecastDay, fahrenheit: boolean): TemplateResult {
+    const hass = this.hass!;
+    const temp = (c: number | null | undefined) => {
+      if (c === null || c === undefined) return nothing;
+      const value = fahrenheit ? (c * 9) / 5 + 32 : Math.abs(c) < 0.5 ? 0 : c;
+      return html`<span class="mountain-temp" style="--temp-color: ${temperatureColor(c)}"
+        >${formatNumber(value, hass, { maximumFractionDigits: 0 })}°</span
+      >`;
+    };
+    return html`<button
+      class="mountain-day"
+      title=${localize(hass, 'card.back_to_now')}
+      @click=${() => (this._day = undefined)}
+    >
+      <span class="mountain-day-date"
+        >${this._day === 0 ? localize(hass, 'card.today') : formatWeekday(day.date, hass)}<ha-icon
+          icon="mdi:close"
+        ></ha-icon
+      ></span>
+      <span class="mountain-day-sub">${formatDate(day.date, hass)}</span>
+      <span class="mountain-day-values"
+        >${weatherText(hass, day.conditions)} ${temp(day.temp_max)} ${temp(day.temp_min)}</span
+      >
+    </button>`;
   }
 
   /** The danger level as the diamond in the mountain's top left corner, grey without a bulletin. */

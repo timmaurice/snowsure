@@ -852,6 +852,7 @@ dialog.trail-map {
 
 /* Mountain picture: the SVG stretches, the labels sit at the same percentages. */
 .mountain {
+  container: mountain / inline-size;
   position: relative;
   height: 200px;
   border-radius: 12px;
@@ -930,12 +931,12 @@ dialog.trail-map {
   cursor: pointer;
 }
 
-.freezing-label.above,
-.freezing-label.below {
+.freezing-label.is-above,
+.freezing-label.is-below {
   transform: none;
 }
 
-.freezing-label.below {
+.freezing-label.is-below {
   top: auto;
   bottom: 8px;
 }
@@ -1052,4 +1053,77 @@ dialog.trail-map {
 
 .mountain-avalanche.expired .mountain-avalanche-label {
   color: var(--warning-color, #ffa600);
+}
+
+/* A forecast day picked for the mountain. */
+.forecast.pick-days .day {
+  cursor: pointer;
+}
+
+.forecast .day.picked {
+  background: color-mix(in srgb, var(--primary-color) 16%, transparent);
+  box-shadow: inset 0 0 0 1.5px var(--primary-color);
+}
+
+.mountain-day {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 5px 8px;
+  border: none;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--mountain-halo) 85%, transparent);
+  color: var(--mountain-text);
+  font: inherit;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.mountain-day-date {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+
+  ha-icon {
+    --mdc-icon-size: 14px;
+    color: var(--secondary-text-color);
+  }
+}
+
+.mountain-day-sub {
+  font-size: 0.75rem;
+  color: var(--secondary-text-color);
+  white-space: nowrap;
+}
+
+.mountain-day-values {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--secondary-text-color);
+  white-space: nowrap;
+}
+
+.mountain.day-view .mountain-value {
+  color: var(--primary-color);
+}
+
+/* Narrow mountains: the day badge keeps the date only (the forecast column
+   below shows the day's temperatures), so it stays clear of the summit label. */
+@container mountain (max-width: 420px) {
+  .mountain-day {
+    padding: 3px 6px;
+  }
+
+  .mountain-day-values {
+    display: none;
+  }
 }

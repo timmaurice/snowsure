@@ -104,7 +104,7 @@ show_webcams: true # the webcams picked in the integration options
 
 Available tiles: `depth_base`, `depth_mid`, `depth_summit`, `snowfall_24h`, `snowfall_7d`, `snowfall_season`, `forecast_7d`, `runs_open`, `lifts_open`, `temperature_base`, `temperature_summit`, `snow_quality`.
 
-SnowSure's daily forecast is for one point, usually mid-mountain. A switch under the bars shows the snowfall at valley, mid or summit (each with its height); `forecast_band` picks where it starts. SnowSure has one temperature series only, so the temperature lines do not change with it.
+With the mountain on, tapping a day in the forecast shows that day on the mountain: new snow at valley, mid and summit, SnowSure's freezing level for the day and its temperatures; tap it again (or the date badge) to go back to now. SnowSure's daily forecast is for one point, usually mid-mountain. A switch under the bars shows the snowfall at valley, mid or summit (each with its height); `forecast_band` picks where it starts. SnowSure has one temperature series only, so the temperature lines do not change with it.
 
 Weather, snow quality and avalanche levels are translated by the card; SnowSure delivers them in English. Webcams and the resort photo load through Home Assistant's image proxy, so the browser makes no third-party requests.
 

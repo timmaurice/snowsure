@@ -541,4 +541,45 @@ describe('mountain', () => {
     const off = await mount({ device: DEVICE, show_avalanche: false });
     expect(root(off).querySelector('.mountain-avalanche')).toBeNull();
   });
+
+  it('shows a tapped forecast day on the mountain and goes back on a second tap', async () => {
+    const card = await mount({ device: DEVICE });
+    const listener = vi.fn();
+    card.addEventListener('hass-more-info', listener);
+    const dayCell = () => root(card).querySelector<HTMLElement>('.day[data-index="2"] .bar-track')!;
+
+    dayCell().click();
+    await card.updateComplete;
+    expect(listener).not.toHaveBeenCalled();
+    expect(root(card).querySelector('.day.picked')?.getAttribute('data-index')).toBe('2');
+    expect(root(card).querySelector('.mountain-avalanche')).toBeNull();
+    expect(text(card, '.mountain-day-date')[0]).toBe('Fri');
+    expect(text(card, '.mountain-day-sub')[0]).toBe('Nov 6');
+    expect(text(card, '.mountain-label.summit')).toEqual(['Summit · 3,883 m +13 cm']);
+    expect(text(card, '.mountain-label.mid')).toEqual(['Mid · 2,723 m +7 cm']);
+    expect(text(card, '.mountain-label.valley')).toEqual(['Valley · 1,562 m +0.4 cm']);
+    // SnowSure's freezing level for that day, not the one from today's readings.
+    expect(text(card, '.freezing-label')).toEqual(['0 °C · 2,900 m']);
+    // Not caught by the forecast grid's .forecast rule.
+    expect(root(card).querySelector('.freezing-label.forecast')).toBeNull();
+
+    dayCell().click();
+    await card.updateComplete;
+    expect(root(card).querySelector('.mountain-day')).toBeNull();
+    expect(text(card, '.mountain-label.summit')).toEqual(['Summit · 3,883 m 78 cm -13°']);
+
+    dayCell().click();
+    await card.updateComplete;
+    root(card).querySelector<HTMLButtonElement>('.mountain-day')!.click();
+    await card.updateComplete;
+    expect(root(card).querySelector('.day.picked')).toBeNull();
+  });
+
+  it('keeps the forecast opening more-info without the mountain', async () => {
+    const card = await mount({ device: DEVICE, show_mountain: false });
+    const listener = vi.fn();
+    card.addEventListener('hass-more-info', listener);
+    root(card).querySelector<HTMLElement>('.day[data-index="2"] .bar-track')!.click();
+    expect(listener.mock.calls[0][0].detail).toEqual({ entityId: 'sensor.matterhorn_forecast' });
+  });
 });

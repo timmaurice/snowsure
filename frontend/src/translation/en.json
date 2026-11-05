@@ -103,7 +103,9 @@
     "freezing_below": "0 °C below the valley",
     "freezing_above": "0 °C above the summit",
     "avalanche_old": "old report",
-    "no_bulletin_short": "no report"
+    "no_bulletin_short": "no report",
+    "pick_day": "Tap a day to see it on the mountain",
+    "back_to_now": "Back to now"
   },
   "editor": {
     "device": "Resort",
