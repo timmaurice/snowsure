@@ -993,3 +993,50 @@ dialog.trail-map {
   font-size: 0.75rem;
   color: var(--secondary-text-color);
 }
+
+.mountain-avalanche {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--mountain-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.avalanche-icon {
+  width: 40px;
+  height: 40px;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
+}
+
+.mountain-avalanche-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  white-space: nowrap;
+  text-shadow:
+    0 0 3px var(--mountain-halo),
+    0 0 6px var(--mountain-halo);
+}
+
+.mountain-avalanche.none .avalanche-icon {
+  opacity: 0.6;
+}
+
+.mountain-avalanche.none .mountain-avalanche-label {
+  color: var(--secondary-text-color);
+}
+
+.mountain-avalanche.expired .avalanche-icon {
+  opacity: 0.45;
+}
+
+.mountain-avalanche.expired .mountain-avalanche-label {
+  color: var(--warning-color, #ffa600);
+}

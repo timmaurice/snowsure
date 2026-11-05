@@ -26,7 +26,7 @@ import { entityDigits, formatDate, formatNumber, formatWeekday, toNumber } from 
 import { localize, tryLocalize } from './localize';
 import { snowQualityText, weatherIcon, weatherText } from './weather';
 import { fireEvent } from './utils';
-import { customStatIcon } from './icons';
+import { AVALANCHE_COLORS, avalancheIcon, customStatIcon } from './icons';
 import {
   BACK_RANGE_PATH,
   MOUNTAIN_PATH,
@@ -45,14 +45,6 @@ import styles from './styles/card.styles.scss';
 const SNOWSURE_URL = 'https://www.snowsure.ai';
 
 /** EAWS danger level colours (1 low ... 5 very high). */
-const AVALANCHE_COLORS: Record<number, string> = {
-  1: '#ccff66',
-  2: '#ffff00',
-  3: '#ff9900',
-  4: '#ff0000',
-  5: '#a00000',
-};
-
 const STAT_ICONS: Record<StatKey, string> = {
   // Fallbacks only: the depth tiles draw their own icons (icons.ts).
   depth_base: 'mdi:arrow-collapse-down',
@@ -252,7 +244,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
           ${c.show_weather ? this._renderWeather(resort, mountain !== nothing) : nothing} ${mountain}
           ${c.show_stats ? this._renderStats(resort, mountain !== nothing) : nothing}
           ${c.show_forecast ? html`<div class="block forecast-block">${this._renderForecast(resort)}</div>` : nothing}
-          ${c.show_avalanche ? this._renderAvalanche(resort) : nothing}
+          ${c.show_avalanche && mountain === nothing ? this._renderAvalanche(resort) : nothing}
           ${c.show_webcams ? html`<div class="block webcams-block">${this._renderWebcams(resort)}</div>` : nothing}
           ${this._renderFooter(device?.configuration_url, resort)}
         </div>
@@ -745,22 +737,31 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     `;
   }
 
+  /** The current bulletin: level, its name in the user's language and whether it ran out. */
+  private _bulletin(entity: HassEntity | undefined) {
+    const level = isAvailable(entity) ? toNumber(entity.state) : null;
+    if (level === null) return null;
+    // EAWS level names in the user's language; SnowSure's label is English.
+    const label =
+      tryLocalize(this.hass, `card.avalanche_levels.${level}`) ??
+      localize(this.hass, 'card.avalanche_level', { level });
+    const validUntil = entity!.attributes.valid_until as string | undefined;
+    // The bulletin stays until the next one is published; say so once it ran out.
+    const expired = Boolean(validUntil) && new Date(validUntil!).getTime() < Date.now();
+    return { level, label, validUntil, expired };
+  }
+
   private _renderAvalanche(resort: ResortEntities): TemplateResult | typeof nothing {
     const hass = this.hass!;
     const entity = resort.byKey.avalanche_level;
     if (!entity) return nothing;
-    const level = isAvailable(entity) ? toNumber(entity.state) : null;
-    if (level === null) {
+    const bulletin = this._bulletin(entity);
+    if (!bulletin) {
       return html`<div class="avalanche none">
         <ha-icon icon="mdi:alert-octagon-outline"></ha-icon>${localize(hass, 'card.no_bulletin')}
       </div>`;
     }
-    // EAWS level names in the user's language; SnowSure's label is English.
-    const label =
-      tryLocalize(hass, `card.avalanche_levels.${level}`) ?? localize(hass, 'card.avalanche_level', { level });
-    const validUntil = entity.attributes.valid_until as string | undefined;
-    // The bulletin stays until the next one is published; say so once it ran out.
-    const expired = Boolean(validUntil) && new Date(validUntil!).getTime() < Date.now();
+    const { level, label, validUntil, expired } = bulletin;
     const link = entity.attributes.link as string | undefined;
     return html`
       <button class="avalanche ${expired ? 'expired' : ''}" @click=${() => this._moreInfo(entity)}>
@@ -879,6 +880,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
               </button>`
             : nothing
         }
+        ${this._config!.show_avalanche ? this._renderMountainAvalanche(resort.byKey.avalanche_level) : nothing}
         <span class="mountain-dot" style="left: ${PEAK_X}%; top: ${PEAK_Y}%"></span>
         <span class="mountain-dot" style="left: ${VALLEY_X}%; top: ${VALLEY_Y}%"></span>
         ${
@@ -925,6 +927,44 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
         </button>
       </div>
     `;
+  }
+
+  /** The danger level as the diamond in the mountain's top left corner, grey without a bulletin. */
+  private _renderMountainAvalanche(entity: HassEntity | undefined): TemplateResult | typeof nothing {
+    if (!entity) return nothing;
+    const hass = this.hass!;
+    const bulletin = this._bulletin(entity);
+    if (!bulletin) {
+      return html`<button
+        class="mountain-avalanche none"
+        title=${localize(hass, 'card.no_bulletin')}
+        aria-label=${localize(hass, 'card.no_bulletin')}
+        @click=${() => this._moreInfo(entity)}
+      >
+        ${avalancheIcon(0)}
+        <span class="mountain-avalanche-label">${localize(hass, 'card.no_bulletin_short')}</span>
+      </button>`;
+    }
+    const { level, label, validUntil, expired } = bulletin;
+    const title = [
+      `${localize(hass, 'card.avalanche')}: ${label}`,
+      validUntil
+        ? localize(hass, expired ? 'card.avalanche_expired' : 'card.avalanche_valid_until', {
+            date: formatDate(validUntil, hass),
+          })
+        : '',
+    ]
+      .filter(Boolean)
+      .join(' · ');
+    return html`<button
+      class="mountain-avalanche ${expired ? 'expired' : ''}"
+      title=${title}
+      aria-label=${title}
+      @click=${() => this._moreInfo(entity)}
+    >
+      ${avalancheIcon(level)}
+      <span class="mountain-avalanche-label">${expired ? localize(hass, 'card.avalanche_old') : label}</span>
+    </button>`;
   }
 
   /**

@@ -391,12 +391,12 @@ describe('render', () => {
     vi.useFakeTimers({ toFake: ['Date'] });
     try {
       vi.setSystemTime(new Date('2026-11-04T12:00:00'));
-      let card = await mount({ device: DEVICE });
+      let card = await mount({ device: DEVICE, show_mountain: false });
       expect(root(card).querySelector('.avalanche.expired')).toBeNull();
       expect(text(card, '.avalanche .secondary')[0]).toMatch(/^valid until/);
 
       vi.setSystemTime(new Date('2026-11-05T08:00:00'));
-      card = await mount({ device: DEVICE });
+      card = await mount({ device: DEVICE, show_mountain: false });
       expect(root(card).querySelector('.avalanche.expired')).not.toBeNull();
       expect(text(card, '.avalanche .secondary')[0]).toMatch(/^expired .*, no newer bulletin yet$/);
     } finally {
@@ -428,7 +428,7 @@ describe('render', () => {
   });
 
   it('shows the avalanche level and hides sections that are switched off', async () => {
-    let card = await mount({ device: DEVICE });
+    let card = await mount({ device: DEVICE, show_mountain: false });
     expect(text(card, '.level')).toEqual(['2']);
     expect(text(card, '.avalanche-title')).toEqual(['Avalanche danger: Moderate']);
 
@@ -441,7 +441,7 @@ describe('render', () => {
   it('says so when there is no bulletin instead of showing level 0', async () => {
     const hass = makeHass();
     hass.states['sensor.matterhorn_avalanche'].state = 'unknown';
-    const card = await mount({ device: DEVICE }, hass);
+    const card = await mount({ device: DEVICE, show_mountain: false }, hass);
     expect(text(card, '.avalanche.none')[0]).toContain('No current avalanche bulletin');
   });
 
@@ -466,7 +466,10 @@ describe('render', () => {
   });
 
   it('renders German texts from hass.locale', async () => {
-    const card = await mount({ device: DEVICE }, makeHass({ locale: { language: 'de', number_format: 'language' } }));
+    const card = await mount(
+      { device: DEVICE, show_mountain: false },
+      makeHass({ locale: { language: 'de', number_format: 'language' } }),
+    );
     expect(text(card, '.chip')).toEqual(['Geöffnet']);
     expect(text(card, '.footer a')[0]).toBe('Daten von SnowSure.ai');
     // EAWS name from the card's translation, not SnowSure's English label.
@@ -516,5 +519,34 @@ describe('mountain', () => {
     const card = await mount({ device: DEVICE }, hass);
     expect(root(card).querySelector('.mountain')).toBeNull();
     expect(text(card, '.stat-label')).toContain('Valley');
+  });
+
+  it('carries the avalanche level as a diamond instead of the row', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(new Date('2026-11-04T12:00:00'));
+      const card = await mount({ device: DEVICE });
+      expect(root(card).querySelector('.avalanche')).toBeNull();
+      expect(text(card, '.mountain-avalanche')).toEqual(['2 Moderate']);
+      expect(root(card).querySelector('.mountain-avalanche')!.getAttribute('title')).toMatch(
+        /^Avalanche danger: Moderate · valid until/,
+      );
+
+      vi.setSystemTime(new Date('2026-11-05T08:00:00'));
+      const old = await mount({ device: DEVICE });
+      expect(root(old).querySelector('.mountain-avalanche.expired')).not.toBeNull();
+      expect(text(old, '.mountain-avalanche-label')).toEqual(['old report']);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('shows a grey diamond without a bulletin, and none when avalanches are off', async () => {
+    const hass = makeHass();
+    hass.states['sensor.matterhorn_avalanche'].state = 'unknown';
+    const card = await mount({ device: DEVICE }, hass);
+    expect(text(card, '.mountain-avalanche.none')).toEqual(['– no report']);
+    const off = await mount({ device: DEVICE, show_avalanche: false });
+    expect(root(off).querySelector('.mountain-avalanche')).toBeNull();
   });
 });

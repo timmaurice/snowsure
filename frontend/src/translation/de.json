@@ -105,7 +105,9 @@
     },
     "freezing_level": "0 °C · {elevation}",
     "freezing_below": "0 °C unter dem Tal",
-    "freezing_above": "0 °C über dem Gipfel"
+    "freezing_above": "0 °C über dem Gipfel",
+    "avalanche_old": "alter Bericht",
+    "no_bulletin_short": "kein Bericht"
   },
   "editor": {
     "device": "Skigebiet",
