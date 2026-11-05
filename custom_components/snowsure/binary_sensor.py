@@ -6,6 +6,7 @@ from collections.abc import Mapping
 from typing import Any
 
 from homeassistant.components.binary_sensor import BinarySensorEntity, BinarySensorEntityDescription
+from homeassistant.const import ATTR_LATITUDE, ATTR_LONGITUDE
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 
@@ -60,6 +61,9 @@ class SnowsureOpenSensor(SnowsureEntity, BinarySensorEntity):
             "season_closing": data.get("season_closing"),
             "website": data.get("website"),
             "trail_map": data.get("trail_map"),
+            # Puts the resort on Home Assistant's map dashboard.
+            ATTR_LATITUDE: data.get("latitude"),
+            ATTR_LONGITUDE: data.get("longitude"),
         }
 
 

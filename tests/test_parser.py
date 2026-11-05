@@ -135,6 +135,7 @@ def test_links_and_image_are_https_only() -> None:
     detail = _detail()
     data = parse_resort(detail)
     assert data["trail_map"].startswith("https://")
+    assert (data["latitude"], data["longitude"]) == (46.0207, 7.7491)
     detail["heroImage"] = "http://cdn.example/x.jpg"
     assert parse_resort(detail)["image"] is None
 

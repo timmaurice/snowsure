@@ -65,6 +65,9 @@ async def test_setup_creates_entities(
 
     assert hass.states.get(_entity_id(hass, "sensor", "avalanche_level")).state == "2"
     assert hass.states.get(_entity_id(hass, "binary_sensor", "open")).state == STATE_ON
+    # Coordinates put the resort on the map dashboard.
+    open_state = hass.states.get(_entity_id(hass, "binary_sensor", "open"))
+    assert (open_state.attributes["latitude"], open_state.attributes["longitude"]) == (46.0207, 7.7491)
     assert hass.states.get(_entity_id(hass, "sensor", "season_opening")).state == "2026-11-01"
 
     (device,) = dr.async_entries_for_config_entry(dr.async_get(hass), mock_entry.entry_id)

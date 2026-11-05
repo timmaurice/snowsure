@@ -134,6 +134,8 @@ def parse_resort(detail: dict[str, Any], avalanche: dict[str, Any] | None = None
         "region": _str(detail.get("region")),
         "url": _str(links.get("snowsure")) or f"{BASE_URL}/resorts/{slug}",
         "website": _str(links.get("website")),
+        "latitude": _num(_dict(detail.get("coordinates")).get("lat")),
+        "longitude": _num(_dict(detail.get("coordinates")).get("lng")),
         "image": _https(detail.get("heroImage")),
         "elevation_base": _int(elevation.get("base")),
         "elevation_summit": _int(elevation.get("summit")),

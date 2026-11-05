@@ -14,6 +14,10 @@
     "seasonOpeningDate": "2026-11-01",
     "seasonClosingDate": "2026-05-03",
     "closure": null,
+    "coordinates": {
+      "lat": 46.0207,
+      "lng": 7.7491
+    },
     "elevation": {
       "base": 1562,
       "summit": 3883,

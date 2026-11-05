@@ -29,28 +29,28 @@ Change the key later with _Reconfigure_; change the update interval (default 30 
 
 ## Entities
 
-| Entity                                                         | Unit   | Enabled by default |
-| -------------------------------------------------------------- | ------ | ------------------ |
-| Open                                                           | on/off | yes                |
-| Powder alarm                                                   | on/off | yes                |
-| SnowSure score                                                 | 0–100  | yes                |
-| Snow depth valley / summit                                     | cm     | yes                |
-| Snow depth mid-mountain                                        | cm     | no                 |
-| New snow 24h / 7 days, season snowfall                         | cm     | yes                |
-| New snow 48h / 72h                                             | cm     | no                 |
-| Snow forecast 7 days (attribute `daily`)                       | cm     | yes                |
-| Snow forecast 14 days (Pro only)                               | cm     | no                 |
-| Lifts open / runs open (attribute `total`)                     | –      | yes                |
-| Terrain open                                                   | %      | no                 |
-| Temperature valley / summit                                    | °C     | yes                |
-| Temperature mid-mountain                                       | °C     | no                 |
-| Weather, snow quality                                          | text   | yes                |
-| Avalanche danger level (1–5)                                   | –      | yes                |
-| Forecast confidence (low / medium / high)                      | –      | yes                |
-| Resort image                                                   | image  | yes                |
-| Webcam _name_ (picked in the options; default the first three) | image  | yes                |
-| Trail map _name_                                               | image  | yes                |
-| Season opening / closing, last updated                         | date   | yes (diagnostic)   |
+| Entity                                                                 | Unit   | Enabled by default |
+| ---------------------------------------------------------------------- | ------ | ------------------ |
+| Open (with the resort's coordinates, so it shows on the map dashboard) | on/off | yes                |
+| Powder alarm                                                           | on/off | yes                |
+| SnowSure score                                                         | 0–100  | yes                |
+| Snow depth valley / summit                                             | cm     | yes                |
+| Snow depth mid-mountain                                                | cm     | no                 |
+| New snow 24h / 7 days, season snowfall                                 | cm     | yes                |
+| New snow 48h / 72h                                                     | cm     | no                 |
+| Snow forecast 7 days (attribute `daily`)                               | cm     | yes                |
+| Snow forecast 14 days (Pro only)                                       | cm     | no                 |
+| Lifts open / runs open (attribute `total`)                             | –      | yes                |
+| Terrain open                                                           | %      | no                 |
+| Temperature valley / summit                                            | °C     | yes                |
+| Temperature mid-mountain                                               | °C     | no                 |
+| Weather, snow quality                                                  | text   | yes                |
+| Avalanche danger level (1–5)                                           | –      | yes                |
+| Forecast confidence (low / medium / high)                              | –      | yes                |
+| Resort image                                                           | image  | yes                |
+| Webcam _name_ (picked in the options; default the first three)         | image  | yes                |
+| Trail map _name_                                                       | image  | yes                |
+| Season opening / closing, last updated                                 | date   | yes (diagnostic)   |
 
 ### Webcams
 
