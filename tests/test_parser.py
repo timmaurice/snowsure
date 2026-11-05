@@ -49,6 +49,9 @@ def test_daily_forecast_is_trimmed_to_known_fields() -> None:
         "weather_code",
         "conditions",
         "freezing_level",
+        "precipitation",
+        "wind_speed",
+        "wind_bearing",
     }
     assert len(data["forecast_daily"]) == data["forecast_horizon_days"] == 14
 

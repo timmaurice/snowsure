@@ -30,6 +30,9 @@ _DAILY_FIELDS = {
     "code": "weather_code",
     "conditions": "conditions",
     "flMax": "freezing_level",
+    "precip": "precipitation",
+    "wind": "wind_speed",
+    "windDirection": "wind_bearing",
 }
 
 
@@ -193,6 +196,9 @@ def parse_resort(
         "terrain_open_pct": _num(operations.get("terrainPercentOpen")),
         # Weather
         "weather": _str(current.get("conditions")),
+        "current_temperature": _num(current.get("temperature")),
+        "current_wind_speed": _num(current.get("windSpeed")),
+        "current_humidity": _num(current.get("humidity")),
         "temperature_base": temperature_at("base"),
         "temperature_mid": temperature_at("mid"),
         "temperature_summit": temperature_at("summit"),
