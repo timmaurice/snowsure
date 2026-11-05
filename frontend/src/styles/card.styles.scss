@@ -1127,3 +1127,46 @@ dialog.trail-map {
     display: none;
   }
 }
+
+/* Change of the 7-day forecast since yesterday. */
+.forecast-trend {
+  display: inline-flex;
+  align-items: center;
+  flex: none;
+  gap: 1px;
+  padding: 1px 6px 1px 3px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  white-space: nowrap;
+
+  ha-icon {
+    --mdc-icon-size: 14px;
+  }
+
+  &.up {
+    color: var(--success-color, #2e7d32);
+    background: color-mix(in srgb, var(--success-color, #2e7d32) 14%, transparent);
+  }
+
+  &.down {
+    color: var(--warning-color, #ef6c00);
+    background: color-mix(in srgb, var(--warning-color, #ef6c00) 14%, transparent);
+  }
+}
+
+/* Narrow forecast: the trend keeps its arrow (amount in the tooltip) so the total stays readable. */
+@container forecast (max-width: 420px) {
+  .forecast-trend {
+    padding: 1px 3px;
+  }
+
+  .trend-amount {
+    display: none;
+  }
+
+  /* With a trend arrow the day count goes; the columns show it anyway. */
+  .section-title:has(.forecast-trend) .total-days {
+    display: none;
+  }
+}

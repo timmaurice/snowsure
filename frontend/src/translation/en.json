@@ -36,7 +36,6 @@
     },
     "snowfall_at": "Snowfall at",
     "today": "Today",
-    "forecast_total": "{value} in {days} days",
     "trail_map": "Trail map",
     "open_in_new_tab": "Open in new tab",
     "close": "Close",
@@ -105,7 +104,10 @@
     "avalanche_old": "old report",
     "no_bulletin_short": "no report",
     "pick_day": "Tap a day to see it on the mountain",
-    "back_to_now": "Back to now"
+    "back_to_now": "Back to now",
+    "trend_more": "7-day forecast: {value} more than yesterday",
+    "trend_less": "7-day forecast: {value} less than yesterday",
+    "forecast_days": "in {days} days"
   },
   "editor": {
     "device": "Resort",

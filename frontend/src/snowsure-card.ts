@@ -570,11 +570,11 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
       <div class="section-title">
         <span>${localize(hass, 'card.forecast')}</span>
         <span class="secondary"
-          >${localize(hass, 'card.forecast_total', {
-            value: `${formatNumber(snow(total), hass, { maximumFractionDigits: 1 })} ${snowUnit}`,
-            days: days.length,
-          })}</span
+          >${formatNumber(snow(total), hass, { maximumFractionDigits: 1 })} ${snowUnit}<span class="total-days">
+            ${localize(hass, 'card.forecast_days', { days: days.length })}</span
+          ></span
         >
+        ${this._renderTrend(forecast, snow, snowUnit)}
         ${
           confidenceLabel
             ? html`<button class="confidence ${confidenceLabel}" @click=${() => this._moreInfo(confidence)}>
@@ -625,6 +625,28 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
       </button>
       ${bands.length > 1 ? this._renderBandSwitch(bands, band, elevations, inches) : nothing}
     `;
+  }
+
+  /**
+   * How the 7-day total moved since yesterday's forecast run, as a small
+   * arrow chip; nothing for changes under half a centimetre.
+   */
+  private _renderTrend(
+    forecast: HassEntity | undefined,
+    snow: (cm: number) => number,
+    unit: string,
+  ): TemplateResult | typeof nothing {
+    const hass = this.hass!;
+    const change = toNumber(forecast?.attributes.change_24h);
+    if (change === null || Math.abs(change) < 0.5) return nothing;
+    const amount = `${formatNumber(snow(Math.abs(change)), hass, { maximumFractionDigits: 1 })} ${unit}`;
+    const up = change > 0;
+    return html`<span
+      class="forecast-trend ${up ? 'up' : 'down'}"
+      title=${localize(hass, up ? 'card.trend_more' : 'card.trend_less', { value: amount })}
+      ><ha-icon .icon=${up ? 'mdi:arrow-up' : 'mdi:arrow-down'}></ha-icon
+      ><span class="trend-amount">${amount}</span></span
+    >`;
   }
 
   /**

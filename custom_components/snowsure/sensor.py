@@ -120,6 +120,8 @@ SENSORS: tuple[SnowsureSensorEntityDescription, ...] = (
             "daily": d.get("forecast_daily"),
             "point_band": d.get("forecast_point_band"),
             "band_elevations": d.get("forecast_band_elevations"),
+            "change_24h": d.get("forecast_change_24h"),
+            "change_48h": d.get("forecast_change_48h"),
         },
     ),
     # Only filled when the caller is entitled to more than seven days.

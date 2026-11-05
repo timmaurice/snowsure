@@ -582,4 +582,18 @@ describe('mountain', () => {
     root(card).querySelector<HTMLElement>('.day[data-index="2"] .bar-track')!.click();
     expect(listener.mock.calls[0][0].detail).toEqual({ entityId: 'sensor.matterhorn_forecast' });
   });
+
+  it('shows how the forecast moved since yesterday', async () => {
+    const card = await mount({ device: DEVICE });
+    const chip = root(card).querySelector('.forecast-trend')!;
+    expect(chip.classList.contains('up')).toBe(true);
+    expect(chip.textContent?.trim()).toBe('4.2 cm');
+    expect(chip.getAttribute('title')).toBe('7-day forecast: 4.2 cm more than yesterday');
+
+    const hass = makeHass();
+    hass.states['sensor.matterhorn_forecast'].attributes.change_24h = -0.3;
+    expect(root(await mount({ device: DEVICE }, hass)).querySelector('.forecast-trend')).toBeNull();
+    hass.states['sensor.matterhorn_forecast'].attributes.change_24h = -6;
+    expect(root(await mount({ device: DEVICE }, hass)).querySelector('.forecast-trend.down')).not.toBeNull();
+  });
 });

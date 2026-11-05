@@ -26,7 +26,7 @@ from custom_components.snowsure.coordinator import async_scan_interval
 from custom_components.snowsure.diagnostics import async_get_config_entry_diagnostics
 from custom_components.snowsure.sensor import SENSORS
 
-from .conftest import AVALANCHE_URL, RESORT_URL, SLUG, load_fixture
+from .conftest import AVALANCHE_URL, RESORT_URL, RUNS_URL, SLUG, load_fixture
 
 
 def _entity_id(hass: HomeAssistant, platform: str, key: str) -> str:
@@ -99,6 +99,8 @@ async def test_daily_forecast_is_not_recorded(
     await _setup(hass, mock_entry)
     entity = hass.data["entity_components"]["sensor"].get_entity(_entity_id(hass, "sensor", "forecast_7d"))
     assert "daily" in entity._unrecorded_attributes
+    forecast = hass.states.get(_entity_id(hass, "sensor", "forecast_7d"))
+    assert (forecast.attributes["change_24h"], forecast.attributes["change_48h"]) == (4.2, -5.1)
 
 
 async def test_avalanche_failure_is_not_fatal(
@@ -106,10 +108,12 @@ async def test_avalanche_failure_is_not_fatal(
 ) -> None:
     aioclient_mock.get(RESORT_URL, json=load_fixture("resort_detail.json"))
     aioclient_mock.get(AVALANCHE_URL, status=500)
+    aioclient_mock.get(RUNS_URL, status=500)
     await _setup(hass, mock_entry)
     assert mock_entry.state is ConfigEntryState.LOADED
     assert hass.states.get(_entity_id(hass, "sensor", "avalanche_level")).state == STATE_UNKNOWN
     assert hass.states.get(_entity_id(hass, "sensor", "score")).state == "33"
+    assert hass.states.get(_entity_id(hass, "sensor", "forecast_7d")).attributes["change_24h"] is None
 
 
 async def test_connection_error_retries_setup(

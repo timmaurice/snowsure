@@ -86,4 +86,11 @@ class SnowsureCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             _LOGGER.debug("Avalanche bulletin for %s unavailable: %s", self.slug, err)
             avalanche = None
 
-        return parse_resort(detail, avalanche)
+        # Optional, like the bulletin: how the forecast changed since yesterday.
+        try:
+            runs: dict[str, Any] | None = await self.client.async_get_forecast_runs(self.slug)
+        except SnowsureError as err:
+            _LOGGER.debug("Forecast runs for %s unavailable: %s", self.slug, err)
+            runs = None
+
+        return parse_resort(detail, avalanche, forecast_runs=runs)

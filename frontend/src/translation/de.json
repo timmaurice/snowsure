@@ -36,7 +36,6 @@
     },
     "snowfall_at": "Neuschnee auf",
     "today": "Heute",
-    "forecast_total": "{value} in {days} Tagen",
     "trail_map": "Pistenplan",
     "open_in_new_tab": "In neuem Tab öffnen",
     "close": "Schließen",
@@ -105,7 +104,10 @@
     "avalanche_old": "alter Bericht",
     "no_bulletin_short": "kein Bericht",
     "pick_day": "Tippe auf einen Tag, um ihn am Berg zu sehen",
-    "back_to_now": "Zurück zu jetzt"
+    "back_to_now": "Zurück zu jetzt",
+    "trend_more": "7-Tage-Prognose: {value} mehr als gestern",
+    "trend_less": "7-Tage-Prognose: {value} weniger als gestern",
+    "forecast_days": "in {days} Tagen"
   },
   "editor": {
     "device": "Skigebiet",

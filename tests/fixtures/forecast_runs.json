@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0.0",
+  "meta": {
+    "source": "SnowSure"
+  },
+  "data": {
+    "latest": {
+      "total7dCm": 15.6
+    },
+    "delta24h": {
+      "since": "2026-11-04T08:03:41+00:00",
+      "total7dCm": 4.2,
+      "total14dCm": 28
+    },
+    "delta48h": {
+      "since": "2026-11-03T09:01:01+00:00",
+      "total7dCm": -5.1,
+      "total14dCm": -15.1
+    }
+  }
+}

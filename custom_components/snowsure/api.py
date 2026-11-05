@@ -143,6 +143,14 @@ class SnowsureClient:
             raise SnowsureError(f"SnowSure returned no avalanche data for {slug}")
         return payload
 
+    async def async_get_forecast_runs(self, slug: str) -> dict[str, Any]:
+        """Return the ``data`` of the forecast-runs endpoint (change against 24 h / 48 h ago)."""
+        payload = await self._get(f"/resorts/{validate_slug(slug)}/forecast-runs", params={"days": "3"})
+        data = payload.get("data") if isinstance(payload, dict) else None
+        if not isinstance(data, dict):
+            raise SnowsureError(f"SnowSure returned no forecast runs for {slug}")
+        return data
+
 
 def parse_resort_list(payload: Any) -> list[ResortSummary]:
     """Turn a /resorts payload into summaries, skipping malformed rows."""

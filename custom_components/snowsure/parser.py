@@ -78,8 +78,13 @@ def _first(*values: Any) -> float | None:
     return None
 
 
-def parse_resort(detail: dict[str, Any], avalanche: dict[str, Any] | None = None) -> dict[str, Any]:
-    """Build the coordinator payload from the detail and avalanche responses."""
+def parse_resort(
+    detail: dict[str, Any],
+    avalanche: dict[str, Any] | None = None,
+    *,
+    forecast_runs: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Build the coordinator payload from the detail and the optional extra responses."""
     conditions = _dict(_dict(detail.get("conditions")).get("data"))
     snow = _dict(detail.get("snow"))
     model_depth = _dict(snow.get("modelDepth"))
@@ -171,6 +176,9 @@ def parse_resort(detail: dict[str, Any], avalanche: dict[str, Any] | None = None
         "forecast_14d": forecast_14d,
         "forecast_horizon_days": horizon,
         "forecast_peak_date": _str(peak.get("date")),
+        # Signed change of the 7-day total against the run 24 h / 48 h earlier.
+        "forecast_change_24h": _num(_dict(_dict(forecast_runs).get("delta24h")).get("total7dCm")),
+        "forecast_change_48h": _num(_dict(_dict(forecast_runs).get("delta48h")).get("total7dCm")),
         "forecast_peak_snowfall": _num(peak.get("snowfallCm")),
         "forecast_daily": daily,
         # The daily snowfall above is for this band; snowfall_<band> per day has all three.

@@ -60,6 +60,8 @@ export function makeHass(overrides: Partial<HomeAssistant> = {}): HomeAssistant 
         horizon_days: 14,
         point_band: 'mid',
         band_elevations: { base: 1562, mid: 2723, summit: 3883 },
+        change_24h: 4.2,
+        change_48h: -5.1,
       }),
     ],
     ['sensor.matterhorn_lifts', 'lifts_open', entity('sensor.matterhorn_lifts', 'unknown', { total: 37 })],
