@@ -13,7 +13,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from .const import BASE_URL
+from homeassistant.util import slugify
+
+from .const import BASE_URL, MAX_WEBCAMS
 
 # The daily forecast is exposed as an attribute, so only what the card and
 # templates need survives - one day of the raw payload has ~20 fields.
@@ -309,3 +311,15 @@ def parse_confidence(forecast: dict[str, Any]) -> dict[str, Any]:
         "forecast_confidence_models": _int(week1.get("modelCount")),
         "forecast_confidence_week2": _str(week2.get("label")),
     }
+
+
+def webcam_key(name: str) -> str:
+    """Stable handle of a webcam: its name, slugified (also the unique_id suffix)."""
+    return slugify(name)
+
+
+def picked_webcams(option: Any, cams: list[dict[str, Any]]) -> set[str]:
+    """The webcam keys to create: the option's (at most MAX_WEBCAMS), else the first ones."""
+    if isinstance(option, list):
+        return {key for key in option if isinstance(key, str)}
+    return {webcam_key(cam["name"]) for cam in cams[:MAX_WEBCAMS]}

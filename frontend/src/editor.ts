@@ -1,7 +1,7 @@
 import { LitElement, TemplateResult, html, nothing, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
 import { ForecastBand, HomeAssistant, LovelaceCardEditor, SnowsureCardConfig } from './types';
-import { PLATFORM, resortEntities } from './entities';
+import { resortEntities } from './entities';
 import { formatNumber, toNumber } from './format';
 import {
   DEFAULTS,
@@ -29,28 +29,9 @@ interface SchemaItem {
 /** Select value for "no forecast_band": SnowSure's own forecast point. Never written to the config. */
 export const AUTO_BAND = 'auto';
 
-/** A webcam of the picked resort from the entity registry, disabled ones included. */
-export interface WebcamEntry {
-  entity_id: string;
-  name: string;
-  disabled: boolean;
-}
-
-interface RegistryEntry {
-  entity_id: string;
-  device_id: string | null;
-  platform: string;
-  translation_key: string | null;
-  original_name: string | null;
-  name: string | null;
-  disabled_by: string | null;
-}
-
 export class SnowsureCardEditor extends LitElement implements LovelaceCardEditor {
   @property({ attribute: false }) public hass?: HomeAssistant;
   @state() private _config?: SnowsureCardConfig;
-  /** Every webcam of the picked resort, also the ones the integration leaves disabled; per device. */
-  @state() private _webcams?: { device: string; entries: WebcamEntry[] };
 
   static styles = unsafeCSS(editorStyles);
 
@@ -139,24 +120,6 @@ export class SnowsureCardEditor extends LitElement implements LovelaceCardEditor
     const more: SchemaItem[] = [];
     (c.show_mountain ? header : more).push(toggle('show_avalanche'));
     more.push(toggle('show_webcams'));
-    const cams = this._webcamOptions();
-    if (c.show_webcams && cams.length) {
-      more.push({
-        name: 'webcams',
-        selector: {
-          select: {
-            multiple: true,
-            reorder: true,
-            mode: 'dropdown',
-            options: cams.map((cam) => ({
-              value: cam.entity_id,
-              label: cam.disabled ? localize(hass, 'editor.webcam_disabled', { name: cam.name }) : cam.name,
-            })),
-          },
-        },
-      });
-    }
-
     return [
       { name: 'device', selector: { device: { filter: [{ integration: 'snowsure' }] } } },
       { name: 'title', selector: { text: {} } },
@@ -197,75 +160,10 @@ export class SnowsureCardEditor extends LitElement implements LovelaceCardEditor
     };
   }
 
-  /**
-   * The picked resort's webcams: from the entity registry when the user may
-   * read it (so the disabled ones can be picked), else the enabled ones.
-   */
-  private _webcamOptions(): WebcamEntry[] {
-    const device = this._config?.device;
-    if (!this.hass || !device) return [];
-    if (this._webcams?.device === device) return this._webcams.entries;
-    void this._loadWebcams(device);
-    return resortEntities(this.hass, device).webcams.map((cam) => ({
-      entity_id: cam.entity_id,
-      name: String(cam.attributes.camera ?? cam.attributes.friendly_name ?? cam.entity_id),
-      disabled: false,
-    }));
-  }
-
-  private _loading?: string;
-
-  private async _loadWebcams(device: string): Promise<void> {
-    if (!this.hass?.callWS || this._loading === device) return;
-    this._loading = device;
-    try {
-      const registry = await this.hass.callWS<RegistryEntry[]>({ type: 'config/entity_registry/list' });
-      const entries = registry
-        .filter(
-          (entry) => entry.platform === PLATFORM && entry.device_id === device && entry.translation_key === 'webcam',
-        )
-        .map((entry) => ({
-          entity_id: entry.entity_id,
-          // "Webcam Gornergrat (3135m)": the entity name carries the platform word.
-          name: (entry.name ?? entry.original_name ?? entry.entity_id).replace(/^webcam\s+/i, ''),
-          disabled: entry.disabled_by !== null,
-        }));
-      if (this._config?.device === device) this._webcams = { device, entries };
-    } catch {
-      // Not an admin: the enabled webcams from the states are all there is.
-    } finally {
-      this._loading = undefined;
-    }
-  }
-
-  /** Picking a disabled webcam enables it; Home Assistant reloads the entry about 30 s later. */
-  private async _enablePicked(picked: string[] | undefined): Promise<void> {
-    const list = this._webcams;
-    if (!list || !picked?.length || !this.hass?.callWS) return;
-    const disabled = list.entries.filter((entry) => entry.disabled && picked.includes(entry.entity_id));
-    if (!disabled.length) return;
-    for (const entry of disabled) {
-      try {
-        await this.hass.callWS({
-          type: 'config/entity_registry/update',
-          entity_id: entry.entity_id,
-          disabled_by: null,
-        });
-        entry.disabled = false;
-      } catch {
-        // Left disabled; the card skips webcams without a state.
-      }
-    }
-    this._webcams = { ...list, entries: [...list.entries] };
-  }
-
   private _computeLabel = (item: SchemaItem): string => (item.name ? localize(this.hass, `editor.${item.name}`) : '');
 
-  private _computeHelper = (item: SchemaItem): string => {
-    if (item.name !== 'webcams') return '';
-    const anyDisabled = this._webcams?.entries.some((entry) => entry.disabled);
-    return localize(this.hass, anyDisabled ? 'editor.webcams_helper_disabled' : 'editor.webcams_helper');
-  };
+  private _computeHelper = (item: SchemaItem): string =>
+    item.name === 'show_webcams' ? localize(this.hass, 'editor.webcams_helper') : '';
 
   private _valueChanged(ev: CustomEvent<{ value: Partial<SnowsureCardConfig> }>): void {
     ev.stopPropagation();
@@ -274,7 +172,6 @@ export class SnowsureCardEditor extends LitElement implements LovelaceCardEditor
     // Cleared or automatic both mean SnowSure's own forecast point.
     if (!config.forecast_band || config.forecast_band === (AUTO_BAND as string)) delete config.forecast_band;
     this._config = config;
-    void this._enablePicked(config.webcams);
     fireEvent(this, 'config-changed', { config: withoutDefaults(this._config) });
   }
 

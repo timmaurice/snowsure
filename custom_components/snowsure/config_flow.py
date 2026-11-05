@@ -32,6 +32,7 @@ from .const import (
     CONF_RESORT,
     CONF_RESORT_NAME,
     CONF_SCAN_INTERVAL_MINUTES,
+    CONF_WEBCAMS,
     DEFAULT_POWDER_BAND,
     DEFAULT_POWDER_DAYS,
     DEFAULT_POWDER_THRESHOLD_CM,
@@ -39,9 +40,11 @@ from .const import (
     DOMAIN,
     MAX_POWDER_DAYS,
     MAX_SCAN_INTERVAL_MINUTES,
+    MAX_WEBCAMS,
     MIN_SCAN_INTERVAL_MINUTES,
     POWDER_BANDS,
 )
+from .parser import picked_webcams, webcam_key
 
 _API_KEY_SELECTOR = TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD))
 
@@ -207,19 +210,46 @@ class SnowsureOptionsFlow(OptionsFlowWithReload):
     """
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        cams = self._webcams()
+        errors: dict[str, str] = {}
         if user_input is not None:
-            return self.async_create_entry(
-                data={
+            picked = user_input.get(CONF_WEBCAMS)
+            if picked is not None and len(picked) > MAX_WEBCAMS:
+                errors[CONF_WEBCAMS] = "too_many_webcams"
+            else:
+                data: dict[str, Any] = {
                     CONF_SCAN_INTERVAL_MINUTES: int(user_input[CONF_SCAN_INTERVAL_MINUTES]),
                     CONF_POWDER_THRESHOLD_CM: float(user_input[CONF_POWDER_THRESHOLD_CM]),
                     CONF_POWDER_DAYS: int(user_input[CONF_POWDER_DAYS]),
                     CONF_POWDER_BAND: user_input[CONF_POWDER_BAND],
                 }
-            )
+                if picked is not None:
+                    # Keep SnowSure's order, whatever order they were ticked in.
+                    data[CONF_WEBCAMS] = [key for key, _ in cams if key in picked]
+                elif CONF_WEBCAMS in self.config_entry.options:
+                    data[CONF_WEBCAMS] = self.config_entry.options[CONF_WEBCAMS]
+                return self.async_create_entry(data=data)
 
-        options = self.config_entry.options
+        options = {**self.config_entry.options, **(user_input or {})}
+        webcam_field: dict[Any, Any] = {}
+        if cams:
+            cams_raw = [{"name": name} for _, name in cams]
+            webcam_field[
+                vol.Optional(
+                    CONF_WEBCAMS,
+                    default=[key for key, _ in cams if key in picked_webcams(options.get(CONF_WEBCAMS), cams_raw)],
+                )
+            ] = SelectSelector(
+                SelectSelectorConfig(
+                    options=[SelectOptionDict(value=key, label=name) for key, name in cams],
+                    multiple=True,
+                    mode=SelectSelectorMode.LIST,
+                )
+            )
         return self.async_show_form(
             step_id="init",
+            errors=errors,
+            description_placeholders={"max_webcams": str(MAX_WEBCAMS)},
             data_schema=vol.Schema(
                 {
                     vol.Required(
@@ -256,6 +286,13 @@ class SnowsureOptionsFlow(OptionsFlowWithReload):
                             translation_key="powder_band",
                         )
                     ),
+                    **webcam_field,
                 }
             ),
         )
+
+    def _webcams(self) -> list[tuple[str, str]]:
+        """(key, name) of the resort's webcams from the last refresh; empty while the entry is not loaded."""
+        coordinator = getattr(self.config_entry, "runtime_data", None)
+        data = getattr(coordinator, "data", None) or {}
+        return [(webcam_key(cam["name"]), cam["name"]) for cam in data.get("webcams") or []]

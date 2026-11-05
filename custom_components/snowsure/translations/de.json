@@ -43,8 +43,7 @@
     "error": {
       "cannot_connect": "snowsure.ai ist nicht erreichbar. Bitte später erneut versuchen.",
       "invalid_auth": "SnowSure hat den API-Schlüssel abgelehnt.",
-      "no_resorts": "SnowSure hat keine Skigebiete geliefert.",
-      "unknown": "Unerwarteter Fehler."
+      "no_resorts": "SnowSure hat keine Skigebiete geliefert."
     },
     "abort": {
       "already_configured": "Dieses Skigebiet ist bereits eingerichtet.",
@@ -56,14 +55,21 @@
     "step": {
       "init": {
         "title": "Optionen",
-        "description": "Wie oft SnowSure abgefragt wird (Prognosen werden stündlich aktualisiert, 30 Minuten reichen) und wann der Powder-Alarm angeht.",
+        "description": "Wie oft SnowSure abgefragt wird (Prognosen werden stündlich aktualisiert, 30 Minuten reichen), wann der Powder-Alarm angeht und welche Webcams (bis zu {max_webcams}) als Entitäten angelegt werden.",
         "data": {
           "scan_interval_minutes": "Aktualisierungsintervall (Minuten)",
           "powder_threshold_cm": "Powder-Alarm: Neuschnee ab",
           "powder_days": "Powder-Alarm: Tage voraus (1 = heute)",
-          "powder_band": "Powder-Alarm: Höhe"
+          "powder_band": "Powder-Alarm: Höhe",
+          "webcams": "Webcams"
+        },
+        "data_description": {
+          "webcams": "Bis zu {max_webcams}; jede ist eine Bild-Entität, die ihr Bild bei jeder Aktualisierung neu lädt. Die Karte zeigt diese."
         }
       }
+    },
+    "error": {
+      "too_many_webcams": "Höchstens {max_webcams} Webcams auswählen."
     }
   },
   "entity": {

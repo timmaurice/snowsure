@@ -131,10 +131,7 @@
       "more": "Avalanches and webcams",
       "webcams": "Webcams"
     },
-    "webcams": "Webcams",
-    "webcams_helper": "Empty shows the enabled webcams, up to six.",
-    "show_mountain": "Mountain with snow depth and 0 °C line",
-    "webcam_disabled": "{name} · disabled",
-    "webcams_helper_disabled": "Empty shows the enabled webcams, up to six. A disabled webcam is enabled when you pick it and shows up about 30 seconds later."
+    "webcams_helper": "Which webcams the card shows (up to three) is set in the integration options: Settings → Devices & services → SnowSure → Configure.",
+    "show_mountain": "Mountain with snow depth and 0 °C line"
   }
 }

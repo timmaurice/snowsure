@@ -17,6 +17,7 @@ from custom_components.snowsure.const import (
     CONF_RESORT,
     CONF_RESORT_NAME,
     CONF_SCAN_INTERVAL_MINUTES,
+    CONF_WEBCAMS,
     DOMAIN,
 )
 
@@ -153,5 +154,38 @@ async def test_options_flow(hass: HomeAssistant, mock_api: AiohttpClientMocker, 
         CONF_POWDER_THRESHOLD_CM: 20.0,
         CONF_POWDER_DAYS: 3,
         CONF_POWDER_BAND: "summit",
+        # The form pre-ticks the first three; saving keeps them.
+        CONF_WEBCAMS: ["matterhorn_glacier_paradise_3883m", "hohtalli_3273m", "gornergrat_3135m"],
     }
     assert mock_entry.runtime_data.update_interval.total_seconds() == 3600
+
+
+async def test_options_flow_picks_up_to_three_webcams(
+    hass: HomeAssistant, mock_api: AiohttpClientMocker, mock_entry: MockConfigEntry
+) -> None:
+    mock_entry.add_to_hass(hass)
+    await hass.config_entries.async_setup(mock_entry.entry_id)
+    await hass.async_block_till_done()
+    base = {
+        CONF_SCAN_INTERVAL_MINUTES: 30,
+        CONF_POWDER_THRESHOLD_CM: 15,
+        CONF_POWDER_DAYS: 2,
+        CONF_POWDER_BAND: "mid",
+    }
+
+    result = await hass.config_entries.options.async_init(mock_entry.entry_id)
+    options = result["data_schema"].schema[CONF_WEBCAMS].config["options"]
+    assert [option["label"] for option in options][:2] == ["Matterhorn Glacier Paradise (3883m)", "Hohtälli (3273m)"]
+    assert len(options) == 5
+
+    four = ["wolf_creek_style", "rothorn_3104m", "gornergrat_3135m", "hohtalli_3273m"]
+    result = await hass.config_entries.options.async_configure(result["flow_id"], {**base, CONF_WEBCAMS: four})
+    assert result["type"] is FlowResultType.FORM
+    assert result["errors"] == {CONF_WEBCAMS: "too_many_webcams"}
+
+    result = await hass.config_entries.options.async_configure(
+        result["flow_id"], {**base, CONF_WEBCAMS: ["wolf_creek_style", "rothorn_3104m"]}
+    )
+    assert result["type"] is FlowResultType.CREATE_ENTRY
+    # SnowSure's order, not the order they were ticked in.
+    assert mock_entry.options[CONF_WEBCAMS] == ["rothorn_3104m", "wolf_creek_style"]

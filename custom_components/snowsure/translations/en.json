@@ -43,8 +43,7 @@
     "error": {
       "cannot_connect": "Could not reach snowsure.ai. Please try again later.",
       "invalid_auth": "SnowSure rejected the API key.",
-      "no_resorts": "SnowSure returned no resorts.",
-      "unknown": "Unexpected error."
+      "no_resorts": "SnowSure returned no resorts."
     },
     "abort": {
       "already_configured": "This resort is already configured.",
@@ -56,14 +55,21 @@
     "step": {
       "init": {
         "title": "Options",
-        "description": "How often SnowSure is polled (forecasts refresh hourly, 30 minutes is plenty) and when the powder alarm turns on.",
+        "description": "How often SnowSure is polled (forecasts update hourly, 30 minutes is plenty), when the powder alarm goes on, and which webcams (up to {max_webcams}) become entities.",
         "data": {
           "scan_interval_minutes": "Update interval (minutes)",
           "powder_threshold_cm": "Powder alarm: new snow from",
           "powder_days": "Powder alarm: days ahead (1 = today)",
-          "powder_band": "Powder alarm: height"
+          "powder_band": "Powder alarm: height",
+          "webcams": "Webcams"
+        },
+        "data_description": {
+          "webcams": "Up to {max_webcams}; each one is an image entity that reloads its picture on every update. The card shows these."
         }
       }
+    },
+    "error": {
+      "too_many_webcams": "Pick at most {max_webcams} webcams."
     }
   },
   "entity": {

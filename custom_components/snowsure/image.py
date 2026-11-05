@@ -6,18 +6,17 @@ from typing import Any
 
 from homeassistant.components.image import ImageEntity, ImageEntityDescription
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
 from homeassistant.util import dt as dt_util
 from homeassistant.util import slugify
 
+from .const import CONF_WEBCAMS
 from .coordinator import SnowsureConfigEntry, SnowsureCoordinator
 from .entity import SnowsureEntity
+from .parser import picked_webcams, webcam_key
 
 PARALLEL_UPDATES = 0
-
-# Resorts list up to a dozen webcams. The first few (SnowSure's own order) are
-# enabled; the rest are there to switch on, not to fill every dashboard.
-ENABLED_WEBCAMS = 3
 
 RESORT_IMAGE = ImageEntityDescription(key="resort_image", translation_key="resort_image")
 
@@ -31,15 +30,16 @@ async def async_setup_entry(
     entities: list[ImageEntity] = []
     if coordinator.data.get("image"):
         entities.append(SnowsureResortImage(coordinator, RESORT_IMAGE))
-    # Webcams are created from the first refresh. One SnowSure adds later shows
-    # up after the next reload of the entry.
-    for index, cam in enumerate(coordinator.data.get("webcams") or []):
-        description = ImageEntityDescription(
-            key=f"webcam_{slugify(cam['name'])}",
-            translation_key="webcam",
-            entity_registry_enabled_default=index < ENABLED_WEBCAMS,
-        )
-        entities.append(SnowsureWebcam(coordinator, description, cam["name"], index))
+    # Webcams are created from the first refresh, only the picked ones; one
+    # SnowSure adds later can be picked after the next reload of the entry.
+    cams = coordinator.data.get("webcams") or []
+    picked = picked_webcams(entry.options.get(CONF_WEBCAMS), cams)
+    _forget_unpicked_webcams(hass, entry, picked)
+    for index, cam in enumerate(cams):
+        key = webcam_key(cam["name"])
+        if key in picked:
+            description = ImageEntityDescription(key=f"webcam_{key}", translation_key="webcam")
+            entities.append(SnowsureWebcam(coordinator, description, cam["name"], index))
     # Trail maps are static and only downloaded when someone opens them.
     for index, trail_map in enumerate(coordinator.data.get("trail_maps") or []):
         description = ImageEntityDescription(
@@ -47,6 +47,23 @@ async def async_setup_entry(
         )
         entities.append(SnowsureTrailMap(coordinator, description, trail_map["label"], index))
     async_add_entities(entities)
+
+
+def _forget_unpicked_webcams(hass: HomeAssistant, entry: SnowsureConfigEntry, picked: set[str]) -> None:
+    """Drop registry entries of webcams no longer picked; enable picked ones that were switched off.
+
+    Older versions created every webcam and disabled all but the first three,
+    so a pick in the options may land on a disabled entry.
+    """
+    registry = er.async_get(hass)
+    prefix = f"{entry.unique_id}_webcam_"
+    for reg in er.async_entries_for_config_entry(registry, entry.entry_id):
+        if reg.domain != "image" or not reg.unique_id.startswith(prefix):
+            continue
+        if reg.unique_id.removeprefix(prefix) not in picked:
+            registry.async_remove(reg.entity_id)
+        elif reg.disabled_by is not None:
+            registry.async_update_entity(reg.entity_id, disabled_by=None)
 
 
 class SnowsureImageBase(SnowsureEntity, ImageEntity):

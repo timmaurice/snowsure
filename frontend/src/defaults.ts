@@ -3,7 +3,7 @@ import { ForecastBand, SnowsureCardConfig, StatKey } from './types';
 export const ELEMENT_NAME = 'snowsure-card';
 export const EDITOR_ELEMENT_NAME = `${ELEMENT_NAME}-editor`;
 export const MAX_FORECAST_DAYS = 14;
-export const MAX_WEBCAMS = 6;
+export const MAX_WEBCAMS = 3;
 /** Valley to summit, the order of the band switch. */
 export const FORECAST_BANDS: ForecastBand[] = ['base', 'mid', 'summit'];
 
@@ -57,7 +57,6 @@ export function withoutDefaults(config: SnowsureCardConfig): SnowsureCardConfig 
     if (cleaned[key] === value) delete cleaned[key];
   }
   if (sameStats(cleaned.stats, DEFAULT_STATS)) delete cleaned.stats;
-  if (Array.isArray(cleaned.webcams) && cleaned.webcams.length === 0) delete cleaned.webcams;
   if (cleaned.title === '') delete cleaned.title;
   if (cleaned.device === '') delete cleaned.device;
   return cleaned as SnowsureCardConfig;

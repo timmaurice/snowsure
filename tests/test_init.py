@@ -19,6 +19,7 @@ from custom_components.snowsure.const import (
     CONF_POWDER_DAYS,
     CONF_POWDER_THRESHOLD_CM,
     CONF_SCAN_INTERVAL_MINUTES,
+    CONF_WEBCAMS,
     DOMAIN,
 )
 from custom_components.snowsure.coordinator import async_scan_interval
@@ -170,10 +171,14 @@ async def test_image_entities(hass: HomeAssistant, mock_api: AiohttpClientMocker
     by_key = {e.unique_id.removeprefix(f"{SLUG}_"): e for e in entries}
     assert "resort_image" in by_key
     webcams = sorted(key for key in by_key if key.startswith("webcam_"))
-    # Four iframes + one image camera; the youtube stream is skipped.
-    assert len(webcams) == 5
-    enabled = [key for key in webcams if by_key[key].disabled_by is None]
-    assert len(enabled) == 3
+    # Five usable webcams (the youtube stream is skipped); without a pick the
+    # first three in SnowSure's order become entities, all enabled.
+    assert webcams == [
+        "webcam_gornergrat_3135m",
+        "webcam_hohtalli_3273m",
+        "webcam_matterhorn_glacier_paradise_3883m",
+    ]
+    assert all(by_key[key].disabled_by is None for key in webcams)
 
     first = hass.states.get(by_key["webcam_matterhorn_glacier_paradise_3883m"].entity_id)
     assert first.attributes["page_url"].startswith("https://zbag.roundshot.com/")
@@ -254,3 +259,32 @@ def test_powder_outlook_falls_back_to_the_forecast_point() -> None:
     assert [d["snowfall"] for d in checked] == [3, 20]
     assert first == {"date": "d2", "snowfall": 20}
     assert powder_outlook(None, 15, 2, "mid") == ([], None)
+
+
+async def test_webcams_follow_the_options_pick(
+    hass: HomeAssistant, mock_api: AiohttpClientMocker, mock_entry: MockConfigEntry
+) -> None:
+    """Older versions left webcams 4+ disabled: a pick enables them, unpicked ones go."""
+    mock_entry.add_to_hass(hass)
+    registry = er.async_get(hass)
+    old = registry.async_get_or_create(
+        "image",
+        DOMAIN,
+        f"{SLUG}_webcam_rothorn_3104m",
+        config_entry=mock_entry,
+        disabled_by=er.RegistryEntryDisabler.INTEGRATION,
+    )
+    stale = registry.async_get_or_create("image", DOMAIN, f"{SLUG}_webcam_hohtalli_3273m", config_entry=mock_entry)
+    hass.config_entries.async_update_entry(
+        mock_entry, options={CONF_WEBCAMS: ["matterhorn_glacier_paradise_3883m", "rothorn_3104m"]}
+    )
+    await _setup(hass, mock_entry)
+
+    webcams = sorted(
+        e.unique_id.removeprefix(f"{SLUG}_")
+        for e in er.async_entries_for_config_entry(registry, mock_entry.entry_id)
+        if e.unique_id.startswith(f"{SLUG}_webcam_")
+    )
+    assert webcams == ["webcam_matterhorn_glacier_paradise_3883m", "webcam_rothorn_3104m"]
+    assert registry.async_get(old.entity_id).disabled_by is None
+    assert registry.async_get(stale.entity_id) is None
