@@ -134,5 +134,23 @@
     "webcams_helper": "Which webcams the card shows is set in the integration options: Settings → Devices & services → SnowSure → Configure.",
     "show_mountain": "Mountain with snow depth and 0 °C line",
     "compact": "Compact: header and mountain only"
+  },
+  "compare": {
+    "title": "Where to ski?",
+    "sort_snowfall": "New snow in the next {days} days",
+    "sort_score": "by SnowSure score",
+    "sort_depth": "by snow depth at the summit",
+    "empty": "No SnowSure resorts set up yet.",
+    "editor": {
+      "title": "Title (optional)",
+      "devices": "Ski resorts (empty: all)",
+      "sort": "Order",
+      "days": "Days of new snow",
+      "band": "Snowfall elevation",
+      "sort_snowfall": "New snow in the next days",
+      "sort_score": "SnowSure score",
+      "sort_depth": "Snow depth at the summit"
+    },
+    "sort_snowfall_today": "New snow today"
   }
 }

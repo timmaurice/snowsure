@@ -41,6 +41,7 @@ import {
   snowPath,
 } from './mountain';
 import styles from './styles/card.styles.scss';
+import './compare-card';
 
 const SNOWSURE_URL = 'https://www.snowsure.ai';
 

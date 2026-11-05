@@ -134,5 +134,23 @@
     "webcams_helper": "Welche Webcams die Karte zeigt, legst du in den Optionen der Integration fest: Einstellungen → Geräte & Dienste → SnowSure → Konfigurieren.",
     "show_mountain": "Berg mit Schneehöhen und 0-Grad-Grenze",
     "compact": "Kompakt: nur Kopf und Berg"
+  },
+  "compare": {
+    "title": "Wohin zum Skifahren?",
+    "sort_snowfall": "Neuschnee der nächsten {days} Tage",
+    "sort_score": "nach SnowSure-Score",
+    "sort_depth": "nach Schneehöhe am Berg",
+    "empty": "Noch keine SnowSure-Skigebiete eingerichtet.",
+    "editor": {
+      "title": "Titel (optional)",
+      "devices": "Skigebiete (leer: alle)",
+      "sort": "Reihenfolge",
+      "days": "Tage Neuschnee",
+      "band": "Neuschnee-Höhe",
+      "sort_snowfall": "Neuschnee der nächsten Tage",
+      "sort_score": "SnowSure-Score",
+      "sort_depth": "Schneehöhe am Berg"
+    },
+    "sort_snowfall_today": "Neuschnee heute"
   }
 }

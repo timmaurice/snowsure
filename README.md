@@ -115,6 +115,19 @@ The card follows its own width. In a normal section column it stacks everything 
 
 Everything can be set in the visual editor. The card is also offered in the card picker for SnowSure entities.
 
+### Compare card
+
+`custom:snowsure-compare-card` ranks several resorts side by side: new snow over the next days (or SnowSure score, or summit depth), with open/closed, summit depth, avalanche level and score per row. A tap opens the resort's forecast.
+
+```yaml
+type: custom:snowsure-compare-card
+title: Where to ski? # optional
+devices: [] # optional: SnowSure resorts, empty = all
+sort: snowfall # snowfall, score or depth
+days: 3 # days of new snow added up, from today
+band: summit # optional: base, mid or summit; unset = each resort's forecast point
+```
+
 ## Development
 
 ```bash
