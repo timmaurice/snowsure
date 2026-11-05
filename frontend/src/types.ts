@@ -84,6 +84,8 @@ export interface SnowsureCardConfig extends LovelaceCardConfig {
   /** device_id of a SnowSure resort. */
   device?: string;
   title?: string;
+  /** Header and mountain only, for small dashboards. */
+  compact?: boolean;
   show_score?: boolean;
   show_image?: boolean;
   show_weather?: boolean;

@@ -35,6 +35,7 @@ export const DEFAULT_STATS: StatKey[] = [
 
 /** What the card assumes when a key is absent. The editor never writes these back. */
 export const DEFAULTS = {
+  compact: false,
   show_score: true,
   show_image: true,
   show_weather: true,

@@ -81,6 +81,7 @@ actions:
 type: custom:snowsure-card
 device: <device id of the resort> # picked in the visual editor
 title: Zermatt # optional
+compact: false # true: header and mountain only, for small dashboards
 show_score: true
 show_image: true # resort photo as header background
 show_weather: true

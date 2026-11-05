@@ -132,6 +132,7 @@
       "webcams": "Webcams"
     },
     "webcams_helper": "Welche Webcams die Karte zeigt, legst du in den Optionen der Integration fest: Einstellungen → Geräte & Dienste → SnowSure → Konfigurieren.",
-    "show_mountain": "Berg mit Schneehöhen und 0-Grad-Grenze"
+    "show_mountain": "Berg mit Schneehöhen und 0-Grad-Grenze",
+    "compact": "Kompakt: nur Kopf und Berg"
   }
 }

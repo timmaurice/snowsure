@@ -596,4 +596,23 @@ describe('mountain', () => {
     hass.states['sensor.matterhorn_forecast'].attributes.change_24h = -6;
     expect(root(await mount({ device: DEVICE }, hass)).querySelector('.forecast-trend.down')).not.toBeNull();
   });
+
+  it('shows header, mountain and credit only when compact', async () => {
+    const card = await mount({ device: DEVICE, compact: true, show_mountain: false });
+    expect(root(card).querySelector('ha-card.compact')).not.toBeNull();
+    expect(root(card).querySelector('.mountain')).not.toBeNull();
+    for (const selector of ['.weather', '.stats', '.forecast', '.avalanche', '.webcams']) {
+      expect(root(card).querySelector(selector)).toBeNull();
+    }
+    expect(text(card, '.footer a')[0]).toBe('Data by SnowSure.ai');
+    expect(card.getCardSize()).toBe(5);
+
+    // Without heights for the mountain the tiles stand in.
+    const hass = makeHass();
+    const forecast = Object.values(hass.states).find((state) => state.attributes.band_elevations)!;
+    forecast.attributes = { ...forecast.attributes, band_elevations: {} };
+    const flat = await mount({ device: DEVICE, compact: true }, hass);
+    expect(root(flat).querySelector('.mountain')).toBeNull();
+    expect(root(flat).querySelector('.stats')).not.toBeNull();
+  });
 });

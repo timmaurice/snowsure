@@ -89,7 +89,7 @@ it('puts the avalanche switch with the mountain, which shows the level', async (
   const off = await mount({ device: DEVICE, show_mountain: false });
   expect(names(off, 0)).not.toContain('show_avalanche');
   expect(names(off, 3)).toEqual(['show_avalanche', 'show_webcams']);
-  expect(off.schema()[5].title).toBe('Avalanches and webcams');
+  expect(off.schema()[6].title).toBe('Avalanches and webcams');
 });
 
 it('shows section options only while their section is on', async () => {
@@ -155,4 +155,22 @@ it('points to the integration options for the webcams', async () => {
   };
   expect(form.computeHelper({ name: 'show_webcams' })).toMatch(/integration options/);
   expect(fields(editor).map((item) => item.name)).not.toContain('webcams');
+});
+
+it('keeps only the header switches in compact mode', async () => {
+  const editor = await mount({ device: DEVICE, compact: true });
+  expect(editor.schema().map((item) => item.name ?? item.title)).toEqual([
+    'device',
+    'title',
+    'compact',
+    'Header, weather and mountain',
+  ]);
+  expect(fields(editor).map((item) => item.name)).toEqual([
+    'device',
+    'title',
+    'compact',
+    'show_score',
+    'show_image',
+    'show_avalanche',
+  ]);
 });

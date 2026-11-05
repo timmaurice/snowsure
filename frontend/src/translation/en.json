@@ -132,6 +132,7 @@
       "webcams": "Webcams"
     },
     "webcams_helper": "Which webcams the card shows is set in the integration options: Settings → Devices & services → SnowSure → Configure.",
-    "show_mountain": "Mountain with snow depth and 0 °C line"
+    "show_mountain": "Mountain with snow depth and 0 °C line",
+    "compact": "Compact: header and mountain only"
   }
 }

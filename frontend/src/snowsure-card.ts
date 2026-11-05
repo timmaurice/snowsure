@@ -183,6 +183,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
   public getCardSize(): number {
     if (!this._config) return 3;
     const c = this._config;
+    if (c.compact) return 5;
     return (
       2 +
       (c.show_weather ? 1 : 0) +
@@ -236,7 +237,21 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     }
 
     const c = this._config;
-    const mountain = c.show_mountain ? this._renderMountain(resort) : nothing;
+    // Compact: the header and the mountain only (the tiles stand in when a
+    // resort lacks the heights for the mountain), plus the required credit.
+    const mountain = c.show_mountain || c.compact ? this._renderMountain(resort) : nothing;
+    if (c.compact) {
+      return html`
+        <ha-card class="compact">
+          ${this._renderHeader(name, resort)}
+          <div class="card-content">
+            ${mountain === nothing ? this._renderStats(resort) : mountain}
+            ${this._renderFooter(device?.configuration_url, resort)}
+          </div>
+          ${this._trailMap ? this._renderTrailMap(name, resort, this._trailMap) : nothing}
+        </ha-card>
+      `;
+    }
     return html`
       <ha-card>
         ${this._renderHeader(name, resort)}

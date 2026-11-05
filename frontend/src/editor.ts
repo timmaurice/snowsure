@@ -120,9 +120,24 @@ export class SnowsureCardEditor extends LitElement implements LovelaceCardEditor
     const more: SchemaItem[] = [];
     (c.show_mountain ? header : more).push(toggle('show_avalanche'));
     more.push(toggle('show_webcams'));
-    return [
+    const top: SchemaItem[] = [
       { name: 'device', selector: { device: { filter: [{ integration: 'snowsure' }] } } },
       { name: 'title', selector: { text: {} } },
+      toggle('compact'),
+    ];
+    // Compact shows the header and the mountain: only their switches apply.
+    if (c.compact) {
+      return [
+        ...top,
+        section('header', 'mdi:image-filter-hdr', [
+          toggle('show_score'),
+          toggle('show_image'),
+          toggle('show_avalanche'),
+        ]),
+      ];
+    }
+    return [
+      ...top,
       section('header', 'mdi:image-filter-hdr', header),
       section('stats', 'mdi:view-grid-outline', stats),
       section('forecast', 'mdi:weather-snowy-heavy', forecast),
