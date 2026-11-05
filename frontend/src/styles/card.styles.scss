@@ -1000,7 +1000,7 @@ dialog.trail-map {
   top: 10px;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 2px;
   padding: 0;
   border: none;
@@ -1011,9 +1011,22 @@ dialog.trail-map {
 }
 
 .avalanche-icon {
-  width: 40px;
-  height: 40px;
+  height: 44px;
+  width: auto;
+  overflow: visible;
   filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.25));
+}
+
+.avalanche-number {
+  fill: #000;
+  font-family: Arial, Helvetica, sans-serif;
+
+  &.inverse {
+    fill: #fff;
+    stroke: #000;
+    stroke-width: 30px;
+    paint-order: stroke;
+  }
 }
 
 .mountain-avalanche-label {

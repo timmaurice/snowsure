@@ -545,7 +545,7 @@ describe('mountain', () => {
     const hass = makeHass();
     hass.states['sensor.matterhorn_avalanche'].state = 'unknown';
     const card = await mount({ device: DEVICE }, hass);
-    expect(text(card, '.mountain-avalanche.none')).toEqual(['– no report']);
+    expect(text(card, '.mountain-avalanche.none')).toEqual(['no report']);
     const off = await mount({ device: DEVICE, show_avalanche: false });
     expect(root(off).querySelector('.mountain-avalanche')).toBeNull();
   });

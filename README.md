@@ -128,3 +128,7 @@ docker compose up -d   # Home Assistant on http://localhost:8138
 ```
 
 The card in `frontend/` is built into `custom_components/snowsure/snowsure-card.js`, which is committed: the integration serves it and registers it as a Lovelace resource.
+
+## Credits
+
+Data by [SnowSure.ai](https://www.snowsure.ai). Avalanche danger icons by the [European Avalanche Warning Services (EAWS)](https://www.avalanches.org/downloads/), with colour and number in the lower half as on [lawinen.report](https://lawinen.report/education/danger-scale).

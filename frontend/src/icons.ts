@@ -1,4 +1,5 @@
-import { TemplateResult, html, svg } from 'lit';
+import { TemplateResult, html, nothing, svg } from 'lit';
+import { EAWS_ICONS } from './avalanche-icons';
 import { StatKey } from './types';
 
 /** Shared silhouette: a small peak, a notch (the valley), a big peak. */
@@ -34,29 +35,38 @@ export const AVALANCHE_COLORS: Record<number, string> = {
 };
 
 /**
- * Avalanche danger as the familiar diamond: a dark mountain with a snow cap
- * above, the level colour and number below; level 5 is chequered red and
- * black; level 0 is the grey "no bulletin" diamond. Drawn here, 48x48.
+ * Avalanche danger as the European diamond (EAWS icons, lawinen.report style):
+ * the level colour and number in the lower half, level 5 chequered red and
+ * black; level 0 is the "no rating" icon. Height follows the CSS, width the
+ * picture (clouds reach out to the right from level 2).
  */
 export function avalancheIcon(level: number): TemplateResult {
-  const color = AVALANCHE_COLORS[level] ?? '#bdbdbd';
+  const icon = EAWS_ICONS[Math.min(Math.max(level, 0), 4)];
+  const [x0, y0, x1, y1] = icon.bottomBox ?? [0, 0, 0, 0];
+  const height = y1 - y0;
+  const middle = (x0 + x1) / 2;
   const chequered = level >= 5;
-  return html`<svg class="avalanche-icon" viewBox="0 0 48 48" aria-hidden="true">
+  return html`<svg class="avalanche-icon" viewBox=${icon.viewBox} aria-hidden="true">
     ${svg`
       <defs>
-        <pattern id="avalanche-check" width="5" height="5" patternUnits="userSpaceOnUse">
-          <rect width="5" height="5" fill="#e00000" />
-          <rect width="2.5" height="2.5" fill="#111" />
-          <rect x="2.5" y="2.5" width="2.5" height="2.5" fill="#111" />
+        <pattern id="avalanche-check" width="150" height="150" patternUnits="userSpaceOnUse"
+          patternTransform="rotate(45)">
+          <rect width="150" height="150" fill="#e3000f" />
+          <rect width="75" height="75" fill="#000" />
+          <rect x="75" y="75" width="75" height="75" fill="#000" />
         </pattern>
       </defs>
-      <path d="M24 2 46 24 2 24Z" fill="#fff" />
-      <path d="M3 24 14 14.5 18.5 18 28 8.5 45 24Z" fill="#111" />
-      <path d="M24.6 11.9 28 8.5 31.4 11.9 29.4 11.3 28 13 26.6 11.3Z" fill="#fff" />
-      <path d="M2 24 46 24 24 46Z" fill=${chequered ? 'url(#avalanche-check)' : color} />
-      <path d="M24 2 46 24 24 46 2 24Z" fill="none" stroke="#111" stroke-width="2" stroke-linejoin="round" />
-      <text x="24" y="38.5" text-anchor="middle" font-size="14" font-weight="700"
-        fill=${chequered ? '#fff' : '#111'}>${level || '–'}</text>
+      ${
+        icon.bottom
+          ? svg`
+            <path fill="#fff" d=${`M${middle} ${y0 - height}L${x1} ${y0}L${middle} ${y1}L${x0} ${y0}Z`} />
+            <path fill=${chequered ? 'url(#avalanche-check)' : (AVALANCHE_COLORS[level] ?? '#fff')} d=${icon.bottom} />
+            <text x=${middle} y=${y0 + height * 0.42} text-anchor="middle" dominant-baseline="central"
+              font-size=${height * 0.72} font-weight="700" class="avalanche-number ${chequered ? 'inverse' : ''}"
+              >${level}</text>`
+          : nothing
+      }
+      ${icon.layers.map((layer) => svg`<path fill=${layer.fill} fill-rule="evenodd" d=${layer.d} />`)}
     `}
   </svg>`;
 }
