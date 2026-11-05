@@ -27,7 +27,8 @@ export type SnowsureKey =
   | 'avalanche_level'
   | 'season_opening'
   | 'updated_at'
-  | 'resort_image';
+  | 'resort_image'
+  | 'bluebird';
 
 export interface ResortEntities {
   byKey: Partial<Record<SnowsureKey, HassEntity>>;

@@ -87,6 +87,16 @@ export function makeHass(overrides: Partial<HomeAssistant> = {}): HomeAssistant 
       entity('sensor.matterhorn_temp_valley', '1.3', { unit_of_measurement: '°C' }),
     ],
     ['sensor.matterhorn_weather', 'weather', entity('sensor.matterhorn_weather', 'Slight snowfall')],
+    [
+      'binary_sensor.matterhorn_bluebird',
+      'bluebird',
+      entity('binary_sensor.matterhorn_bluebird', 'on', {
+        days: [
+          { date: '2026-11-05', fresh_snow: 0.5, source: 'forecast' },
+          { date: '2026-11-07', fresh_snow: 6.9 },
+        ],
+      }),
+    ],
     ['sensor.matterhorn_quality', 'snow_quality', entity('sensor.matterhorn_quality', 'icy')],
     ['sensor.matterhorn_season_opening', 'season_opening', entity('sensor.matterhorn_season_opening', '2026-11-28')],
     [

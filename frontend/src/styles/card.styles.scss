@@ -1170,3 +1170,62 @@ dialog.trail-map {
     display: none;
   }
 }
+
+/* Kaiserwetter (bluebird): sun after new snow. */
+$bluebird: #e0a100;
+
+.forecast .day.bluebird {
+  background: linear-gradient(to bottom, color-mix(in srgb, #{$bluebird} 18%, transparent), transparent 70%);
+}
+
+.bluebird-icon {
+  --mdc-icon-size: 12px;
+  margin-left: 2px;
+  color: $bluebird;
+  vertical-align: -1px;
+}
+
+.chip.bluebird,
+.header.with-image .chip.bluebird {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  color: #3d2c00;
+  background: color-mix(in srgb, #{$bluebird} 85%, #fff);
+
+  ha-icon {
+    --mdc-icon-size: 14px;
+  }
+}
+
+.mountain-day-bluebird {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #8a6200;
+  white-space: nowrap;
+
+  ha-icon {
+    --mdc-icon-size: 14px;
+    color: $bluebird;
+  }
+}
+
+/* A Kaiserwetter day on the mountain: a deep blue sky. */
+.mountain.bluebird {
+  background: linear-gradient(to bottom, #6fb0ef, color-mix(in srgb, #6fb0ef 20%, transparent));
+
+  /* The day's numbers keep the text colour: blue on a blue sky would vanish. */
+  .mountain-value {
+    color: var(--primary-text-color);
+  }
+}
+
+@container mountain (max-width: 420px) {
+  /* The sun alone keeps the narrow badge clear of the summit label. */
+  .mountain-day-bluebird .bluebird-text {
+    display: none;
+  }
+}

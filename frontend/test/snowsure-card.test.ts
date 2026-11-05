@@ -78,7 +78,7 @@ describe('render', () => {
   it('shows name, open chip and score', async () => {
     const card = await mount({ device: DEVICE });
     expect(text(card, '.name')).toEqual(['Matterhorn Ski Paradise']);
-    expect(text(card, '.chip')).toEqual(['Open']);
+    expect(text(card, '.chip:not(.bluebird)')).toEqual(['Open']);
     expect(text(card, '.score-value')).toEqual(['33']);
     expect(text(card, '.score-rating')).toEqual(['Solid']);
   });
@@ -175,7 +175,7 @@ describe('render', () => {
     hass.states['binary_sensor.matterhorn_open'].state = 'off';
     hass.states['sensor.matterhorn_season_opening'].state = '2999-11-28';
     const card = await mount({ device: DEVICE }, hass);
-    expect(text(card, '.chip')).toEqual(['Closed']);
+    expect(text(card, '.chip:not(.bluebird)')).toEqual(['Closed']);
     expect(text(card, '.season')[0]).toMatch(/^Season opens /);
   });
 
@@ -462,7 +462,7 @@ describe('render', () => {
       { device: DEVICE, show_mountain: false },
       makeHass({ locale: { language: 'de', number_format: 'language' } }),
     );
-    expect(text(card, '.chip')).toEqual(['Geöffnet']);
+    expect(text(card, '.chip:not(.bluebird)')).toEqual(['Geöffnet']);
     expect(text(card, '.footer a')[0]).toBe('Daten von SnowSure.ai');
     // EAWS name from the card's translation, not SnowSure's English label.
     expect(text(card, '.avalanche-title')).toEqual(['Lawinengefahr: Mäßig']);
@@ -614,5 +614,34 @@ describe('mountain', () => {
     const flat = await mount({ device: DEVICE, compact: true }, hass);
     expect(root(flat).querySelector('.mountain')).toBeNull();
     expect(root(flat).querySelector('.stats')).not.toBeNull();
+  });
+
+  it('shows Kaiserwetter in the forecast, the header and the picked day', async () => {
+    const card = await mount({ device: DEVICE });
+    // Nov 5 (index 1) and Nov 7 (index 3) are Kaiserwetter days.
+    const bluebird = [...root(card).querySelectorAll('.day.bluebird')].map((day) => day.getAttribute('data-index'));
+    expect(bluebird).toEqual(['1', '3']);
+    expect(root(card).querySelector('.day.bluebird')!.getAttribute('title')).toMatch(
+      /^Bluebird day after 1 cm new snow · /,
+    );
+    // Nov 5 is the forecast's second day: tomorrow.
+    expect(text(card, '.chip.bluebird')).toEqual(['Bluebird tomorrow']);
+
+    root(card).querySelector<HTMLElement>('.day[data-index="3"] .bar-track')!.click();
+    await card.updateComplete;
+    expect(root(card).querySelector('.mountain.bluebird')).not.toBeNull();
+    expect(text(card, '.mountain-day-bluebird')).toEqual(['Bluebird day']);
+
+    root(card).querySelector<HTMLElement>('.day[data-index="2"] .bar-track')!.click();
+    await card.updateComplete;
+    expect(root(card).querySelector('.mountain.bluebird')).toBeNull();
+  });
+
+  it('shows no Kaiserwetter without the sensor', async () => {
+    const hass = makeHass();
+    hass.states['binary_sensor.matterhorn_bluebird'].attributes = {};
+    const card = await mount({ device: DEVICE }, hass);
+    expect(root(card).querySelector('.day.bluebird')).toBeNull();
+    expect(root(card).querySelector('.chip.bluebird')).toBeNull();
   });
 });

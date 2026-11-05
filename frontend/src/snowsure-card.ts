@@ -439,6 +439,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
                   </button>`
                 : nothing
             }
+            ${this._renderBluebirdChip(resort)}
             ${
               opensOn
                 ? html`<span class="season"
@@ -581,6 +582,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     // A floor keeps a 0.3 cm drizzle from filling the whole bar.
     const scale = Math.max(...amounts, 5);
     const confidenceLabel = isAvailable(confidence) ? confidence.state : undefined;
+    const bluebirdDays = this._bluebirdDays(resort);
 
     return html`
       <div class="section-title">
@@ -617,13 +619,20 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
           // SnowSure's first forecast day is the resort's today; the viewer's
           // clock can be a day ahead (Europe looking at Colorado).
           const isToday = index === 0;
+          const bluebird = bluebirdDays.get(day.date);
           return html`
             <div
-              class="day ${isToday ? 'today' : ''} ${pickDays && this._day === index ? 'picked' : ''}"
+              class="day ${isToday ? 'today' : ''} ${pickDays && this._day === index ? 'picked' : ''} ${
+                bluebird ? 'bluebird' : ''
+              }"
               data-index=${index}
-              title=${tooltip}
+              title=${bluebird ? `${this._bluebirdTitle(bluebird)} · ${tooltip}` : tooltip}
             >
-              <span class="weekday">${isToday ? localize(hass, 'card.today') : formatWeekday(day.date, hass)}</span>
+              <span class="weekday"
+                >${isToday ? localize(hass, 'card.today') : formatWeekday(day.date, hass)}${
+                  bluebird ? html`<ha-icon class="bluebird-icon" icon="mdi:white-balance-sunny"></ha-icon>` : nothing
+                }</span
+              >
               <div class="bar-track">
                 <div class="bar" style="height: ${Math.round((amount / scale) * 100)}%"></div>
               </div>
@@ -803,6 +812,46 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     `;
   }
 
+  /**
+   * Kaiserwetter (bluebird) days from the integration's sensor, by date:
+   * clear and dry after new snow, within the coming week.
+   */
+  private _bluebirdDays(resort: ResortEntities): Map<string, { fresh_snow?: number | null }> {
+    const sensor = resort.byKey.bluebird;
+    const days = (isAvailable(sensor) ? sensor.attributes.days : undefined) as
+      { date: string; fresh_snow?: number | null }[] | undefined;
+    return new Map((Array.isArray(days) ? days : []).map((day) => [day.date, day]));
+  }
+
+  /** "Kaiserwetter today / tomorrow" next to the status, from the forecast's first two days. */
+  private _renderBluebirdChip(resort: ResortEntities): TemplateResult | typeof nothing {
+    const hass = this.hass!;
+    const daily = (resort.byKey.forecast_7d?.attributes.daily as ForecastDay[] | undefined) ?? [];
+    const bluebird = this._bluebirdDays(resort);
+    const index = [0, 1].find((i) => daily[i] && bluebird.has(daily[i].date));
+    if (index === undefined) return nothing;
+    return html`<button
+      class="chip bluebird"
+      title=${this._bluebirdTitle(bluebird.get(daily[index].date))}
+      @click=${() => this._moreInfo(resort.byKey.bluebird)}
+    >
+      <ha-icon icon="mdi:white-balance-sunny"></ha-icon>${localize(
+        hass,
+        index === 0 ? 'card.bluebird_today' : 'card.bluebird_tomorrow',
+      )}
+    </button>`;
+  }
+
+  private _bluebirdTitle(day: { fresh_snow?: number | null } | undefined): string {
+    const hass = this.hass!;
+    const fresh = toNumber(day?.fresh_snow);
+    return fresh === null
+      ? localize(hass, 'card.bluebird')
+      : localize(hass, 'card.bluebird_after', {
+          value: `${formatNumber(fresh, hass, { maximumFractionDigits: 0 })} cm`,
+        });
+  }
+
   /** The current bulletin: level, its name in the user's language and whether it ran out. */
   private _bulletin(entity: HassEntity | undefined) {
     const level = isAvailable(entity) ? toNumber(entity.state) : null;
@@ -934,7 +983,9 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     const vsAverage = toNumber(depth_base?.attributes.vs_average_pct);
 
     return html`
-      <div class="block mountain ${day ? 'day-view' : ''}">
+      <div
+        class="block mountain ${day ? 'day-view' : ''} ${day && this._bluebirdDays(resort).has(day.date) ? 'bluebird' : ''}"
+      >
         <svg class="mountain-art" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           <defs>
             <clipPath id="mountain-clip"><path d=${MOUNTAIN_PATH}></path></clipPath>
@@ -967,7 +1018,11 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
         }
         ${
           day
-            ? this._renderMountainDay(day, temperature_summit?.attributes.unit_of_measurement === '°F')
+            ? this._renderMountainDay(
+                day,
+                temperature_summit?.attributes.unit_of_measurement === '°F',
+                this._bluebirdDays(resort).get(day.date),
+              )
             : this._config!.show_avalanche
               ? this._renderMountainAvalanche(resort.byKey.avalanche_level)
               : nothing
@@ -1030,7 +1085,11 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
   }
 
   /** The picked forecast day in the top left corner, with its temperatures; a tap goes back to now. */
-  private _renderMountainDay(day: ForecastDay, fahrenheit: boolean): TemplateResult {
+  private _renderMountainDay(
+    day: ForecastDay,
+    fahrenheit: boolean,
+    bluebird?: { fresh_snow?: number | null },
+  ): TemplateResult {
     const hass = this.hass!;
     const temp = (c: number | null | undefined) => {
       if (c === null || c === undefined) return nothing;
@@ -1050,6 +1109,14 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
         ></ha-icon
       ></span>
       <span class="mountain-day-sub">${formatDate(day.date, hass)}</span>
+      ${
+        bluebird
+          ? html`<span class="mountain-day-bluebird" title=${this._bluebirdTitle(bluebird)}
+              ><ha-icon icon="mdi:white-balance-sunny"></ha-icon
+              ><span class="bluebird-text">${localize(hass, 'card.bluebird')}</span></span
+            >`
+          : nothing
+      }
       <span class="mountain-day-values"
         >${weatherText(hass, day.conditions)} ${temp(day.temp_max)} ${temp(day.temp_min)}</span
       >

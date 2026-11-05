@@ -112,7 +112,11 @@
     "back_to_now": "Back to now",
     "trend_more": "7-day forecast: {value} more than yesterday",
     "trend_less": "7-day forecast: {value} less than yesterday",
-    "forecast_days": "in {days} days"
+    "forecast_days": "in {days} days",
+    "bluebird": "Bluebird day",
+    "bluebird_after": "Bluebird day after {value} new snow",
+    "bluebird_today": "Bluebird today",
+    "bluebird_tomorrow": "Bluebird tomorrow"
   },
   "editor": {
     "device": "Resort",

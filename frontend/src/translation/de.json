@@ -112,7 +112,11 @@
     "back_to_now": "Zurück zu jetzt",
     "trend_more": "7-Tage-Prognose: {value} mehr als gestern",
     "trend_less": "7-Tage-Prognose: {value} weniger als gestern",
-    "forecast_days": "in {days} Tagen"
+    "forecast_days": "in {days} Tagen",
+    "bluebird": "Kaiserwetter",
+    "bluebird_after": "Kaiserwetter nach {value} Neuschnee",
+    "bluebird_today": "Kaiserwetter heute",
+    "bluebird_tomorrow": "Kaiserwetter morgen"
   },
   "editor": {
     "device": "Skigebiet",
