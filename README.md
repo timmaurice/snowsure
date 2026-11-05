@@ -137,6 +137,18 @@ show_webcams: true # the webcams picked in the integration options
 
 Available tiles: `depth_base`, `depth_mid`, `depth_summit`, `snowfall_24h`, `snowfall_7d`, `snowfall_season`, `forecast_7d`, `runs_open`, `lifts_open`, `temperature_base`, `temperature_summit`, `snow_quality`. Everything can be set in the visual editor, and the card is offered in the card picker for SnowSure entities.
 
+### Layouts
+
+The card follows its own width, and a compact variant and a compare card sit next to it:
+
+| Wide (a section spanning two columns)                                                                                                                                                                                                               | Slim (one column)                                                                                                                                                        |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <img src="https://raw.githubusercontent.com/timmaurice/snowsure/main/docs/card-wide.png" alt="The wide card: header with photo and score, tiles left and the 7-day forecast right, the mountain as a panorama below, then the webcams" width="480"> | <img src="https://raw.githubusercontent.com/timmaurice/snowsure/main/image.png" alt="The slim card: everything stacked, the mountain under the weather row" width="300"> |
+
+| Compact (`compact: true`)                                                                                                                                 | Compare card                                                                                                                                                                                                                                        |
+| :-------------------------------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <img src="https://raw.githubusercontent.com/timmaurice/snowsure/main/docs/card-compact.png" alt="The compact card: header and mountain only" width="380"> | <img src="https://raw.githubusercontent.com/timmaurice/snowsure/main/docs/card-compare.png" alt="The compare card ranking eight resorts by new snow in the next three days, with open status, summit depth, avalanche level and score" width="380"> |
+
 ### Card Features
 
 - **The mountain**: Snow depth and temperature at valley and summit, the 0 °C line from those temperatures, and the avalanche danger as the EAWS diamond. It replaces the depth tiles and the temperatures in the weather row.
