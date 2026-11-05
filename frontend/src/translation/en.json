@@ -94,14 +94,10 @@
     "snow_quality_values": {
       "powder": "Powder",
       "packed": "Packed",
-      "groomed": "Groomed",
-      "hardpack": "Hardpack",
+      "dense": "Dense",
       "icy": "Icy",
       "wet": "Wet",
-      "slush": "Slush",
-      "spring": "Spring snow",
-      "crud": "Crud",
-      "variable": "Variable"
+      "spring": "Spring snow"
     },
     "freezing_level": "0 °C · {elevation}",
     "freezing_below": "0 °C below the valley",

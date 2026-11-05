@@ -30,6 +30,21 @@ describe('localize', () => {
     expect(localize(hass('en'), 'card.nope')).toBe('card.nope');
   });
 
+  it('translates every snow quality SnowSure sends', async () => {
+    const { snowQualityText } = await import('../src/weather');
+    // Seen across all resorts (Nov 2026): the measured density classes and the modelled surface states.
+    const seen = ['powder', 'packed', 'dense', 'icy', 'wet', 'spring'];
+    expect(seen.map((label) => snowQualityText(hass('de'), label))).toEqual([
+      'Pulver',
+      'Gepresst',
+      'Dicht',
+      'Eisig',
+      'Nass',
+      'Firn',
+    ]);
+    expect(snowQualityText(hass('de'), 'something new')).toBe('something new');
+  });
+
   it('fills placeholders', () => {
     expect(localize(hass('en'), 'card.avalanche_level', { level: 3 })).toBe('Level 3');
   });

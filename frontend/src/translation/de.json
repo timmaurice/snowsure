@@ -94,14 +94,10 @@
     "snow_quality_values": {
       "powder": "Pulver",
       "packed": "Gepresst",
-      "groomed": "Präpariert",
-      "hardpack": "Hart",
+      "dense": "Dicht",
       "icy": "Eisig",
       "wet": "Nass",
-      "slush": "Sulz",
-      "spring": "Firn",
-      "crud": "Bruchharsch",
-      "variable": "Wechselhaft"
+      "spring": "Firn"
     },
     "freezing_level": "0 °C · {elevation}",
     "freezing_below": "0 °C unter dem Tal",
