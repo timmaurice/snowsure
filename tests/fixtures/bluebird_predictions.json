@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-11-05T10:08:42Z",
+  "predictions": [
+    {
+      "resortSlug": "matterhorn-ski-paradise",
+      "resortName": "Matterhorn Ski Paradise",
+      "predictedDate": "2026-11-09",
+      "confidence": "medium",
+      "predictedSnowfallCm": 6,
+      "predictedTempMaxC": -8,
+      "predictedWindMaxKmh": 12
+    },
+    {
+      "resortSlug": "schilthorn",
+      "resortName": "Schilthorn",
+      "predictedDate": "2026-11-10",
+      "confidence": "medium",
+      "predictedSnowfallCm": 9,
+      "predictedTempMaxC": -5,
+      "predictedWindMaxKmh": 2
+    }
+  ],
+  "accuracy": {
+    "total": 257,
+    "correct": 0,
+    "accuracy": 0
+  }
+}

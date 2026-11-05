@@ -13,6 +13,7 @@ from homeassistant.util import dt as dt_util
 from .binary_sensor import powder_settings
 from .coordinator import SnowsureConfigEntry
 from .entity import SnowsureEntity
+from .parser import bluebird_days
 
 PARALLEL_UPDATES = 0
 
@@ -24,12 +25,16 @@ _TEXT = {
         "closing": "{resort}: season ends",
         "powder": "{resort}: powder day, {amount} cm new snow",
         "powder_detail": "SnowSure forecast at {elevation}, threshold {threshold} cm.",
+        "bluebird": "{resort}: bluebird day",
+        "bluebird_detail": "Sun after {amount} cm new snow.",
     },
     "de": {
         "opening": "{resort}: Saisonstart",
         "closing": "{resort}: Saisonende",
         "powder": "{resort}: Powder-Tag, {amount} cm Neuschnee",
         "powder_detail": "SnowSure-Prognose auf {elevation}, Schwelle {threshold} cm.",
+        "bluebird": "{resort}: Bluebird-Tag",
+        "bluebird_detail": "Sonne nach {amount} cm Neuschnee.",
     },
 }
 
@@ -69,6 +74,17 @@ def resort_events(data: dict[str, Any], threshold: float, band: str, language: s
                 ),
             )
         )
+    for bluebird in bluebird_days(data.get("forecast_daily"), band, data.get("bluebird_predictions")):
+        if day := _date(bluebird["date"]):
+            fresh = bluebird.get("fresh_snow")
+            events.append(
+                CalendarEvent(
+                    start=day,
+                    end=day + timedelta(days=1),
+                    summary=text["bluebird"].format(resort=resort),
+                    description=text["bluebird_detail"].format(amount=f"{fresh:g}") if fresh is not None else None,
+                )
+            )
     return sorted(events, key=lambda event: event.start)
 
 

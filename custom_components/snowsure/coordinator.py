@@ -93,4 +93,10 @@ class SnowsureCoordinator(DataUpdateCoordinator[dict[str, Any]]):
             _LOGGER.debug("Forecast runs for %s unavailable: %s", self.slug, err)
             runs = None
 
-        return parse_resort(detail, avalanche, forecast_runs=runs)
+        try:
+            bluebird: list[dict[str, Any]] | None = await self.client.async_get_bluebird_predictions()
+        except SnowsureError as err:
+            _LOGGER.debug("Bluebird predictions unavailable: %s", err)
+            bluebird = None
+
+        return parse_resort(detail, avalanche, forecast_runs=runs, bluebird=bluebird)

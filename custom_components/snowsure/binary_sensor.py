@@ -22,11 +22,15 @@ from .const import (
 )
 from .coordinator import SnowsureConfigEntry, SnowsureCoordinator
 from .entity import SnowsureEntity
+from .parser import bluebird_days
 
 PARALLEL_UPDATES = 0
 
 OPEN_DESCRIPTION = BinarySensorEntityDescription(key="open", translation_key="open")
 POWDER_DESCRIPTION = BinarySensorEntityDescription(key="powder_alarm", translation_key="powder_alarm")
+BLUEBIRD_DESCRIPTION = BinarySensorEntityDescription(key="bluebird", translation_key="bluebird")
+# Bluebird days count within the coming week, today included.
+BLUEBIRD_HORIZON_DAYS = 7
 
 
 async def async_setup_entry(
@@ -38,6 +42,7 @@ async def async_setup_entry(
         [
             SnowsureOpenSensor(entry.runtime_data, OPEN_DESCRIPTION),
             SnowsurePowderAlarm(entry.runtime_data, POWDER_DESCRIPTION, entry.options),
+            SnowsureBluebird(entry.runtime_data, BLUEBIRD_DESCRIPTION, entry.options),
         ]
     )
 
@@ -143,3 +148,41 @@ def _option_float(value: Any, default: float) -> float:
         return float(value)
     except TypeError, ValueError:
         return default
+
+
+class SnowsureBluebird(SnowsureEntity, BinarySensorEntity):
+    """On while a bluebird day (sun after new snow) lies in the forecast's next week."""
+
+    def __init__(
+        self,
+        coordinator: SnowsureCoordinator,
+        description: BinarySensorEntityDescription,
+        options: Mapping[str, Any],
+    ) -> None:
+        super().__init__(coordinator, description)
+        _threshold, _days, self._band = powder_settings(options)
+
+    def _days(self) -> list[dict[str, Any]]:
+        data = self.coordinator.data
+        upcoming = bluebird_days(data.get("forecast_daily"), self._band, data.get("bluebird_predictions"))
+        week = {day.get("date") for day in (data.get("forecast_daily") or [])[:BLUEBIRD_HORIZON_DAYS]}
+        return [day for day in upcoming if day["date"] in week]
+
+    @property
+    def is_on(self) -> bool | None:
+        if not self.coordinator.data.get("forecast_daily"):
+            return None
+        return bool(self._days())
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        days = self._days()
+        first = days[0] if days else {}
+        return {
+            "date": first.get("date"),
+            "fresh_snow": first.get("fresh_snow"),
+            "source": first.get("source"),
+            "confidence": first.get("confidence"),
+            "band": self._band,
+            "days": days,
+        }

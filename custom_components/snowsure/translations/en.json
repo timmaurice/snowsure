@@ -80,6 +80,9 @@
       },
       "powder_alarm": {
         "name": "Powder alarm"
+      },
+      "bluebird": {
+        "name": "Bluebird day"
       }
     },
     "image": {

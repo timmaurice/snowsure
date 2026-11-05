@@ -12,6 +12,12 @@
         "state": {
           "off": "mdi:snowflake-off"
         }
+      },
+      "bluebird": {
+        "default": "mdi:weather-sunny",
+        "state": {
+          "off": "mdi:weather-partly-cloudy"
+        }
       }
     },
     "image": {

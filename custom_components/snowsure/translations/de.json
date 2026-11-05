@@ -80,6 +80,9 @@
       },
       "powder_alarm": {
         "name": "Powder-Alarm"
+      },
+      "bluebird": {
+        "name": "Bluebird-Tag"
       }
     },
     "image": {

@@ -86,6 +86,7 @@ def parse_resort(
     avalanche: dict[str, Any] | None = None,
     *,
     forecast_runs: dict[str, Any] | None = None,
+    bluebird: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Build the coordinator payload from the detail and the optional extra responses."""
     conditions = _dict(_dict(detail.get("conditions")).get("data"))
@@ -182,6 +183,7 @@ def parse_resort(
         # Signed change of the 7-day total against the run 24 h / 48 h earlier.
         "forecast_change_24h": _num(_dict(_dict(forecast_runs).get("delta24h")).get("total7dCm")),
         "forecast_change_48h": _num(_dict(_dict(forecast_runs).get("delta48h")).get("total7dCm")),
+        "bluebird_predictions": parse_bluebird(bluebird, _str(detail.get("slug"))),
         "forecast_peak_snowfall": _num(peak.get("snowfallCm")),
         "forecast_daily": daily,
         # The daily snowfall above is for this band; snowfall_<band> per day has all three.
@@ -339,3 +341,55 @@ def picked_webcams(option: Any, cams: list[dict[str, Any]]) -> set[str]:
     if isinstance(option, list):
         return {key for key in option if isinstance(key, str)}
     return {webcam_key(cam["name"]) for cam in cams[:RECOMMENDED_WEBCAMS]}
+
+
+def parse_bluebird(rows: list[dict[str, Any]] | None, slug: str | None) -> list[dict[str, Any]]:
+    """SnowSure's bluebird predictions for this resort, by date."""
+    if not slug:
+        return []
+    found = [
+        {
+            "date": _str(row.get("predictedDate")),
+            "confidence": _str(row.get("confidence")),
+            "snowfall": _num(row.get("predictedSnowfallCm")),
+            "temp_max": _num(row.get("predictedTempMaxC")),
+            "wind_max": _num(row.get("predictedWindMaxKmh")),
+        }
+        for row in rows or []
+        if row.get("resortSlug") == slug and _str(row.get("predictedDate"))
+    ]
+    return sorted(found, key=lambda row: row["date"])
+
+
+# A bluebird day: clear (WMO 0 or 1), dry, after new snow the day before or
+# that night. The same rule SnowSure describes; its own list is short.
+BLUEBIRD_CODES = (0, 1)
+BLUEBIRD_MAX_PRECIP_PROB = 20
+BLUEBIRD_MIN_FRESH_CM = 5
+
+
+def bluebird_days(
+    daily: list[dict[str, Any]] | None,
+    band: str,
+    predictions: list[dict[str, Any]] | None = None,
+    min_fresh: float = BLUEBIRD_MIN_FRESH_CM,
+) -> list[dict[str, Any]]:
+    """Clear, dry days after fresh snow in the forecast, plus SnowSure's own predictions."""
+    days = daily or []
+    found: dict[str, dict[str, Any]] = {}
+
+    def fresh(day: dict[str, Any]) -> float:
+        amount = day.get(f"snowfall_{band}")
+        return float(amount if amount is not None else day.get("snowfall") or 0)
+
+    for index in range(1, len(days)):
+        day, before = days[index], days[index - 1]
+        clear = day.get("weather_code") in BLUEBIRD_CODES
+        dry = (day.get("precipitation_probability") or 0) <= BLUEBIRD_MAX_PRECIP_PROB
+        if clear and dry and fresh(before) >= min_fresh and day.get("date"):
+            found[day["date"]] = {"date": day["date"], "fresh_snow": round(fresh(before), 1), "source": "forecast"}
+    for prediction in predictions or []:
+        date = prediction["date"]
+        found.setdefault(date, {"date": date, "fresh_snow": prediction.get("snowfall"), "source": "snowsure"})
+        found[date]["confidence"] = prediction.get("confidence")
+    return sorted(found.values(), key=lambda row: row["date"])

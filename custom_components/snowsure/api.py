@@ -151,6 +151,14 @@ class SnowsureClient:
             raise SnowsureError(f"SnowSure returned no forecast runs for {slug}")
         return data
 
+    async def async_get_bluebird_predictions(self) -> list[dict[str, Any]]:
+        """SnowSure's predicted bluebird days, for all resorts (a short list)."""
+        payload = await self._get("/bluebird-predictions")
+        rows = payload.get("predictions") if isinstance(payload, dict) else None
+        if not isinstance(rows, list):
+            raise SnowsureError("SnowSure returned no bluebird predictions")
+        return [row for row in rows if isinstance(row, dict)]
+
 
 def parse_resort_list(payload: Any) -> list[ResortSummary]:
     """Turn a /resorts payload into summaries, skipping malformed rows."""

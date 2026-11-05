@@ -17,6 +17,7 @@ SLUG = "matterhorn-ski-paradise"
 RESORT_URL = f"{API_URL}/resorts/{SLUG}"
 AVALANCHE_URL = f"{RESORT_URL}/avalanche"
 RUNS_URL = f"{RESORT_URL}/forecast-runs"
+BLUEBIRD_URL = f"{API_URL}/bluebird-predictions"
 RESORTS_URL = f"{API_URL}/resorts"
 
 
@@ -46,5 +47,6 @@ def mock_api(aioclient_mock: AiohttpClientMocker) -> AiohttpClientMocker:
     aioclient_mock.get(RESORT_URL, json=load_fixture("resort_detail.json"))
     aioclient_mock.get(AVALANCHE_URL, json=load_fixture("avalanche_bulletin.json"))
     aioclient_mock.get(RUNS_URL, json=load_fixture("forecast_runs.json"))
+    aioclient_mock.get(BLUEBIRD_URL, json=load_fixture("bluebird_predictions.json"))
     aioclient_mock.get(RESORTS_URL, json=load_fixture("resorts.json"))
     return aioclient_mock
