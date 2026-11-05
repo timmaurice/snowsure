@@ -145,6 +145,8 @@ ruff check . && ruff format --check .
 docker compose up -d   # Home Assistant on http://localhost:8138
 ```
 
+The test container sets `SNOWSURE_DEMO=1`: the resort list then also offers **Kaiserberg (Demo)** (country "Demo"), a made-up resort answered locally by `custom_components/snowsure/demo.py`, with dates that follow today so every case stays visible: powder alarm today, Kaiserwetter tomorrow, avalanche level 4, forecast trend, snowpack snow quality. Never set the variable outside development.
+
 The card in `frontend/` is built into `custom_components/snowsure/snowsure-card.js`, which is committed: the integration serves it and registers it as a Lovelace resource.
 
 ## Credits

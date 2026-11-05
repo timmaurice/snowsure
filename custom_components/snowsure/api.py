@@ -9,6 +9,17 @@ from typing import Any
 import aiohttp
 
 from .const import API_URL, USER_AGENT
+from .demo import (
+    DEMO_COUNTRY,
+    DEMO_NAME,
+    DEMO_REGION,
+    DEMO_SLUG,
+    demo_avalanche,
+    demo_detail,
+    demo_enabled,
+    demo_forecast_runs,
+    demo_snowpack,
+)
 
 # The resort list is ~1 MB for the whole catalogue and takes a few seconds;
 # everything else answers in well under a second.
@@ -126,10 +137,14 @@ class SnowsureClient:
             cursor = payload.get("nextCursor") if isinstance(payload, dict) else None
             if not cursor:
                 break
+        if demo_enabled():
+            resorts.append(ResortSummary(slug=DEMO_SLUG, name=DEMO_NAME, country=DEMO_COUNTRY, region=DEMO_REGION))
         return resorts
 
     async def async_get_resort(self, slug: str) -> dict[str, Any]:
         """Return the ``data`` object of the resort detail endpoint."""
+        if _is_demo(slug):
+            return demo_detail()
         payload = await self._get(f"/resorts/{validate_slug(slug)}")
         data = payload.get("data") if isinstance(payload, dict) else None
         if not isinstance(data, dict):
@@ -138,6 +153,8 @@ class SnowsureClient:
 
     async def async_get_avalanche(self, slug: str) -> dict[str, Any]:
         """Return the avalanche envelope (``meta`` + ``data``) for a resort."""
+        if _is_demo(slug):
+            return demo_avalanche()
         payload = await self._get(f"/resorts/{validate_slug(slug)}/avalanche")
         if not isinstance(payload, dict):
             raise SnowsureError(f"SnowSure returned no avalanche data for {slug}")
@@ -145,6 +162,8 @@ class SnowsureClient:
 
     async def async_get_forecast_runs(self, slug: str) -> dict[str, Any]:
         """Return the ``data`` of the forecast-runs endpoint (change against 24 h / 48 h ago)."""
+        if _is_demo(slug):
+            return demo_forecast_runs()
         payload = await self._get(f"/resorts/{validate_slug(slug)}/forecast-runs", params={"days": "3"})
         data = payload.get("data") if isinstance(payload, dict) else None
         if not isinstance(data, dict):
@@ -153,6 +172,8 @@ class SnowsureClient:
 
     async def async_get_snowpack(self, slug: str) -> dict[str, Any]:
         """Return the snowpack model payload (``locked`` without access to the resort)."""
+        if _is_demo(slug):
+            return demo_snowpack()
         payload = await self._get(f"/resorts/{validate_slug(slug)}/snowpack", params={"band": "mid", "aspect": "flat"})
         data = payload.get("data", payload) if isinstance(payload, dict) else None
         if not isinstance(data, dict):
@@ -166,6 +187,11 @@ class SnowsureClient:
         if not isinstance(rows, list):
             raise SnowsureError("SnowSure returned no bluebird predictions")
         return [row for row in rows if isinstance(row, dict)]
+
+
+def _is_demo(slug: str) -> bool:
+    """The made-up development resort (demo.py), only with SNOWSURE_DEMO=1."""
+    return slug == DEMO_SLUG and demo_enabled()
 
 
 def parse_resort_list(payload: Any) -> list[ResortSummary]:

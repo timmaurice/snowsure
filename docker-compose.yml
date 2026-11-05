@@ -9,6 +9,10 @@ services:
       # brings the built frontend along: no /local resource to register.
       - ./custom_components/snowsure:/config/custom_components/snowsure
       - /etc/localtime:/etc/localtime:ro
+    environment:
+      # Adds the made-up resort "Kaiserberg (Demo)" (custom_components/snowsure/demo.py)
+      # with every case the card can show; never set this outside development.
+      - SNOWSURE_DEMO=1
     ports:
       - '8138:8123'
     restart: unless-stopped
