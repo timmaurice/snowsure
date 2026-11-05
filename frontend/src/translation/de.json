@@ -107,16 +107,25 @@
   "editor": {
     "device": "Skigebiet",
     "title": "Titel (optional)",
-    "display": "Anzeige",
     "show_score": "SnowSure-Score anzeigen",
     "show_stats": "Schnee- und Liftwerte anzeigen",
     "show_forecast": "Schneeprognose anzeigen",
     "forecast_days": "Prognosetage",
-    "forecast_band": "Höhe der Prognose",
+    "forecast_band": "Neuschnee-Höhe",
     "show_avalanche": "Lawinengefahr anzeigen",
     "stats": "Kacheln",
     "show_weather": "Wetter anzeigen",
     "show_webcams": "Webcams anzeigen",
-    "show_image": "Titelbild als Hintergrund"
+    "show_image": "Titelbild als Hintergrund",
+    "band_auto": "Automatisch (SnowSure-Prognosepunkt)",
+    "band_auto_named": "Automatisch ({band})",
+    "section": {
+      "header": "Kopf und Wetter",
+      "stats": "Kacheln",
+      "forecast": "Schneeprognose",
+      "more": "Lawinen und Webcams"
+    },
+    "webcams": "Webcams",
+    "webcams_helper": "Leer zeigt die aktivierten Webcams, höchstens sechs. Weitere lassen sich beim Gerät des Skigebiets aktivieren."
   }
 }

@@ -163,6 +163,9 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
       stats,
       forecast_days:
         days === null ? DEFAULTS.forecast_days : Math.min(Math.max(Math.round(days), 1), MAX_FORECAST_DAYS),
+      webcams: Array.isArray(config.webcams)
+        ? config.webcams.filter((id): id is string => typeof id === 'string')
+        : undefined,
       forecast_band: FORECAST_BANDS.includes(config.forecast_band as ForecastBand) ? config.forecast_band : undefined,
     };
     this._band = undefined;
@@ -763,12 +766,20 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     `;
   }
 
-  /** Enabled webcam entities, through Home Assistant's image proxy (no third-party request from the browser). */
+  /**
+   * The picked webcams in the picked order, else the enabled ones up to six;
+   * through Home Assistant's image proxy (no third-party request from the browser).
+   */
   private _renderWebcams(resort: ResortEntities): TemplateResult | typeof nothing {
     const hass = this.hass!;
-    const cams = resort.webcams
-      .filter((cam) => isAvailable(cam) && cam.attributes.entity_picture)
-      .slice(0, MAX_WEBCAMS);
+    const picked = this._config!.webcams ?? [];
+    const cams = (
+      picked.length
+        ? picked
+            .map((id) => resort.webcams.find((cam) => cam.entity_id === id))
+            .filter((cam): cam is HassEntity => Boolean(cam))
+        : resort.webcams.slice(0, MAX_WEBCAMS)
+    ).filter((cam) => isAvailable(cam) && cam.attributes.entity_picture);
     // Without webcams the row stays, as one muted tile: cards side by side
     // keep the same height.
     return html`

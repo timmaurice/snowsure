@@ -196,6 +196,14 @@ describe('render', () => {
 
     const hidden = await mount({ device: DEVICE, show_webcams: false });
     expect(root(hidden).querySelector('.webcams')).toBeNull();
+
+    const picked = await mount({
+      device: DEVICE,
+      webcams: ['image.matterhorn_webcam_b', 'image.elsewhere_webcam', 'image.matterhorn_webcam_a'],
+    });
+    expect(text(picked, '.webcam-name')).toEqual(['Gornergrat', 'Glacier Paradise']);
+    const one = await mount({ device: DEVICE, webcams: ['image.matterhorn_webcam_b'] });
+    expect(text(one, '.webcam-name')).toEqual(['Gornergrat']);
   });
 
   it('uses the resort image as header background unless turned off', async () => {

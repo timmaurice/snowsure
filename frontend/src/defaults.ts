@@ -56,6 +56,7 @@ export function withoutDefaults(config: SnowsureCardConfig): SnowsureCardConfig 
     if (cleaned[key] === value) delete cleaned[key];
   }
   if (sameStats(cleaned.stats, DEFAULT_STATS)) delete cleaned.stats;
+  if (Array.isArray(cleaned.webcams) && cleaned.webcams.length === 0) delete cleaned.webcams;
   if (cleaned.title === '') delete cleaned.title;
   if (cleaned.device === '') delete cleaned.device;
   return cleaned as SnowsureCardConfig;

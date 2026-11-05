@@ -96,6 +96,8 @@ export interface SnowsureCardConfig extends LovelaceCardConfig {
   forecast_band?: ForecastBand;
   show_avalanche?: boolean;
   show_webcams?: boolean;
+  /** Webcam image entities in this order; unset shows the enabled ones, up to six. */
+  webcams?: string[];
 }
 
 export type ForecastBand = 'base' | 'mid' | 'summit';

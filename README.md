@@ -96,6 +96,8 @@ forecast_days: 7 # 1–14
 forecast_band: mid # base, mid or summit; unset = SnowSure's forecast point
 show_avalanche: true
 show_webcams: true # enabled webcam entities, up to six
+webcams: # optional: these webcam entities in this order
+  - image.matterhorn_ski_paradise_webcam_gornergrat
 ```
 
 Available tiles: `depth_base`, `depth_mid`, `depth_summit`, `snowfall_24h`, `snowfall_7d`, `snowfall_season`, `forecast_7d`, `runs_open`, `lifts_open`, `temperature_base`, `temperature_summit`, `snow_quality`.

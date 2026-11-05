@@ -1,6 +1,8 @@
 import { LitElement, TemplateResult, html, nothing, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
-import { HomeAssistant, LovelaceCardEditor, SnowsureCardConfig } from './types';
+import { ForecastBand, HomeAssistant, LovelaceCardEditor, SnowsureCardConfig } from './types';
+import { resortEntities } from './entities';
+import { formatNumber, toNumber } from './format';
 import {
   DEFAULTS,
   DEFAULT_STATS,
@@ -18,9 +20,14 @@ interface SchemaItem {
   name?: string;
   type?: string;
   title?: string;
+  icon?: string;
+  required?: boolean;
   selector?: Record<string, unknown>;
   schema?: SchemaItem[];
 }
+
+/** Select value for "no forecast_band": SnowSure's own forecast point. Never written to the config. */
+export const AUTO_BAND = 'auto';
 
 export class SnowsureCardEditor extends LitElement implements LovelaceCardEditor {
   @property({ attribute: false }) public hass?: HomeAssistant;
@@ -33,20 +40,24 @@ export class SnowsureCardEditor extends LitElement implements LovelaceCardEditor
   }
 
   /**
-   * Built per render: the expandable's title follows the user's language, and
-   * options that belong to a section only show while that section is on.
+   * Built per render: one expandable per part of the card, in the card's
+   * order, titled in the user's language. Options that belong to a part only
+   * show while it is on, and the forecast options follow the picked resort.
    */
   public schema(): SchemaItem[] {
     const hass = this.hass;
     const c = { ...DEFAULTS, ...this._config };
-    const display: SchemaItem[] = [
-      { name: 'show_score', selector: { boolean: {} } },
-      { name: 'show_image', selector: { boolean: {} } },
-      { name: 'show_weather', selector: { boolean: {} } },
-      { name: 'show_stats', selector: { boolean: {} } },
-    ];
+    const section = (key: string, icon: string, schema: SchemaItem[]): SchemaItem => ({
+      type: 'expandable',
+      title: localize(hass, `editor.section.${key}`),
+      icon,
+      schema,
+    });
+    const toggle = (name: string): SchemaItem => ({ name, selector: { boolean: {} } });
+
+    const stats: SchemaItem[] = [toggle('show_stats')];
     if (c.show_stats) {
-      display.push({
+      stats.push({
         name: 'stats',
         selector: {
           select: {
@@ -58,41 +69,118 @@ export class SnowsureCardEditor extends LitElement implements LovelaceCardEditor
         },
       });
     }
-    display.push({ name: 'show_forecast', selector: { boolean: {} } });
+
+    const forecast: SchemaItem[] = [toggle('show_forecast')];
     if (c.show_forecast) {
-      display.push(
-        {
-          name: 'forecast_days',
-          selector: { number: { min: 1, max: MAX_FORECAST_DAYS, step: 1, mode: 'slider' } },
-        },
-        {
+      const resort = this._forecastInfo();
+      forecast.push({
+        name: 'forecast_days',
+        selector: { number: { min: 1, max: resort.maxDays, step: 1, mode: 'slider' } },
+      });
+      // Without a resort the heights are unknown, but the choice still makes sense.
+      const bands = resort.bands ?? FORECAST_BANDS;
+      if (bands.length > 1) {
+        const bandName = (band: ForecastBand) => localize(hass, `card.band.${band}`);
+        forecast.push({
           name: 'forecast_band',
           selector: {
             select: {
               mode: 'dropdown',
-              options: FORECAST_BANDS.map((band) => ({ value: band, label: localize(hass, `card.band.${band}`) })),
+              options: [
+                {
+                  value: AUTO_BAND,
+                  label: resort.point
+                    ? localize(hass, 'editor.band_auto_named', { band: bandName(resort.point) })
+                    : localize(hass, 'editor.band_auto'),
+                },
+                ...bands.map((band) => {
+                  const metres = resort.elevations?.[band];
+                  return {
+                    value: band,
+                    label:
+                      metres === undefined
+                        ? bandName(band)
+                        : `${bandName(band)} · ${formatNumber(metres, hass, { maximumFractionDigits: 0 })} m`,
+                  };
+                }),
+              ],
             },
           },
-        },
-      );
+        });
+      }
     }
-    display.push(
-      { name: 'show_avalanche', selector: { boolean: {} } },
-      { name: 'show_webcams', selector: { boolean: {} } },
-    );
+
+    const more: SchemaItem[] = [toggle('show_avalanche'), toggle('show_webcams')];
+    const cams = this.hass ? resortEntities(this.hass, c.device).webcams : [];
+    if (c.show_webcams && cams.length) {
+      more.push({
+        name: 'webcams',
+        selector: {
+          select: {
+            multiple: true,
+            reorder: true,
+            mode: 'dropdown',
+            options: cams.map((cam) => ({
+              value: cam.entity_id,
+              label: (cam.attributes.camera as string | undefined) ?? cam.attributes.friendly_name ?? cam.entity_id,
+            })),
+          },
+        },
+      });
+    }
+
     return [
       { name: 'device', selector: { device: { filter: [{ integration: 'snowsure' }] } } },
       { name: 'title', selector: { text: {} } },
-      { type: 'expandable', title: localize(hass, 'editor.display'), schema: display },
+      section('header', 'mdi:image-filter-hdr', [toggle('show_score'), toggle('show_image'), toggle('show_weather')]),
+      section('stats', 'mdi:view-grid-outline', stats),
+      section('forecast', 'mdi:weather-snowy-heavy', forecast),
+      section('more', 'mdi:webcam', more),
     ];
+  }
+
+  /**
+   * What the picked resort's forecast offers: how many days (7, or 14 with a
+   * Pro key), SnowSure's own forecast point and the heights of the bands.
+   */
+  private _forecastInfo(): {
+    maxDays: number;
+    point?: ForecastBand;
+    bands?: ForecastBand[];
+    elevations?: Partial<Record<ForecastBand, number>>;
+  } {
+    const forecast = this.hass ? resortEntities(this.hass, this._config?.device).byKey.forecast_7d : undefined;
+    if (!forecast) return { maxDays: MAX_FORECAST_DAYS };
+    const attrs = forecast.attributes;
+    const daily = Array.isArray(attrs.daily) ? attrs.daily.length : 0;
+    const raw = (attrs.band_elevations ?? {}) as Record<string, unknown>;
+    const elevations: Partial<Record<ForecastBand, number>> = {};
+    for (const band of FORECAST_BANDS) {
+      const metres = toNumber(raw[band]);
+      if (metres !== null) elevations[band] = metres;
+    }
+    const point = FORECAST_BANDS.find((band) => band === attrs.point_band);
+    const bands = FORECAST_BANDS.filter((band) => band in elevations);
+    return {
+      maxDays: daily > 0 ? Math.min(daily, MAX_FORECAST_DAYS) : MAX_FORECAST_DAYS,
+      point,
+      bands: bands.length ? bands : undefined,
+      elevations,
+    };
   }
 
   private _computeLabel = (item: SchemaItem): string => (item.name ? localize(this.hass, `editor.${item.name}`) : '');
 
+  private _computeHelper = (item: SchemaItem): string =>
+    item.name === 'webcams' ? localize(this.hass, 'editor.webcams_helper') : '';
+
   private _valueChanged(ev: CustomEvent<{ value: Partial<SnowsureCardConfig> }>): void {
     ev.stopPropagation();
     if (!this._config) return;
-    this._config = { ...this._config, ...ev.detail.value };
+    const config = { ...this._config, ...ev.detail.value };
+    // Cleared or automatic both mean SnowSure's own forecast point.
+    if (!config.forecast_band || config.forecast_band === (AUTO_BAND as string)) delete config.forecast_band;
+    this._config = config;
     fireEvent(this, 'config-changed', { config: withoutDefaults(this._config) });
   }
 
@@ -101,9 +189,10 @@ export class SnowsureCardEditor extends LitElement implements LovelaceCardEditor
     return html`
       <ha-form
         .hass=${this.hass}
-        .data=${this._config}
+        .data=${{ ...this._config, forecast_band: this._config.forecast_band ?? AUTO_BAND }}
         .schema=${this.schema()}
         .computeLabel=${this._computeLabel}
+        .computeHelper=${this._computeHelper}
         @value-changed=${this._valueChanged}
       ></ha-form>
     `;
