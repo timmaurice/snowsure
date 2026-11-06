@@ -161,7 +161,7 @@ The card follows its own width, and a compact variant and a compare card sit nex
 
 ### Compare Card
 
-`custom:snowsure-compare-card` ranks several resorts side by side: new snow over the next days (or SnowSure score, or summit depth), with open/closed, summit depth, avalanche level and score per row. A tap opens the resort's forecast. The chips under the title (Auto, Valley, Mid, Summit) switch the height the new snow is read at and re-rank the list; `band` sets where it starts.
+`custom:snowsure-compare-card` ranks several resorts side by side: new snow over the next days (or SnowSure score, or summit depth), with open/closed, summit depth, avalanche level and score per row. A tap opens the resort's forecast. The chips under the title (Valley, Mid, Summit) switch the height the new snow is read at and re-rank the list; `band` sets where it starts.
 
 ```yaml
 type: custom:snowsure-compare-card

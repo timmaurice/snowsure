@@ -88,8 +88,9 @@ describe('compare card', () => {
 
   it('switches the height on the card without touching the config', async () => {
     const card = await mount({ days: 3 });
-    expect(text(card, '.band')).toEqual(['Auto', 'Valley', 'Mid', 'Summit']);
-    expect(text(card, '.band.active')).toEqual(['Auto']);
+    // No band configured: both resorts' forecast point is mid.
+    expect(text(card, '.band')).toEqual(['Valley', 'Mid', 'Summit']);
+    expect(text(card, '.band.active')).toEqual(['Mid']);
     const pick = async (label: string) => {
       Array.from(card.shadowRoot!.querySelectorAll<HTMLButtonElement>('.band'))
         .find((button) => button.textContent?.trim() === label)!
@@ -101,9 +102,16 @@ describe('compare card', () => {
     expect(text(card, '.name')).toEqual(['Matterhorn Ski Paradise', 'Whistler Blackcomb']);
     expect(text(card, '.amount')).toEqual(['14 cm', '14 cm']);
     expect(text(card, '.band.active')).toEqual(['Summit']);
-    await pick('Auto');
+    await pick('Mid');
     expect(text(card, '.name')).toEqual(['Whistler Blackcomb', 'Matterhorn Ski Paradise']);
     expect(text(card, '.amount')).toEqual(['30 cm', '7.4 cm']);
+  });
+
+  it('lights no chip while the resorts read different forecast points', async () => {
+    const hass = twoResorts();
+    const forecast = hass.states['sensor.whistler_forecast'];
+    forecast.attributes = { ...forecast.attributes, point_band: 'summit' };
+    expect(text(await mount({}, hass), '.band.active')).toEqual([]);
   });
 
   it('opens the forecast on a row', async () => {
