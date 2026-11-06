@@ -160,6 +160,7 @@
       "sort_score": "SnowSure score",
       "sort_depth": "Snow depth at the summit"
     },
-    "sort_snowfall_today": "New snow today"
+    "sort_snowfall_today": "New snow today",
+    "band_auto": "Auto"
   }
 }

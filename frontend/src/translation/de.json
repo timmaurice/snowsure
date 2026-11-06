@@ -160,6 +160,7 @@
       "sort_score": "SnowSure-Score",
       "sort_depth": "Schneehöhe am Berg"
     },
-    "sort_snowfall_today": "Neuschnee heute"
+    "sort_snowfall_today": "Neuschnee heute",
+    "band_auto": "Auto"
   }
 }

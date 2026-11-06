@@ -28,6 +28,46 @@ ha-card {
   text-overflow: ellipsis;
 }
 
+// Same look as the resort card's band switch.
+.band-switch {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.band-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-right: 2px;
+  font-size: 0.75rem;
+  color: var(--info-color, #039be5);
+
+  ha-icon {
+    --mdc-icon-size: 16px;
+  }
+}
+
+.band {
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(var(--rgb-info-color, 3, 155, 229), 0.35);
+  background: none;
+  color: var(--secondary-text-color);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 500;
+  cursor: pointer;
+
+  &.active {
+    background: rgba(var(--rgb-info-color, 3, 155, 229), 0.22);
+    border-color: transparent;
+    color: var(--primary-text-color);
+  }
+}
+
 .rows {
   list-style: none;
   margin: 0;

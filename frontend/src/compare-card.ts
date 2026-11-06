@@ -97,6 +97,8 @@ export function sortRows(rows: CompareRow[], sort: CompareSort): CompareRow[] {
 export class SnowsureCompareCard extends LitElement implements LovelaceCard {
   @property({ attribute: false }) public hass?: HomeAssistant;
   @state() private _config?: CompareCardConfig;
+  /** Height picked on the card; 'auto' is each resort's forecast point. Unset follows the config. */
+  @state() private _band?: ForecastBand | 'auto';
 
   static styles = unsafeCSS(styles);
 
@@ -118,6 +120,12 @@ export class SnowsureCompareCard extends LitElement implements LovelaceCard {
       band: FORECAST_BANDS.includes(config.band as ForecastBand) ? config.band : undefined,
       sort: COMPARE_SORTS.includes(config.sort as CompareSort) ? config.sort : COMPARE_DEFAULTS.sort,
     };
+    this._band = undefined;
+  }
+
+  private get _activeBand(): ForecastBand | undefined {
+    const band = this._band ?? this._config?.band;
+    return band === 'auto' ? undefined : band;
   }
 
   public getCardSize(): number {
@@ -133,7 +141,7 @@ export class SnowsureCompareCard extends LitElement implements LovelaceCard {
     const c = this._config!;
     const devices = c.devices?.length ? c.devices : snowsureDevices(hass);
     const rows = devices
-      .map((device) => compareRow(hass, device, c.days!, c.band))
+      .map((device) => compareRow(hass, device, c.days!, this._activeBand))
       .filter((row): row is CompareRow => row !== null);
     return sortRows(rows, c.sort!);
   }
@@ -145,15 +153,15 @@ export class SnowsureCompareCard extends LitElement implements LovelaceCard {
     const rows = this._rows();
     const max = Math.max(...rows.map((row) => row.snowfall ?? 0), 5);
     const title = c.title ?? localize(hass, 'compare.title');
-    const band = c.band ? ` · ${localize(hass, `card.band.${c.band}`)}` : '';
     return html`
       <ha-card>
         <div class="head">
           <span class="title">${title}</span>
           <span class="secondary"
-            >${localize(hass, c.sort === 'snowfall' && c.days === 1 ? 'compare.sort_snowfall_today' : `compare.sort_${c.sort}`, { days: c.days! })}${band}</span
+            >${localize(hass, c.sort === 'snowfall' && c.days === 1 ? 'compare.sort_snowfall_today' : `compare.sort_${c.sort}`, { days: c.days! })}</span
           >
         </div>
+        ${this._renderBandSwitch()}
         ${
           rows.length === 0
             ? html`<div class="empty">${localize(hass, 'compare.empty')}</div>`
@@ -167,6 +175,33 @@ export class SnowsureCompareCard extends LitElement implements LovelaceCard {
           >
         </div>
       </ha-card>
+    `;
+  }
+
+  /** Auto / valley / mid / summit, like the resort card's switch; heights differ per resort, so no metres. */
+  private _renderBandSwitch(): TemplateResult {
+    const hass = this.hass!;
+    const active = this._activeBand ?? 'auto';
+    const options: (ForecastBand | 'auto')[] = ['auto', ...FORECAST_BANDS];
+    return html`
+      <div class="band-switch" role="radiogroup" aria-label=${localize(hass, 'card.snowfall_at')}>
+        <span class="band-label"
+          ><ha-icon icon="mdi:snowflake"></ha-icon><span>${localize(hass, 'card.snowfall_at')}</span></span
+        >
+        ${options.map(
+          (band) => html`
+            <button
+              role="radio"
+              class="band ${band === active ? 'active' : ''}"
+              title=${band === 'auto' ? localize(hass, 'editor.band_auto') : localize(hass, `card.band.${band}`)}
+              aria-checked=${band === active ? 'true' : 'false'}
+              @click=${() => (this._band = band)}
+            >
+              ${band === 'auto' ? localize(hass, 'compare.band_auto') : localize(hass, `card.band.${band}`)}
+            </button>
+          `,
+        )}
+      </div>
     `;
   }
 

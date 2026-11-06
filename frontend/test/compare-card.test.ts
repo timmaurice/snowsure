@@ -82,7 +82,28 @@ describe('compare card', () => {
     const card = await mount({ band: 'summit', devices: [DEVICE], days: 1 });
     expect(text(card, '.name')).toEqual(['Matterhorn Ski Paradise']);
     expect(text(card, '.amount')).toEqual(['1 cm']);
-    expect(text(card, '.secondary')).toEqual(['New snow today · Summit']);
+    expect(text(card, '.secondary')).toEqual(['New snow today']);
+    expect(text(card, '.band.active')).toEqual(['Summit']);
+  });
+
+  it('switches the height on the card without touching the config', async () => {
+    const card = await mount({ days: 3 });
+    expect(text(card, '.band')).toEqual(['Auto', 'Valley', 'Mid', 'Summit']);
+    expect(text(card, '.band.active')).toEqual(['Auto']);
+    const pick = async (label: string) => {
+      Array.from(card.shadowRoot!.querySelectorAll<HTMLButtonElement>('.band'))
+        .find((button) => button.textContent?.trim() === label)!
+        .click();
+      await card.updateComplete;
+    };
+    // Summit, days 1-3: 1 + 0 + 12.5 cm at both (the copy only changed mid), so the tie goes by name.
+    await pick('Summit');
+    expect(text(card, '.name')).toEqual(['Matterhorn Ski Paradise', 'Whistler Blackcomb']);
+    expect(text(card, '.amount')).toEqual(['14 cm', '14 cm']);
+    expect(text(card, '.band.active')).toEqual(['Summit']);
+    await pick('Auto');
+    expect(text(card, '.name')).toEqual(['Whistler Blackcomb', 'Matterhorn Ski Paradise']);
+    expect(text(card, '.amount')).toEqual(['30 cm', '7.4 cm']);
   });
 
   it('opens the forecast on a row', async () => {
