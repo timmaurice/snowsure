@@ -107,6 +107,30 @@ describe('compare card', () => {
     expect(text(card, '.amount')).toEqual(['30 cm', '7.4 cm']);
   });
 
+  it('slides the rows to their new place when the height changes', async () => {
+    // jsdom has no layout: a row's top is its place in the list.
+    const top = vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
+      this: HTMLElement,
+    ) {
+      return { top: Array.from(this.parentElement?.children ?? []).indexOf(this) * 50 } as DOMRect;
+    });
+    const animate = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, 'animate', { value: animate, configurable: true });
+    try {
+      const card = await mount({ days: 3 });
+      expect(text(card, '.name')).toEqual(['Whistler Blackcomb', 'Matterhorn Ski Paradise']);
+      card.shadowRoot!.querySelectorAll<HTMLButtonElement>('.band')[2].click();
+      await card.updateComplete;
+      expect(text(card, '.name')).toEqual(['Matterhorn Ski Paradise', 'Whistler Blackcomb']);
+      // Same elements, moved: Matterhorn up from 50 px, Whistler down from 0.
+      const moves = animate.mock.calls.map(([frames]) => frames[0].transform);
+      expect(moves.sort()).toEqual(['translateY(-50px)', 'translateY(50px)']);
+    } finally {
+      top.mockRestore();
+      delete (HTMLElement.prototype as Partial<HTMLElement>).animate;
+    }
+  });
+
   it('lights no chip while the resorts read different forecast points', async () => {
     const hass = twoResorts();
     const forecast = hass.states['sensor.whistler_forecast'];

@@ -1,5 +1,6 @@
-import { LitElement, TemplateResult, html, nothing, unsafeCSS } from 'lit';
+import { LitElement, PropertyValues, TemplateResult, html, nothing, unsafeCSS } from 'lit';
 import { property, state } from 'lit/decorators.js';
+import { repeat } from 'lit/directives/repeat.js';
 import { ForecastBand, ForecastDay, HassEntity, HomeAssistant, LovelaceCard, LovelaceCardEditor } from './types';
 import { FORECAST_BANDS } from './defaults';
 import { isAvailable, resortEntities, snowsureDevices } from './entities';
@@ -28,6 +29,8 @@ export interface CompareCardConfig {
 
 export const COMPARE_DEFAULTS = { days: 3, sort: 'snowfall' as CompareSort };
 const CM_PER_INCH = 2.54;
+/** Same length as the bar's width transition in compare.styles.scss. */
+const MOVE_MS = 400;
 
 /** One resort's row, everything already read from its entities. */
 export interface CompareRow {
@@ -102,6 +105,8 @@ export class SnowsureCompareCard extends LitElement implements LovelaceCard {
   @state() private _config?: CompareCardConfig;
   /** Height picked on the card; unset follows the config. */
   @state() private _band?: ForecastBand;
+  /** Row tops before a height switch, keyed by device, for the move animation. */
+  private _tops?: Map<string, number>;
 
   static styles = unsafeCSS(styles);
 
@@ -148,6 +153,35 @@ export class SnowsureCompareCard extends LitElement implements LovelaceCard {
     return sortRows(rows, c.sort!);
   }
 
+  /** A height switch re-ranks the rows: note where each one was... */
+  protected willUpdate(changed: PropertyValues<this>): void {
+    this._tops = changed.has('_band' as keyof this) ? this._rowTops() : undefined;
+  }
+
+  /** ...and slide every moved row from there to its new place (FLIP). */
+  protected updated(): void {
+    const before = this._tops;
+    this._tops = undefined;
+    if (!before?.size || window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+    for (const [device, top] of this._rowTops()) {
+      const li = this.shadowRoot!.querySelector<HTMLElement>(`li[data-device="${CSS.escape(device)}"]`);
+      const from = before.get(device);
+      if (!li || from === undefined || from === top || typeof li.animate !== 'function') continue;
+      li.animate([{ transform: `translateY(${from - top}px)` }, { transform: 'none' }], {
+        duration: MOVE_MS,
+        easing: 'cubic-bezier(0.2, 0, 0, 1)',
+      });
+    }
+  }
+
+  private _rowTops(): Map<string, number> {
+    const tops = new Map<string, number>();
+    this.shadowRoot?.querySelectorAll<HTMLElement>('li[data-device]').forEach((li) => {
+      tops.set(li.dataset.device!, li.getBoundingClientRect().top);
+    });
+    return tops;
+  }
+
   protected render(): TemplateResult | typeof nothing {
     if (!this.hass || !this._config) return nothing;
     const hass = this.hass;
@@ -168,7 +202,11 @@ export class SnowsureCompareCard extends LitElement implements LovelaceCard {
           rows.length === 0
             ? html`<div class="empty">${localize(hass, 'compare.empty')}</div>`
             : html`<ol class="rows">
-                ${rows.map((row, index) => this._renderRow(row, index, max))}
+                ${repeat(
+                  rows,
+                  (row) => row.device,
+                  (row, index) => this._renderRow(row, index, max),
+                )}
               </ol>`
         }
         <div class="footer">
@@ -223,7 +261,7 @@ export class SnowsureCompareCard extends LitElement implements LovelaceCard {
     const depth =
       row.depth === null ? null : `${formatNumber(row.depth, hass, { maximumFractionDigits: 0 })} ${depthUnit}`;
     return html`
-      <li>
+      <li data-device=${row.device}>
         <button
           class="row"
           @click=${() => row.forecast && fireEvent(this, 'hass-more-info', { entityId: row.forecast.entity_id })}

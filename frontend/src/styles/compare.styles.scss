@@ -176,6 +176,20 @@ ha-card {
   height: 100%;
   border-radius: 3px;
   background: var(--primary-color);
+  // The rows slide for the same 400 ms (MOVE_MS in compare-card.ts).
+  transition: width 400ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+// Rows stack above each other while they slide past.
+.rows li {
+  position: relative;
+  background: var(--ha-card-background, var(--card-background-color, #fff));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    transition: none;
+  }
 }
 
 .score {
