@@ -215,6 +215,8 @@ def parse_resort(
         "webcams": parse_webcams(detail.get("webcams")),
         # Avalanche
         **parse_avalanche(avalanche),
+        # SnowSure's terms ask to carry these alongside "Data by SnowSure.ai".
+        "credits": parse_credits(detail.get("credits")),
     }
 
 
@@ -268,6 +270,26 @@ def parse_avalanche(payload: dict[str, Any] | None) -> dict[str, Any]:
 _LIVE_IMAGE_TYPES = frozenset({"image", "panomax", "skaping"})
 # YouTube "webcams" are streams; their thumbnail is a video poster, often 404.
 _SKIPPED_WEBCAM_TYPES = frozenset({"youtube"})
+
+
+def parse_credits(raw: Any) -> list[dict[str, str | None]]:
+    """The upstream sources SnowSure lists under ``credits.upstream``.
+
+    The API asks every display of its data to carry these next to its own
+    credit. Entries without a name or text are dropped, links are https only.
+    """
+    credits = []
+    for item in _dict(raw).get("upstream") or []:
+        if not isinstance(item, dict):
+            continue
+        name = _str(item.get("name"))
+        text = _str(item.get("text")) or name
+        if not text:
+            continue
+        credits.append(
+            {"name": name or text, "text": text, "url": _https(item.get("url")), "license": _str(item.get("license"))}
+        )
+    return credits
 
 
 def parse_webcams(raw: Any) -> list[dict[str, str | None]]:

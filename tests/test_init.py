@@ -103,6 +103,24 @@ async def test_daily_forecast_is_not_recorded(
     assert (forecast.attributes["change_24h"], forecast.attributes["change_48h"]) == (4.2, -5.1)
 
 
+async def test_upstream_credits_ride_on_the_updated_sensor(
+    hass: HomeAssistant, mock_api: AiohttpClientMocker, mock_entry: MockConfigEntry
+) -> None:
+    await _setup(hass, mock_entry)
+    updated_id = _entity_id(hass, "sensor", "updated_at")
+    sources = hass.states.get(updated_id).attributes["sources"]
+    assert [source["name"] for source in sources] == ["Open-Meteo", "UK Met Office", "Japan Meteorological Agency"]
+    assert sources[1] == {
+        "name": "UK Met Office",
+        "text": "Contains UK Met Office data",
+        "url": "https://www.metoffice.gov.uk/",
+        "license": "CC BY-SA 4.0",
+    }
+    # The list is the same on every poll; one copy per refresh would bloat the recorder.
+    entity = hass.data["entity_components"]["sensor"].get_entity(updated_id)
+    assert "sources" in entity._unrecorded_attributes
+
+
 async def test_avalanche_failure_is_not_fatal(
     hass: HomeAssistant, aioclient_mock: AiohttpClientMocker, mock_entry: MockConfigEntry
 ) -> None:

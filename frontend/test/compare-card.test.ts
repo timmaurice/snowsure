@@ -39,6 +39,13 @@ function twoResorts(): HomeAssistant {
     })),
   }));
   copy('sensor.matterhorn_score', 'score', (attributes) => attributes, '25');
+  // Same Open-Meteo entry as the first resort, plus one of its own.
+  copy('sensor.matterhorn_updated', 'updated_at', (attributes) => ({
+    sources: [
+      (attributes.sources as unknown[])[0],
+      { name: 'ECCC climate stations', text: 'Contains ECCC information', url: 'https://climate.weather.gc.ca/' },
+    ],
+  }));
   hass.devices[OTHER] = { id: OTHER, name: 'Whistler Blackcomb' };
   return hass;
 }
@@ -71,6 +78,18 @@ describe('compare card', () => {
     expect(text(card, '.secondary')).toEqual(['New snow in the next 3 days']);
     expect(text(card, '.score')).toEqual(['25', '33']);
     expect(text(card, '.footer a')).toEqual(['Data by SnowSure.ai']);
+  });
+
+  it('lists the upstream sources of all resorts once', async () => {
+    const card = await mount({});
+    card.shadowRoot!.querySelector<HTMLButtonElement>('.sources-toggle')!.click();
+    await card.updateComplete;
+    // Open-Meteo is on both resorts and shows once.
+    expect(text(card, '.sources li')).toEqual([
+      'Weather data by Open-Meteo.com (modified by SnowSure) (CC BY 4.0)',
+      'Contains ECCC information',
+      'JMA forecast data',
+    ]);
   });
 
   it('sorts by score or summit depth, and keeps resorts without a value last', async () => {

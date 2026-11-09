@@ -142,13 +142,19 @@ class SnowsureClient:
         return resorts
 
     async def async_get_resort(self, slug: str) -> dict[str, Any]:
-        """Return the ``data`` object of the resort detail endpoint."""
+        """Return the ``data`` object of the resort detail endpoint.
+
+        The envelope's ``credits`` (SnowSure's own plus the upstream sources) sit
+        next to ``data``; they are copied in so the parser sees them.
+        """
         if _is_demo(slug):
             return demo_detail()
         payload = await self._get(f"/resorts/{validate_slug(slug)}")
         data = payload.get("data") if isinstance(payload, dict) else None
         if not isinstance(data, dict):
             raise SnowsureError(f"SnowSure returned no resort data for {slug}")
+        if isinstance(payload.get("credits"), dict) and "credits" not in data:
+            data = {**data, "credits": payload["credits"]}
         return data
 
     async def async_get_avalanche(self, slug: str) -> dict[str, Any]:

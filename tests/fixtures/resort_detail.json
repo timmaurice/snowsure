@@ -1041,5 +1041,33 @@
         "thumbnailUrl": "https://example.com/thumb.jpg"
       }
     ]
+  },
+  "credits": {
+    "provider": {
+      "name": "SnowSure",
+      "url": "https://www.snowsure.ai",
+      "text": "Data by SnowSure.ai"
+    },
+    "required": "Credit \"Data by SnowSure.ai\" with a visible link to https://www.snowsure.ai wherever this data is shown, and carry the upstream credits listed here.",
+    "terms": "https://www.snowsure.ai/terms",
+    "upstream": [
+      {
+        "name": "Open-Meteo",
+        "text": "Weather data by Open-Meteo.com (modified by SnowSure)",
+        "url": "https://open-meteo.com/",
+        "license": "CC BY 4.0"
+      },
+      {
+        "name": "UK Met Office",
+        "text": "Contains UK Met Office data",
+        "url": "https://www.metoffice.gov.uk/",
+        "license": "CC BY-SA 4.0"
+      },
+      {
+        "name": "Japan Meteorological Agency",
+        "text": "JMA forecast data",
+        "url": "https://www.jma.go.jp/"
+      }
+    ]
   }
 }

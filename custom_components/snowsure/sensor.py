@@ -219,6 +219,8 @@ SENSORS: tuple[SnowsureSensorEntityDescription, ...] = (
         key="updated_at",
         translation_key="updated_at",
         value_fn=_timestamp("updated_at"),
+        # The upstream credits ride on this one sensor; the card reads them here.
+        attrs_fn=lambda d: {"sources": d.get("credits") or []},
         device_class=SensorDeviceClass.TIMESTAMP,
         entity_category=EntityCategory.DIAGNOSTIC,
     ),
@@ -239,8 +241,9 @@ class SnowsureSensor(SnowsureEntity, SensorEntity):
 
     entity_description: SnowsureSensorEntityDescription
     # The daily forecast changes every refresh; keeping it out of the recorder
-    # stops it from bloating the database with a copy per poll.
-    _unrecorded_attributes = frozenset({"daily", "breakdown", "advice"})
+    # stops it from bloating the database with a copy per poll. The source
+    # list is long and the same every time.
+    _unrecorded_attributes = frozenset({"daily", "breakdown", "advice", "sources"})
 
     @property
     def native_value(self) -> Any:

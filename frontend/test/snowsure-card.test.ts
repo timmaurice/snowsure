@@ -197,7 +197,9 @@ describe('render', () => {
 
   it('shows enabled webcams in SnowSure order through the image proxy', async () => {
     const card = await mount({ device: DEVICE });
-    expect(text(card, '.webcam-name')).toEqual(['Glacier Paradise', 'Gornergrat']);
+    expect(text(card, '.webcam-name')).toEqual(['Glacier ParadiseZermatt Bergbahnen AG', 'Gornergrat']);
+    // The image owner SnowSure names stays on the tile.
+    expect(text(card, '.webcam-credit')).toEqual(['Zermatt Bergbahnen AG']);
     const img = root(card).querySelector<HTMLImageElement>('.webcam img')!;
     expect(img.getAttribute('src')).toBe('/api/image_proxy/image.matterhorn_webcam_a?token=t');
 
@@ -444,6 +446,32 @@ describe('render', () => {
     expect(link.href).toBe('https://www.snowsure.ai/resorts/matterhorn-ski-paradise');
   });
 
+  it('unfolds the upstream sources SnowSure asks to credit', async () => {
+    const card = await mount({ device: DEVICE });
+    const toggle = root(card).querySelector<HTMLButtonElement>('.sources-toggle')!;
+    expect(toggle.textContent!.trim()).toBe('Sources');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    expect(root(card).querySelector('.sources')).toBeNull();
+
+    toggle.click();
+    await card.updateComplete;
+    expect(toggle.getAttribute('aria-expanded')).toBe('true');
+    expect(text(card, '.sources li')).toEqual([
+      'Weather data by Open-Meteo.com (modified by SnowSure) (CC BY 4.0)',
+      'JMA forecast data',
+    ]);
+    const link = root(card).querySelector<HTMLAnchorElement>('.sources a')!;
+    expect(link.href).toBe('https://open-meteo.com/');
+    expect(link.rel).toBe('noopener noreferrer');
+  });
+
+  it('has no sources toggle when the integration lists none', async () => {
+    const hass = makeHass();
+    hass.states['sensor.matterhorn_updated'].attributes = {};
+    const card = await mount({ device: DEVICE }, hass);
+    expect(root(card).querySelector('.sources-toggle')).toBeNull();
+  });
+
   it('warns for a device without SnowSure entities', async () => {
     const card = await mount({ device: 'device-sun' });
     expect(text(card, '.hint')[0]).toContain('No SnowSure entities');
@@ -463,7 +491,9 @@ describe('render', () => {
       makeHass({ locale: { language: 'de', number_format: 'language' } }),
     );
     expect(text(card, '.chip:not(.bluebird)')).toEqual(['Geöffnet']);
-    expect(text(card, '.footer a')[0]).toBe('Daten von SnowSure.ai');
+    // SnowSure's terms name the credit word for word, so it stays English.
+    expect(text(card, '.footer a')[0]).toBe('Data by SnowSure.ai');
+    expect(text(card, '.sources-toggle')).toEqual(['Quellen']);
     // EAWS name from the card's translation, not SnowSure's English label.
     expect(text(card, '.avalanche-title')).toEqual(['Lawinengefahr: Mäßig']);
     expect(text(card, '.stat-label')).toContain('Pisten offen');

@@ -79,7 +79,26 @@ export function makeHass(overrides: Partial<HomeAssistant> = {}): HomeAssistant 
         link: 'https://www.slf.ch/',
       }),
     ],
-    ['sensor.matterhorn_updated', 'updated_at', entity('sensor.matterhorn_updated', '2026-11-04T15:00:44+00:00')],
+    [
+      'sensor.matterhorn_updated',
+      'updated_at',
+      entity('sensor.matterhorn_updated', '2026-11-04T15:00:44+00:00', {
+        sources: [
+          {
+            name: 'Open-Meteo',
+            text: 'Weather data by Open-Meteo.com (modified by SnowSure)',
+            url: 'https://open-meteo.com/',
+            license: 'CC BY 4.0',
+          },
+          {
+            name: 'Japan Meteorological Agency',
+            text: 'JMA forecast data',
+            url: 'https://www.jma.go.jp/',
+            license: null,
+          },
+        ],
+      }),
+    ],
     ['sensor.matterhorn_runs', 'runs_open', entity('sensor.matterhorn_runs', '43', { total: 144 })],
     [
       'sensor.matterhorn_temp_valley',
@@ -126,6 +145,7 @@ export function makeHass(overrides: Partial<HomeAssistant> = {}): HomeAssistant 
       entity('image.matterhorn_webcam_a', '2026-11-04T15:00:00+00:00', {
         entity_picture: '/api/image_proxy/image.matterhorn_webcam_a?token=t',
         camera: 'Glacier Paradise',
+        credit: 'Zermatt Bergbahnen AG',
         position: 0,
       }),
     ],

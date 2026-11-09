@@ -15,7 +15,7 @@
     "avalanche_valid_until": "gültig bis {date}",
     "avalanche_expired": "abgelaufen {date}, noch kein neuer Bericht",
     "no_bulletin": "Kein aktueller Lawinenlagebericht",
-    "attribution": "Daten von SnowSure.ai",
+    "sources": "Quellen",
     "select_resort": "Wähle im Karten-Editor ein SnowSure-Skigebiet.",
     "resort_not_found": "Für dieses Gerät gibt es keine SnowSure-Entitäten. Ist die Integration eingerichtet?",
     "updated": "Aktualisiert {date}",

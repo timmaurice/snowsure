@@ -26,6 +26,7 @@ import { localize, tryLocalize } from './localize';
 import { snowQualityText, weatherIcon, weatherText } from './weather';
 import { fireEvent } from './utils';
 import { AVALANCHE_COLORS, avalancheIcon, customStatIcon } from './icons';
+import { ATTRIBUTION, SNOWSURE_URL, renderCredits, upstreamCredits } from './credits';
 import {
   BACK_RANGE_PATH,
   MOUNTAIN_PATH,
@@ -42,8 +43,6 @@ import {
 } from './mountain';
 import styles from './styles/card.styles.scss';
 import './compare-card';
-
-const SNOWSURE_URL = 'https://www.snowsure.ai';
 
 /** EAWS danger level colours (1 low ... 5 very high). */
 const STAT_ICONS: Record<StatKey, string> = {
@@ -135,6 +134,8 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
   @state() private _day?: number;
   /** The trail map dialog, while it is open: which map, and whether it is zoomed. */
   @state() private _trailMap?: { index: number; zoom: boolean };
+  /** The upstream source list under the footer, while it is unfolded. */
+  @state() private _showSources = false;
   /** Where the user clicked to zoom (0..1 of the image), to scroll there afterwards. */
   private _zoomFocus?: { x: number; y: number };
 
@@ -1185,7 +1186,13 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
           (cam) => html`
             <button class="webcam" @click=${() => this._moreInfo(cam)}>
               <img src=${cam.attributes.entity_picture as string} alt="" loading="lazy" />
-              <span class="webcam-name">${(cam.attributes.camera as string | undefined) ?? ''}</span>
+              <span class="webcam-name"
+                >${(cam.attributes.camera as string | undefined) ?? ''}${
+                  cam.attributes.credit
+                    ? html`<span class="webcam-credit">${cam.attributes.credit as string}</span>`
+                    : nothing
+                }</span
+              >
             </button>
           `,
         )}
@@ -1200,10 +1207,22 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     const maps = this._trailMaps(resort);
     const trailMap = this._trailMapPdf(resort, maps[0]) ?? (maps[0]?.attributes.entity_picture as string | undefined);
     const href = resortUrl && resortUrl.startsWith(SNOWSURE_URL) ? resortUrl : SNOWSURE_URL;
+    const credits = upstreamCredits([updated]);
     return html`
       <div class="footer">
         <span class="links">
-          <a href=${href} target="_blank" rel="noopener noreferrer">${localize(hass, 'card.attribution')}</a>
+          <a href=${href} target="_blank" rel="noopener noreferrer">${ATTRIBUTION}</a>
+          ${
+            credits.length
+              ? html`<button
+                  class="sources-toggle"
+                  aria-expanded=${this._showSources ? 'true' : 'false'}
+                  @click=${() => (this._showSources = !this._showSources)}
+                >
+                  ${localize(hass, 'card.sources')}
+                </button>`
+              : nothing
+          }
           ${
             trailMap
               ? html`<a href=${trailMap} target="_blank" rel="noopener noreferrer" @click=${this._openTrailMap}
@@ -1217,6 +1236,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
             ? html`<span>${localize(hass, 'card.updated', { date: formatDate(updated.state, hass) })}</span>`
             : nothing
         }
+        ${this._showSources && credits.length ? renderCredits(credits) : nothing}
       </div>
     `;
   }

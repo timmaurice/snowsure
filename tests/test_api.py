@@ -29,6 +29,8 @@ async def test_get_resort_returns_data(hass: HomeAssistant, mock_api: AiohttpCli
     data = await _client(hass).async_get_resort(SLUG)
     assert data["slug"] == SLUG
     assert data["snowSure"]["score"] == 33
+    # The envelope's credits are copied next to the resort data.
+    assert data["credits"]["provider"]["text"] == "Data by SnowSure.ai"
 
 
 async def test_no_authorization_header_without_key(hass: HomeAssistant, mock_api: AiohttpClientMocker) -> None:

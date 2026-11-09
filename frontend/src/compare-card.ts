@@ -6,6 +6,7 @@ import { FORECAST_BANDS } from './defaults';
 import { isAvailable, resortEntities, snowsureDevices } from './entities';
 import { formatNumber, toNumber } from './format';
 import { avalancheIcon } from './icons';
+import { ATTRIBUTION, SNOWSURE_URL, renderCredits, upstreamCredits } from './credits';
 import { localize } from './localize';
 import { fireEvent } from './utils';
 import styles from './styles/compare.styles.scss';
@@ -105,6 +106,8 @@ export class SnowsureCompareCard extends LitElement implements LovelaceCard {
   @state() private _config?: CompareCardConfig;
   /** Height picked on the card; unset follows the config. */
   @state() private _band?: ForecastBand;
+  /** The upstream source list under the footer, while it is unfolded. */
+  @state() private _showSources = false;
   /** Row tops before a height switch, keyed by device, for the move animation. */
   private _tops?: Map<string, number>;
 
@@ -189,6 +192,7 @@ export class SnowsureCompareCard extends LitElement implements LovelaceCard {
     const rows = this._rows();
     const max = Math.max(...rows.map((row) => row.snowfall ?? 0), 5);
     const title = c.title ?? localize(hass, 'compare.title');
+    const credits = upstreamCredits(rows.map((row) => resortEntities(hass, row.device).byKey.updated_at));
     return html`
       <ha-card>
         <div class="head">
@@ -210,9 +214,19 @@ export class SnowsureCompareCard extends LitElement implements LovelaceCard {
               </ol>`
         }
         <div class="footer">
-          <a href="https://www.snowsure.ai" target="_blank" rel="noopener noreferrer"
-            >${localize(hass, 'card.attribution')}</a
-          >
+          <a href=${SNOWSURE_URL} target="_blank" rel="noopener noreferrer">${ATTRIBUTION}</a>
+          ${
+            credits.length
+              ? html`<button
+                  class="sources-toggle"
+                  aria-expanded=${this._showSources ? 'true' : 'false'}
+                  @click=${() => (this._showSources = !this._showSources)}
+                >
+                  ${localize(hass, 'card.sources')}
+                </button>`
+              : nothing
+          }
+          ${this._showSources && credits.length ? renderCredits(credits) : nothing}
         </div>
       </ha-card>
     `;

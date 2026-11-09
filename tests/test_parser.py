@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import copy
 
-from custom_components.snowsure.parser import parse_avalanche, parse_resort, parse_trail_maps
+from custom_components.snowsure.parser import parse_avalanche, parse_credits, parse_resort, parse_trail_maps
 
 from .conftest import load_fixture
 
@@ -197,3 +197,35 @@ def test_snow_quality_prefers_the_snowpack_model() -> None:
     locked = parse_resort(_detail(), snowpack={"locked": True, "snowQuality": None})
     assert locked["snow_quality_source"] in ("conditions", None)
     assert locked["snow_quality"] == parse_resort(_detail())["snow_quality"]
+
+
+def test_parse_credits_keeps_the_upstream_sources() -> None:
+    credits = parse_credits(
+        {
+            "provider": {"name": "SnowSure", "text": "Data by SnowSure.ai"},
+            "upstream": [
+                {
+                    "name": "NOAA",
+                    "text": "NOAA GFS forecast data",
+                    "url": "https://www.noaa.gov/",
+                    "license": "Public domain",
+                },
+                {"name": "Plain", "text": "Plain link", "url": "http://example.com/"},
+                {"text": "Only text"},
+                {"name": ""},
+                "not a dict",
+            ],
+        }
+    )
+    assert credits == [
+        {"name": "NOAA", "text": "NOAA GFS forecast data", "url": "https://www.noaa.gov/", "license": "Public domain"},
+        # Links are https only.
+        {"name": "Plain", "text": "Plain link", "url": None, "license": None},
+        {"name": "Only text", "text": "Only text", "url": None, "license": None},
+    ]
+
+
+def test_parse_credits_without_a_block() -> None:
+    assert parse_credits(None) == []
+    assert parse_credits({"upstream": None}) == []
+    assert parse_resort(_detail())["credits"] == []

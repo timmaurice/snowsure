@@ -215,11 +215,39 @@ ha-card {
 }
 
 .footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
   padding-top: 6px;
   font-size: 0.75rem;
 
   a {
     color: var(--primary-color);
     text-decoration: none;
+  }
+
+  .sources-toggle {
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    color: var(--primary-color);
+    cursor: pointer;
+  }
+
+  // The upstream credits SnowSure's API asks to carry, unfolded on demand.
+  .sources {
+    color: var(--secondary-text-color);
+    flex-basis: 100%;
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .license {
+    opacity: 0.8;
   }
 }
