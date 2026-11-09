@@ -446,22 +446,25 @@ describe('render', () => {
     expect(link.href).toBe('https://www.snowsure.ai/resorts/matterhorn-ski-paradise');
   });
 
-  it('unfolds the upstream sources SnowSure asks to credit', async () => {
+  it('shows the upstream sources SnowSure asks to credit behind an info button', async () => {
     const card = await mount({ device: DEVICE });
     const toggle = root(card).querySelector<HTMLButtonElement>('.sources-toggle')!;
-    expect(toggle.textContent!.trim()).toBe('Sources');
+    expect(toggle.getAttribute('aria-label')).toBe('Sources');
+    // Hover: every source with its licence, one per line.
+    expect(toggle.title).toBe('Weather data by Open-Meteo.com (modified by SnowSure) (CC BY 4.0)\nJMA forecast data');
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
     expect(root(card).querySelector('.sources')).toBeNull();
 
+    // Tap, for touch screens without hover: one compact paragraph.
     toggle.click();
     await card.updateComplete;
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
-    expect(text(card, '.sources li')).toEqual([
-      'Weather data by Open-Meteo.com (modified by SnowSure) (CC BY 4.0)',
-      'JMA forecast data',
+    expect(text(card, '.sources')).toEqual([
+      'Weather data by Open-Meteo.com (modified by SnowSure) · JMA forecast data',
     ]);
     const link = root(card).querySelector<HTMLAnchorElement>('.sources a')!;
     expect(link.href).toBe('https://open-meteo.com/');
+    expect(link.title).toBe('CC BY 4.0');
     expect(link.rel).toBe('noopener noreferrer');
   });
 
@@ -493,7 +496,7 @@ describe('render', () => {
     expect(text(card, '.chip:not(.bluebird)')).toEqual(['Geöffnet']);
     // SnowSure's terms name the credit word for word, so it stays English.
     expect(text(card, '.footer a')[0]).toBe('Data by SnowSure.ai');
-    expect(text(card, '.sources-toggle')).toEqual(['Quellen']);
+    expect(root(card).querySelector('.sources-toggle')!.getAttribute('aria-label')).toBe('Quellen');
     // EAWS name from the card's translation, not SnowSure's English label.
     expect(text(card, '.avalanche-title')).toEqual(['Lawinengefahr: Mäßig']);
     expect(text(card, '.stat-label')).toContain('Pisten offen');

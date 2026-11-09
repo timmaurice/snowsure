@@ -174,7 +174,7 @@ band: summit # optional start: base, mid or summit; unset = each resort's foreca
 
 ## Data Source
 
-All data comes from the [SnowSure](https://www.snowsure.ai) public API and is shown with the credit "Data by SnowSure.ai", as SnowSure's terms require. The credit stays in English in every language, because the terms name it word for word. SnowSure builds on weather models and station networks such as Open-Meteo, ECMWF, DWD and SLF, and its API lists their credits with every resort. The integration keeps that list in the `sources` attribute of each resort's "Last updated" sensor, and both cards show it under **Sources** in the footer. Webcam tiles name the image owner SnowSure gives for each camera.
+All data comes from the [SnowSure](https://www.snowsure.ai) public API and is shown with the credit "Data by SnowSure.ai", as SnowSure's terms require. The credit stays in English in every language, because the terms name it word for word. SnowSure builds on weather models and station networks such as Open-Meteo, ECMWF, DWD and SLF, and its API lists their credits with every resort. The integration keeps that list in the `sources` attribute of each resort's "Last updated" sensor, and both cards show it behind the ⓘ next to the credit: as a tooltip on hover, unfolded on a tap. Webcam tiles name the image owner SnowSure gives for each camera.
 
 Each resort refreshes every 30 minutes by default (15–360 in the options). A refresh asks for the resort, its avalanche bulletin, the forecast trend and the snowpack. SnowSure's bluebird list covers all resorts and is fetched once for all of them. Without access to a resort's snowpack model, the integration asks for it only once a day.
 
@@ -232,7 +232,7 @@ When you're done, run `docker compose down` to stop the environment. Your config
 
 ## Credits
 
-Data by [SnowSure.ai](https://www.snowsure.ai), with the upstream sources it lists (shown under **Sources** in the card footer). Avalanche danger icons by the [European Avalanche Warning Services (EAWS)](https://www.avalanches.org/downloads/), with colour and number in the lower half as on [lawinen.report](https://lawinen.report/education/danger-scale).
+Data by [SnowSure.ai](https://www.snowsure.ai), with the upstream sources it lists (behind the ⓘ next to the credit in the card footer). Avalanche danger icons by the [European Avalanche Warning Services (EAWS)](https://www.avalanches.org/downloads/), with colour and number in the lower half as on [lawinen.report](https://lawinen.report/education/danger-scale).
 
 ## Contributions
 

@@ -85,10 +85,8 @@ describe('compare card', () => {
     card.shadowRoot!.querySelector<HTMLButtonElement>('.sources-toggle')!.click();
     await card.updateComplete;
     // Open-Meteo is on both resorts and shows once.
-    expect(text(card, '.sources li')).toEqual([
-      'Weather data by Open-Meteo.com (modified by SnowSure) (CC BY 4.0)',
-      'Contains ECCC information',
-      'JMA forecast data',
+    expect(text(card, '.sources')).toEqual([
+      'Weather data by Open-Meteo.com (modified by SnowSure) · Contains ECCC information · JMA forecast data',
     ]);
   });
 

@@ -26,7 +26,7 @@ import { localize, tryLocalize } from './localize';
 import { snowQualityText, weatherIcon, weatherText } from './weather';
 import { fireEvent } from './utils';
 import { AVALANCHE_COLORS, avalancheIcon, customStatIcon } from './icons';
-import { ATTRIBUTION, SNOWSURE_URL, renderCredits, upstreamCredits } from './credits';
+import { ATTRIBUTION, SNOWSURE_URL, renderCredits, renderCreditsButton, upstreamCredits } from './credits';
 import {
   BACK_RANGE_PATH,
   MOUNTAIN_PATH,
@@ -1212,17 +1212,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
       <div class="footer">
         <span class="links">
           <a href=${href} target="_blank" rel="noopener noreferrer">${ATTRIBUTION}</a>
-          ${
-            credits.length
-              ? html`<button
-                  class="sources-toggle"
-                  aria-expanded=${this._showSources ? 'true' : 'false'}
-                  @click=${() => (this._showSources = !this._showSources)}
-                >
-                  ${localize(hass, 'card.sources')}
-                </button>`
-              : nothing
-          }
+          ${renderCreditsButton(credits, localize(hass, 'card.sources'), this._showSources, () => (this._showSources = !this._showSources))}
           ${
             trailMap
               ? html`<a href=${trailMap} target="_blank" rel="noopener noreferrer" @click=${this._openTrailMap}

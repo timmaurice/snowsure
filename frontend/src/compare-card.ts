@@ -6,7 +6,7 @@ import { FORECAST_BANDS } from './defaults';
 import { isAvailable, resortEntities, snowsureDevices } from './entities';
 import { formatNumber, toNumber } from './format';
 import { avalancheIcon } from './icons';
-import { ATTRIBUTION, SNOWSURE_URL, renderCredits, upstreamCredits } from './credits';
+import { ATTRIBUTION, SNOWSURE_URL, renderCredits, renderCreditsButton, upstreamCredits } from './credits';
 import { localize } from './localize';
 import { fireEvent } from './utils';
 import styles from './styles/compare.styles.scss';
@@ -215,17 +215,7 @@ export class SnowsureCompareCard extends LitElement implements LovelaceCard {
         }
         <div class="footer">
           <a href=${SNOWSURE_URL} target="_blank" rel="noopener noreferrer">${ATTRIBUTION}</a>
-          ${
-            credits.length
-              ? html`<button
-                  class="sources-toggle"
-                  aria-expanded=${this._showSources ? 'true' : 'false'}
-                  @click=${() => (this._showSources = !this._showSources)}
-                >
-                  ${localize(hass, 'card.sources')}
-                </button>`
-              : nothing
-          }
+          ${renderCreditsButton(credits, localize(hass, 'card.sources'), this._showSources, () => (this._showSources = !this._showSources))}
           ${this._showSources && credits.length ? renderCredits(credits) : nothing}
         </div>
       </ha-card>

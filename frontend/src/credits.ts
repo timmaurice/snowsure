@@ -36,18 +36,45 @@ export function upstreamCredits(entities: (HassEntity | undefined)[]): UpstreamC
   return [...seen.values()];
 }
 
-/** The source list under the footer: text, linked where there is an https URL, and the licence. */
+/** One line per source with its licence: the ⓘ button's tooltip. */
+export function creditsTooltip(credits: UpstreamCredit[]): string {
+  return credits.map((credit) => (credit.license ? `${credit.text} (${credit.license})` : credit.text)).join('\n');
+}
+
+/**
+ * The ⓘ next to SnowSure's credit. Hovering shows every source as a tooltip;
+ * a tap (touch screens have no hover) unfolds them under the footer.
+ */
+export function renderCreditsButton(
+  credits: UpstreamCredit[],
+  label: string,
+  expanded: boolean,
+  toggle: () => void,
+): TemplateResult | typeof nothing {
+  if (!credits.length) return nothing;
+  return html`<button
+    class="sources-toggle"
+    title=${creditsTooltip(credits)}
+    aria-label=${label}
+    aria-expanded=${expanded ? 'true' : 'false'}
+    @click=${toggle}
+  >
+    <ha-icon icon="mdi:information-outline"></ha-icon>
+  </button>`;
+}
+
+/** The unfolded sources: one small paragraph, linked where there is an https URL, licence in the tooltip. */
 export function renderCredits(credits: UpstreamCredit[]): TemplateResult {
-  return html`<ul class="sources">
+  return html`<p class="sources">
     ${credits.map(
-      (credit) =>
-        html`<li>
-          ${
-            credit.url?.startsWith('https://')
-              ? html`<a href=${credit.url} target="_blank" rel="noopener noreferrer">${credit.text}</a>`
-              : credit.text
-          }${credit.license ? html` <span class="license">(${credit.license})</span>` : nothing}
-        </li>`,
+      (credit, index) =>
+        html`${index ? ' · ' : nothing}${
+          credit.url?.startsWith('https://')
+            ? html`<a href=${credit.url} target="_blank" rel="noopener noreferrer" title=${credit.license ?? nothing}
+                >${credit.text}</a
+              >`
+            : html`<span title=${credit.license ?? nothing}>${credit.text}</span>`
+        }`,
     )}
-  </ul>`;
+  </p>`;
 }
