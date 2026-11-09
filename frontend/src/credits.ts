@@ -1,4 +1,5 @@
-import { TemplateResult, html, nothing } from 'lit';
+import { LitElement, TemplateResult, css, html, nothing } from 'lit';
+import { property, state } from 'lit/decorators.js';
 import { HassEntity } from './types';
 
 export const SNOWSURE_URL = 'https://www.snowsure.ai';
@@ -36,45 +37,157 @@ export function upstreamCredits(entities: (HassEntity | undefined)[]): UpstreamC
   return [...seen.values()];
 }
 
-/** One line per source with its licence: the ⓘ button's tooltip. */
-export function creditsTooltip(credits: UpstreamCredit[]): string {
-  return credits.map((credit) => (credit.license ? `${credit.text} (${credit.license})` : credit.text)).join('\n');
-}
-
 /**
- * The ⓘ next to SnowSure's credit. Hovering shows every source as a tooltip;
- * a tap (touch screens have no hover) unfolds them under the footer.
+ * The ⓘ in the footer corner. Its popover lists the upstream sources over the
+ * card instead of growing it: on hover with a mouse, on a tap on touch
+ * screens. A tap outside or Escape closes it again.
  */
-export function renderCreditsButton(
-  credits: UpstreamCredit[],
-  label: string,
-  expanded: boolean,
-  toggle: () => void,
-): TemplateResult | typeof nothing {
-  if (!credits.length) return nothing;
-  return html`<button
-    class="sources-toggle"
-    title=${creditsTooltip(credits)}
-    aria-label=${label}
-    aria-expanded=${expanded ? 'true' : 'false'}
-    @click=${toggle}
-  >
-    <ha-icon icon="mdi:information-outline"></ha-icon>
-  </button>`;
+export class SnowsureCredits extends LitElement {
+  @property({ attribute: false }) public credits: UpstreamCredit[] = [];
+  @property() public label = 'Sources';
+  @state() private _open = false;
+
+  static styles = css`
+    :host {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    button {
+      display: inline-flex;
+      padding: 0;
+      border: none;
+      background: none;
+      color: var(--secondary-text-color);
+      cursor: pointer;
+      --mdc-icon-size: 16px;
+    }
+
+    button:hover,
+    button[aria-expanded='true'] {
+      color: var(--primary-color);
+    }
+
+    .popover {
+      display: none;
+      position: absolute;
+      right: -4px;
+      bottom: calc(100% + 8px);
+      z-index: 10;
+      box-sizing: border-box;
+      width: max-content;
+      /* Never wider than the card: both cards are size containers. */
+      max-width: min(340px, calc(100cqw - 16px));
+      padding: 8px 12px;
+      border: 1px solid var(--divider-color);
+      border-radius: 8px;
+      background: var(--card-background-color, var(--ha-card-background, #fff));
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      color: var(--primary-text-color);
+      font-size: 0.7rem;
+      line-height: 1.4;
+      text-align: left;
+      white-space: normal;
+    }
+
+    /* Bridges the gap to the icon, so the mouse can reach the links. */
+    .popover::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 100%;
+      height: 8px;
+    }
+
+    .popover.open {
+      display: block;
+    }
+
+    /* Only real hover: on touch screens a tap would otherwise stick it open. */
+    @media (hover: hover) {
+      :host(:hover) .popover {
+        display: block;
+      }
+    }
+
+    .title {
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    ul {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    a {
+      color: var(--primary-color);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .license {
+      color: var(--secondary-text-color);
+    }
+  `;
+
+  disconnectedCallback(): void {
+    super.disconnectedCallback();
+    this._setOpen(false);
+  }
+
+  private _onOutside = (ev: Event): void => {
+    if (!ev.composedPath().includes(this)) this._setOpen(false);
+  };
+
+  private _onKey = (ev: KeyboardEvent): void => {
+    if (ev.key === 'Escape') this._setOpen(false);
+  };
+
+  private _setOpen(open: boolean): void {
+    this._open = open;
+    const method = open ? 'addEventListener' : 'removeEventListener';
+    window[method]('click', this._onOutside as EventListener, true);
+    window[method]('keydown', this._onKey as EventListener);
+  }
+
+  protected render(): TemplateResult | typeof nothing {
+    if (!this.credits.length) return nothing;
+    return html`<button
+        aria-label=${this.label}
+        aria-expanded=${this._open ? 'true' : 'false'}
+        aria-controls="sources"
+        @click=${() => this._setOpen(!this._open)}
+      >
+        <ha-icon icon="mdi:information-outline"></ha-icon>
+      </button>
+      <div id="sources" class="popover ${this._open ? 'open' : ''}">
+        <div class="title">${this.label}</div>
+        <ul>
+          ${this.credits.map(
+            (credit) =>
+              html`<li>
+                ${
+                  credit.url?.startsWith('https://')
+                    ? html`<a href=${credit.url} target="_blank" rel="noopener noreferrer">${credit.text}</a>`
+                    : credit.text
+                }${credit.license ? html` <span class="license">· ${credit.license}</span>` : nothing}
+              </li>`,
+          )}
+        </ul>
+      </div>`;
+  }
 }
 
-/** The unfolded sources: one small paragraph, linked where there is an https URL, licence in the tooltip. */
-export function renderCredits(credits: UpstreamCredit[]): TemplateResult {
-  return html`<p class="sources">
-    ${credits.map(
-      (credit, index) =>
-        html`${index ? ' · ' : nothing}${
-          credit.url?.startsWith('https://')
-            ? html`<a href=${credit.url} target="_blank" rel="noopener noreferrer" title=${credit.license ?? nothing}
-                >${credit.text}</a
-              >`
-            : html`<span title=${credit.license ?? nothing}>${credit.text}</span>`
-        }`,
-    )}
-  </p>`;
+if (!customElements.get('snowsure-credits')) {
+  customElements.define('snowsure-credits', SnowsureCredits);
 }

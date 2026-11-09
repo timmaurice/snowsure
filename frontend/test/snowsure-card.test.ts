@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SnowsureCard, statColumns, temperatureColor } from '../src/snowsure-card';
+import { SnowsureCredits } from '../src/credits';
 import { HomeAssistant, SnowsureCardConfig } from '../src/types';
 import { DEVICE, makeHass } from './fixtures';
 
@@ -446,33 +447,58 @@ describe('render', () => {
     expect(link.href).toBe('https://www.snowsure.ai/resorts/matterhorn-ski-paradise');
   });
 
-  it('shows the upstream sources SnowSure asks to credit behind an info button', async () => {
-    const card = await mount({ device: DEVICE });
-    const toggle = root(card).querySelector<HTMLButtonElement>('.sources-toggle')!;
-    expect(toggle.getAttribute('aria-label')).toBe('Sources');
-    // Hover: every source with its licence, one per line.
-    expect(toggle.title).toBe('Weather data by Open-Meteo.com (modified by SnowSure) (CC BY 4.0)\nJMA forecast data');
-    expect(toggle.getAttribute('aria-expanded')).toBe('false');
-    expect(root(card).querySelector('.sources')).toBeNull();
+  /** The ⓘ element in the footer corner and its own shadow root. */
+  const credits = async (card: SnowsureCard) => {
+    const element = root(card).querySelector('.footer .meta snowsure-credits') as SnowsureCredits;
+    await element.updateComplete;
+    return element.shadowRoot!;
+  };
 
-    // Tap, for touch screens without hover: one compact paragraph.
-    toggle.click();
-    await card.updateComplete;
-    expect(toggle.getAttribute('aria-expanded')).toBe('true');
-    expect(text(card, '.sources')).toEqual([
-      'Weather data by Open-Meteo.com (modified by SnowSure) · JMA forecast data',
+  it('puts the upstream sources SnowSure asks to credit behind an info icon', async () => {
+    const card = await mount({ device: DEVICE });
+    const shadow = await credits(card);
+    const button = shadow.querySelector('button')!;
+    expect(button.getAttribute('aria-label')).toBe('Sources');
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+    expect(shadow.querySelector('.popover.open')).toBeNull();
+    expect([...shadow.querySelectorAll('li')].map((li) => li.textContent!.replace(/\s+/g, ' ').trim())).toEqual([
+      'Weather data by Open-Meteo.com (modified by SnowSure) · CC BY 4.0',
+      'JMA forecast data',
     ]);
-    const link = root(card).querySelector<HTMLAnchorElement>('.sources a')!;
+    const link = shadow.querySelector<HTMLAnchorElement>('li a')!;
     expect(link.href).toBe('https://open-meteo.com/');
-    expect(link.title).toBe('CC BY 4.0');
     expect(link.rel).toBe('noopener noreferrer');
+    // The card itself does not grow: the list is a popover.
+    expect(root(card).querySelector('.sources')).toBeNull();
   });
 
-  it('has no sources toggle when the integration lists none', async () => {
+  it('opens the sources on a tap and closes them on a tap outside or Escape', async () => {
+    const card = await mount({ device: DEVICE });
+    const shadow = await credits(card);
+    const element = shadow.host as SnowsureCredits;
+    const button = shadow.querySelector('button')!;
+
+    button.click();
+    await element.updateComplete;
+    expect(button.getAttribute('aria-expanded')).toBe('true');
+    expect(shadow.querySelector('.popover.open')).not.toBeNull();
+
+    document.body.click();
+    await element.updateComplete;
+    expect(shadow.querySelector('.popover.open')).toBeNull();
+
+    button.click();
+    await element.updateComplete;
+    window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+    await element.updateComplete;
+    expect(button.getAttribute('aria-expanded')).toBe('false');
+  });
+
+  it('has no info icon when the integration lists no sources', async () => {
     const hass = makeHass();
     hass.states['sensor.matterhorn_updated'].attributes = {};
     const card = await mount({ device: DEVICE }, hass);
-    expect(root(card).querySelector('.sources-toggle')).toBeNull();
+    expect((await credits(card)).querySelector('button')).toBeNull();
   });
 
   it('warns for a device without SnowSure entities', async () => {
@@ -496,7 +522,7 @@ describe('render', () => {
     expect(text(card, '.chip:not(.bluebird)')).toEqual(['Geöffnet']);
     // SnowSure's terms name the credit word for word, so it stays English.
     expect(text(card, '.footer a')[0]).toBe('Data by SnowSure.ai');
-    expect(root(card).querySelector('.sources-toggle')!.getAttribute('aria-label')).toBe('Quellen');
+    expect((await credits(card)).querySelector('button')!.getAttribute('aria-label')).toBe('Quellen');
     // EAWS name from the card's translation, not SnowSure's English label.
     expect(text(card, '.avalanche-title')).toEqual(['Lawinengefahr: Mäßig']);
     expect(text(card, '.stat-label')).toContain('Pisten offen');

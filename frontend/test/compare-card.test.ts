@@ -7,6 +7,7 @@ import {
   compareRow,
   sortRows,
 } from '../src/compare-card';
+import { SnowsureCredits } from '../src/credits';
 import { HomeAssistant } from '../src/types';
 import { DEVICE, makeHass } from './fixtures';
 
@@ -82,11 +83,15 @@ describe('compare card', () => {
 
   it('lists the upstream sources of all resorts once', async () => {
     const card = await mount({});
-    card.shadowRoot!.querySelector<HTMLButtonElement>('.sources-toggle')!.click();
-    await card.updateComplete;
+    const element = card.shadowRoot!.querySelector('.footer snowsure-credits') as SnowsureCredits;
+    await element.updateComplete;
     // Open-Meteo is on both resorts and shows once.
-    expect(text(card, '.sources')).toEqual([
-      'Weather data by Open-Meteo.com (modified by SnowSure) · Contains ECCC information · JMA forecast data',
+    expect(
+      [...element.shadowRoot!.querySelectorAll('li')].map((li) => li.textContent!.replace(/\s+/g, ' ').trim()),
+    ).toEqual([
+      'Weather data by Open-Meteo.com (modified by SnowSure) · CC BY 4.0',
+      'Contains ECCC information',
+      'JMA forecast data',
     ]);
   });
 

@@ -6,7 +6,7 @@ import { FORECAST_BANDS } from './defaults';
 import { isAvailable, resortEntities, snowsureDevices } from './entities';
 import { formatNumber, toNumber } from './format';
 import { avalancheIcon } from './icons';
-import { ATTRIBUTION, SNOWSURE_URL, renderCredits, renderCreditsButton, upstreamCredits } from './credits';
+import { ATTRIBUTION, SNOWSURE_URL, upstreamCredits } from './credits';
 import { localize } from './localize';
 import { fireEvent } from './utils';
 import styles from './styles/compare.styles.scss';
@@ -106,8 +106,6 @@ export class SnowsureCompareCard extends LitElement implements LovelaceCard {
   @state() private _config?: CompareCardConfig;
   /** Height picked on the card; unset follows the config. */
   @state() private _band?: ForecastBand;
-  /** The upstream source list under the footer, while it is unfolded. */
-  @state() private _showSources = false;
   /** Row tops before a height switch, keyed by device, for the move animation. */
   private _tops?: Map<string, number>;
 
@@ -215,8 +213,7 @@ export class SnowsureCompareCard extends LitElement implements LovelaceCard {
         }
         <div class="footer">
           <a href=${SNOWSURE_URL} target="_blank" rel="noopener noreferrer">${ATTRIBUTION}</a>
-          ${renderCreditsButton(credits, localize(hass, 'card.sources'), this._showSources, () => (this._showSources = !this._showSources))}
-          ${this._showSources && credits.length ? renderCredits(credits) : nothing}
+          <snowsure-credits .credits=${credits} .label=${localize(hass, 'card.sources')}></snowsure-credits>
         </div>
       </ha-card>
     `;

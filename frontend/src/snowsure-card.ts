@@ -26,7 +26,7 @@ import { localize, tryLocalize } from './localize';
 import { snowQualityText, weatherIcon, weatherText } from './weather';
 import { fireEvent } from './utils';
 import { AVALANCHE_COLORS, avalancheIcon, customStatIcon } from './icons';
-import { ATTRIBUTION, SNOWSURE_URL, renderCredits, renderCreditsButton, upstreamCredits } from './credits';
+import { ATTRIBUTION, SNOWSURE_URL, upstreamCredits } from './credits';
 import {
   BACK_RANGE_PATH,
   MOUNTAIN_PATH,
@@ -134,8 +134,6 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
   @state() private _day?: number;
   /** The trail map dialog, while it is open: which map, and whether it is zoomed. */
   @state() private _trailMap?: { index: number; zoom: boolean };
-  /** The upstream source list under the footer, while it is unfolded. */
-  @state() private _showSources = false;
   /** Where the user clicked to zoom (0..1 of the image), to scroll there afterwards. */
   private _zoomFocus?: { x: number; y: number };
 
@@ -1212,7 +1210,6 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
       <div class="footer">
         <span class="links">
           <a href=${href} target="_blank" rel="noopener noreferrer">${ATTRIBUTION}</a>
-          ${renderCreditsButton(credits, localize(hass, 'card.sources'), this._showSources, () => (this._showSources = !this._showSources))}
           ${
             trailMap
               ? html`<a href=${trailMap} target="_blank" rel="noopener noreferrer" @click=${this._openTrailMap}
@@ -1221,12 +1218,14 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
               : nothing
           }
         </span>
-        ${
-          isAvailable(updated)
-            ? html`<span>${localize(hass, 'card.updated', { date: formatDate(updated.state, hass) })}</span>`
-            : nothing
-        }
-        ${this._showSources && credits.length ? renderCredits(credits) : nothing}
+        <span class="meta">
+          ${
+            isAvailable(updated)
+              ? html`<span>${localize(hass, 'card.updated', { date: formatDate(updated.state, hass) })}</span>`
+              : nothing
+          }
+          <snowsure-credits .credits=${credits} .label=${localize(hass, 'card.sources')}></snowsure-credits>
+        </span>
       </div>
     `;
   }
