@@ -2,7 +2,7 @@ name: snowsure-test
 services:
   homeassistant:
     container_name: ha-snowsure-test
-    image: homeassistant/home-assistant:2026.11.0
+    image: homeassistant/home-assistant:2026.11.1
     volumes:
       - ./test_config:/config
       # The integration serves its own card from this folder, so mounting it
