@@ -483,6 +483,10 @@ button {
 
 .day {
   display: flex;
+  // Also a <button> (picking days): fill its grid cell like the plain column.
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 0;
   flex-direction: column;
   align-items: center;
   min-width: 0;
@@ -502,6 +506,7 @@ button {
 }
 
 .bar-track {
+  display: flex;
   width: 100%;
   height: var(--chart-height);
   display: flex;
@@ -510,6 +515,7 @@ button {
 }
 
 .bar {
+  display: block;
   width: 55%;
   max-width: 28px;
   background: rgba(var(--rgb-info-color, 3, 155, 229), 0.22);
@@ -1076,6 +1082,16 @@ dialog.trail-map {
 /* A forecast day picked for the mountain. */
 .forecast.pick-days .day {
   cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: -2px;
+  }
+}
+
+.band:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
 }
 
 .forecast .day.picked {

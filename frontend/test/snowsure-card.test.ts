@@ -358,6 +358,19 @@ describe('render', () => {
     expect(text(card, '.section-title .secondary')[0]).toBe('13.5 cm in 3 days');
   });
 
+  it('exposes the band switch as buttons with a pressed state', async () => {
+    const card = await mount({ device: DEVICE, forecast_days: 3 });
+    const group = root(card).querySelector('.band-switch')!;
+    expect(group.getAttribute('role')).toBe('group');
+    const buttons = Array.from(group.querySelectorAll<HTMLButtonElement>('button.band'));
+    expect(buttons.map((b) => b.getAttribute('aria-pressed'))).toEqual(['false', 'true', 'false']);
+    expect(buttons.some((b) => b.hasAttribute('role'))).toBe(false);
+    buttons[2].click();
+    await card.updateComplete;
+    const after = Array.from(root(card).querySelectorAll('button.band')).map((b) => b.getAttribute('aria-pressed'));
+    expect(after).toEqual(['false', 'false', 'true']);
+  });
+
   it('starts on the configured band and drops the switch without band data', async () => {
     const card = await mount({ device: DEVICE, forecast_days: 3, forecast_band: 'base' });
     expect(text(card, '.band.active .band-name')).toEqual(['Valley']);
@@ -632,6 +645,29 @@ describe('mountain', () => {
     root(card).querySelector<HTMLButtonElement>('.mountain-day')!.click();
     await card.updateComplete;
     expect(root(card).querySelector('.day.picked')).toBeNull();
+  });
+
+  it('makes the forecast days real buttons with a pressed state while the mountain is on', async () => {
+    const card = await mount({ device: DEVICE, forecast_days: 3 });
+    const days = Array.from(root(card).querySelectorAll<HTMLButtonElement>('button.day'));
+    expect(days).toHaveLength(3);
+    expect(root(card).querySelector('.forecast')!.tagName).toBe('DIV');
+    expect(root(card).querySelector('.forecast')!.getAttribute('role')).toBe('group');
+    expect(days.every((day) => day.type === 'button' && day.getAttribute('aria-pressed') === 'false')).toBe(true);
+    expect(days[1].getAttribute('aria-label')).toContain(text(card, '.day[data-index="1"] .weekday')[0]);
+
+    days[1].click();
+    await card.updateComplete;
+    const pressed = Array.from(root(card).querySelectorAll('button.day')).map((d) => d.getAttribute('aria-pressed'));
+    expect(pressed).toEqual(['false', 'true', 'false']);
+  });
+
+  it('opens more-info from the forecast area outside the day buttons', async () => {
+    const card = await mount({ device: DEVICE });
+    const listener = vi.fn();
+    card.addEventListener('hass-more-info', listener);
+    root(card).querySelector<HTMLElement>('.forecast')!.click();
+    expect(listener.mock.calls[0][0].detail).toEqual({ entityId: 'sensor.matterhorn_forecast' });
   });
 
   it('keeps the forecast opening more-info without the mountain', async () => {

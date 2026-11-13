@@ -229,16 +229,16 @@ export class SnowsureCompareCard extends LitElement implements LovelaceCard {
     const points = new Set(rows.map((row) => row.point));
     const active = this._activeBand ?? (points.size === 1 ? [...points][0] : undefined);
     return html`
-      <div class="band-switch" role="radiogroup" aria-label=${localize(hass, 'card.snowfall_at')}>
+      <div class="band-switch" role="group" aria-label=${localize(hass, 'card.snowfall_at')}>
         <span class="band-label"
           ><ha-icon icon="mdi:snowflake"></ha-icon><span>${localize(hass, 'card.snowfall_at')}</span></span
         >
         ${FORECAST_BANDS.map(
           (band) => html`
             <button
-              role="radio"
+              type="button"
               class="band ${band === active ? 'active' : ''}"
-              aria-checked=${band === active ? 'true' : 'false'}
+              aria-pressed=${band === active ? 'true' : 'false'}
               @click=${() => (this._band = band)}
             >
               ${localize(hass, `card.band.${band}`)}

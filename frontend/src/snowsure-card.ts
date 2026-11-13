@@ -585,6 +585,67 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
     const confidenceLabel = isAvailable(confidence) ? confidence.state : undefined;
     const bluebirdDays = this._bluebirdDays(resort);
 
+    const daysTpl = html`${days.map((day, index) => {
+      const amount = amounts[index];
+      const freezing = toNumber(day.freezing_level);
+      const tooltip = [
+        weatherText(hass, day.conditions),
+        freezing !== null ? `0° ${formatNumber(freezing, hass, { maximumFractionDigits: 0 })} m` : '',
+      ]
+        .filter(Boolean)
+        .join(' · ');
+      // SnowSure's first forecast day is the resort's today; the viewer's
+      // clock can be a day ahead (Europe looking at Colorado).
+      const isToday = index === 0;
+      const bluebird = bluebirdDays.get(day.date);
+      const classes = `day ${isToday ? 'today' : ''} ${pickDays && this._day === index ? 'picked' : ''} ${
+        bluebird ? 'bluebird' : ''
+      }`;
+      const title = bluebird ? `${this._bluebirdTitle(bluebird)} · ${tooltip}` : tooltip;
+      const label = [
+        isToday ? localize(hass, 'card.today') : formatWeekday(day.date, hass),
+        amount > 0
+          ? `${formatNumber(snow(amount), hass, { maximumFractionDigits: inches || snow(amount) < 1 ? 1 : 0 })} ${snowUnit}`
+          : '',
+        tooltip,
+      ]
+        .filter(Boolean)
+        .join(', ');
+      const content = html`
+        <span class="weekday"
+          >${isToday ? localize(hass, 'card.today') : formatWeekday(day.date, hass)}${
+            bluebird ? html`<ha-icon class="bluebird-icon" icon="mdi:white-balance-sunny"></ha-icon>` : nothing
+          }</span
+        >
+        <span class="bar-track">
+          <span class="bar" style="height: ${Math.round((amount / scale) * 100)}%"></span>
+        </span>
+        <span class="amount"
+          >${
+            amount > 0
+              ? formatNumber(snow(amount), hass, { maximumFractionDigits: inches || snow(amount) < 1 ? 1 : 0 })
+              : ''
+          }</span
+        >
+      `;
+      // With the mountain on, every day is a real button (Tab, Enter, Space);
+      // elsewhere the whole forecast is one button that opens more-info.
+      return pickDays
+        ? html`<button
+            type="button"
+            class=${classes}
+            data-index=${index}
+            title=${title}
+            aria-label=${label}
+            aria-pressed=${this._day === index ? 'true' : 'false'}
+            @click=${() => (this._day = this._day === index ? undefined : index)}
+          >
+            ${content}
+          </button>`
+        : html`<div class=${classes} data-index=${index} title=${title}>${content}</div>`;
+    })}`;
+    const chartTpl = this._renderTemperatureChart(days, temp);
+
     return html`
       <div class="section-title">
         <span>${localize(hass, 'card.forecast')}</span>
@@ -602,53 +663,27 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
             : nothing
         }
       </div>
-      <button
-        class="forecast ${pickDays ? 'pick-days' : ''}"
-        style="--days: ${days.length}"
-        title=${pickDays ? localize(hass, 'card.pick_day') : ''}
-        @click=${(ev: Event) => this._forecastClick(ev, forecast, pickDays)}
-      >
-        ${days.map((day, index) => {
-          const amount = amounts[index];
-          const freezing = toNumber(day.freezing_level);
-          const tooltip = [
-            weatherText(hass, day.conditions),
-            freezing !== null ? `0° ${formatNumber(freezing, hass, { maximumFractionDigits: 0 })} m` : '',
-          ]
-            .filter(Boolean)
-            .join(' · ');
-          // SnowSure's first forecast day is the resort's today; the viewer's
-          // clock can be a day ahead (Europe looking at Colorado).
-          const isToday = index === 0;
-          const bluebird = bluebirdDays.get(day.date);
-          return html`
-            <div
-              class="day ${isToday ? 'today' : ''} ${pickDays && this._day === index ? 'picked' : ''} ${
-                bluebird ? 'bluebird' : ''
-              }"
-              data-index=${index}
-              title=${bluebird ? `${this._bluebirdTitle(bluebird)} · ${tooltip}` : tooltip}
+      ${
+        pickDays
+          ? html`<div
+              class="forecast pick-days"
+              role="group"
+              style="--days: ${days.length}"
+              aria-label=${localize(hass, 'card.pick_day')}
+              title=${localize(hass, 'card.pick_day')}
+              @click=${(ev: Event) => this._forecastClick(ev, forecast)}
             >
-              <span class="weekday"
-                >${isToday ? localize(hass, 'card.today') : formatWeekday(day.date, hass)}${
-                  bluebird ? html`<ha-icon class="bluebird-icon" icon="mdi:white-balance-sunny"></ha-icon>` : nothing
-                }</span
-              >
-              <div class="bar-track">
-                <div class="bar" style="height: ${Math.round((amount / scale) * 100)}%"></div>
-              </div>
-              <span class="amount"
-                >${
-                  amount > 0
-                    ? formatNumber(snow(amount), hass, { maximumFractionDigits: inches || snow(amount) < 1 ? 1 : 0 })
-                    : ''
-                }</span
-              >
-            </div>
-          `;
-        })}
-        ${this._renderTemperatureChart(days, temp)}
-      </button>
+              ${daysTpl} ${chartTpl}
+            </div>`
+          : html`<button
+              type="button"
+              class="forecast"
+              style="--days: ${days.length}"
+              @click=${() => this._moreInfo(forecast)}
+            >
+              ${daysTpl} ${chartTpl}
+            </button>`
+      }
       ${bands.length > 1 ? this._renderBandSwitch(bands, band, elevations, inches) : nothing}
     `;
   }
@@ -676,18 +711,12 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
   }
 
   /**
-   * With the mountain on, a day in the forecast shows that day on the
-   * mountain (a second tap goes back to now); elsewhere the forecast opens
-   * the sensor's more-info.
+   * With the mountain on, the days are buttons of their own; a click on the
+   * rest of the forecast (not on a day) still opens the sensor's more-info.
    */
-  private _forecastClick(ev: Event, forecast: HassEntity | undefined, pickDays: boolean): void {
-    const day = (ev.target as HTMLElement | null)?.closest?.('.day') as HTMLElement | null;
-    if (!pickDays || !day) {
-      this._moreInfo(forecast);
-      return;
-    }
-    const index = Number(day.dataset.index);
-    this._day = this._day === index ? undefined : index;
+  private _forecastClick(ev: Event, forecast: HassEntity | undefined): void {
+    if ((ev.target as HTMLElement | null)?.closest?.('.day')) return;
+    this._moreInfo(forecast);
   }
 
   /**
@@ -707,7 +736,7 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
         ? `${formatNumber(meters * 3.28084, hass, { maximumFractionDigits: 0 })} ft`
         : `${formatNumber(meters, hass, { maximumFractionDigits: 0 })} m`;
     return html`
-      <div class="band-switch" role="radiogroup" aria-label=${localize(hass, 'card.snowfall_at')}>
+      <div class="band-switch" role="group" aria-label=${localize(hass, 'card.snowfall_at')}>
         <span class="band-label" title=${localize(hass, 'card.snowfall_at')}
           ><ha-icon icon="mdi:snowflake"></ha-icon
           ><span class="band-label-text">${localize(hass, 'card.snowfall_at')}</span></span
@@ -715,10 +744,10 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
         ${bands.map(
           (band) => html`
             <button
-              role="radio"
+              type="button"
               class="band ${band === active ? 'active' : ''}"
               title=${`${localize(hass, `card.band.${band}`)} ${height(elevations[band]!)}`}
-              aria-checked=${band === active ? 'true' : 'false'}
+              aria-pressed=${band === active ? 'true' : 'false'}
               @click=${() => (this._band = band)}
             >
               <span class="band-name">${localize(hass, `card.band.${band}`)}</span>
