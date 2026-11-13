@@ -7,7 +7,7 @@
  * goes into a dashboard of its own, so the manual playground stays intact.
  */
 import { execFileSync } from 'node:child_process';
-import { readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -176,6 +176,55 @@ export async function resources(): Promise<{ id: string; url: string }[]> {
 }
 
 export const DEMO_NAME = 'Kaiserberg (Demo)';
+const DEMO_UNIQUE_ID = 'kaiserberg-demo';
+/** Remembers that this suite re-enabled the demo entry, across worker processes. */
+const DEMO_MARKER_FILE = resolve(E2E_DIR, '.demo-entry-disabled.json');
+
+interface ConfigEntry {
+  entry_id: string;
+  unique_id: string | null;
+  state: string;
+  disabled_by: string | null;
+}
+
+const demoEntry = async () =>
+  (await callWebsocket<ConfigEntry[]>({ type: 'config_entries/get', domain: 'snowsure' })).find(
+    (entry) => entry.unique_id === DEMO_UNIQUE_ID,
+  );
+
+/**
+ * A disabled demo entry keeps its device in the registry but loads no
+ * entities, so every card test would sit in its timeout. Re-enable it (and
+ * remember that, so {@link restoreDemoEntry} can put it back) or fail with a
+ * message that says what is wrong. No entry at all is fine: demoDevice()
+ * creates it.
+ */
+export async function ensureDemoEntryEnabled(): Promise<void> {
+  const entry = await demoEntry();
+  if (!entry || !entry.disabled_by) return;
+  if (entry.disabled_by !== 'user') {
+    throw new Error(
+      `The demo config entry is disabled by "${entry.disabled_by}" and cannot be re-enabled by the suite.`,
+    );
+  }
+  writeFileSync(DEMO_MARKER_FILE, JSON.stringify({ entry_id: entry.entry_id }));
+  await callWebsocket({ type: 'config_entries/disable', entry_id: entry.entry_id, disabled_by: null });
+
+  const deadline = Date.now() + 60_000;
+  while (Date.now() < deadline) {
+    if ((await demoEntry())?.state === 'loaded') return;
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  throw new Error('The demo config entry was re-enabled but did not reach state "loaded" in time.');
+}
+
+/** Disables the demo entry again if {@link ensureDemoEntryEnabled} had to enable it. */
+export async function restoreDemoEntry(): Promise<void> {
+  if (!existsSync(DEMO_MARKER_FILE)) return;
+  const { entry_id } = JSON.parse(readFileSync(DEMO_MARKER_FILE, 'utf8')) as { entry_id: string };
+  await callWebsocket({ type: 'config_entries/disable', entry_id, disabled_by: 'user' });
+  rmSync(DEMO_MARKER_FILE);
+}
 
 /**
  * The device id of the made-up demo resort (custom_components/snowsure/demo.py),
@@ -184,6 +233,7 @@ export const DEMO_NAME = 'Kaiserberg (Demo)';
  * powder today, Kaiserwetter tomorrow, avalanche level 4.
  */
 export async function demoDevice(): Promise<string> {
+  await ensureDemoEntryEnabled();
   const find = async () =>
     (await callWebsocket<{ id: string; name: string }[]>({ type: 'config/device_registry/list' })).find(
       (device) => device.name === DEMO_NAME,

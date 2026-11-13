@@ -3,7 +3,9 @@ import {
   BASE_URL,
   PASSWORD,
   USERNAME,
+  ensureDemoEntryEnabled,
   ensureRunning,
+  restoreDemoEntry,
   saveTokens,
   waitForCoreRunning,
   waitForFrontend,
@@ -15,7 +17,7 @@ import {
  * frontend its tokens through localStorage, so we take them from there rather
  * than inventing a second authentication path.
  */
-export default async function globalSetup(): Promise<void> {
+export default async function globalSetup(): Promise<() => Promise<void>> {
   ensureRunning();
   await waitForFrontend();
 
@@ -45,7 +47,11 @@ export default async function globalSetup(): Promise<void> {
 
     // Tokens first: this needs the websocket API.
     await waitForCoreRunning();
+    // A disabled demo entry would time out every card test.
+    await ensureDemoEntryEnabled();
   } finally {
     await browser.close();
   }
+  // Playwright runs the returned function as global teardown.
+  return restoreDemoEntry;
 }
