@@ -224,7 +224,7 @@ To test your changes against a real Home Assistant instance without touching you
 
 The container sets `SNOWSURE_DEMO=1`: the resort list then also offers **Kaiserberg (Demo)** (country "Demo"), a made-up resort answered locally by `custom_components/snowsure/demo.py`. Its dates follow today, so every case stays visible: powder alarm today, Kaiserwetter tomorrow, avalanche level 4, forecast trend and snowpack snow quality. Never set the variable outside development.
 
-`npm run test:e2e` runs the Playwright suite in `test/e2e` against that container, on dashboards of its own; it uses the demo resort. Run `npx playwright install chromium` once before the first run.
+`npm run test:e2e` runs the Playwright suite in `test/e2e` against that container, on dashboards of its own; it uses the demo resort. From a fresh clone: `npm ci`, `npm run build`, `npx playwright install chromium` once, then `npm run test:e2e`. It starts the container, onboards an empty `test_config/` (user `admin` / `password`) and adds the demo resort through the config flow, so no API key and no manual setup are needed. CI runs the same in `.github/workflows/e2e.yml`.
 
 When you're done, run `docker compose down` to stop the environment. Your configuration persists in the `test_config/` folder between runs.
 

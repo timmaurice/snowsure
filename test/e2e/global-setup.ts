@@ -5,6 +5,7 @@ import {
   USERNAME,
   ensureDemoEntryEnabled,
   ensureRunning,
+  onboardIfNeeded,
   restoreDemoEntry,
   saveTokens,
   waitForCoreRunning,
@@ -20,6 +21,8 @@ import {
 export default async function globalSetup(): Promise<() => Promise<void>> {
   ensureRunning();
   await waitForFrontend();
+  // A fresh clone or CI has an empty test_config/, so there is no user to sign in as yet.
+  await onboardIfNeeded();
 
   const browser = await chromium.launch();
   const page = await browser.newPage();

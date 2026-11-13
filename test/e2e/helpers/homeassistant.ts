@@ -2,9 +2,11 @@
  * Talks to the Home Assistant the repository's docker-compose already provides.
  *
  * The suite deliberately reuses that instance instead of booting one of its
- * own: it is already onboarded and carries real entities, which is what makes
- * an end-to-end assertion worth more than a mock. Everything the suite writes
- * goes into a dashboard of its own, so the manual playground stays intact.
+ * own. A fresh clone (and CI) starts with an empty `test_config/`, so global
+ * setup onboards the instance through Home Assistant's own onboarding API when
+ * it is not onboarded yet, and the demo resort is added through the config flow
+ * (demo mode needs no SnowSure API key). Everything the suite writes goes into
+ * a dashboard of its own, so a manual playground stays intact.
  */
 import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync, existsSync, rmSync } from 'node:fs';
@@ -47,6 +49,60 @@ export async function waitForFrontend(timeoutMs = 180_000): Promise<void> {
     await new Promise((r) => setTimeout(r, 2000));
   }
   throw new Error(`Home Assistant did not answer at ${BASE_URL} within ${timeoutMs}ms`);
+}
+
+/**
+ * Onboards a fresh Home Assistant (creates the admin user and finishes the
+ * remaining onboarding steps) and does nothing on one that is onboarded already.
+ * `/api/onboarding` answers 404 once onboarding is complete.
+ */
+export async function onboardIfNeeded(): Promise<void> {
+  const status = await fetch(`${BASE_URL}/api/onboarding`);
+  if (!status.ok) return;
+  const steps = (await status.json()) as { step: string; done: boolean }[];
+  if (steps.every((step) => step.done)) return;
+
+  const clientId = `${BASE_URL}/`;
+  const json = { 'Content-Type': 'application/json' };
+
+  let token: string | undefined;
+  if (!steps.find((step) => step.step === 'user')?.done) {
+    const created = await fetch(`${BASE_URL}/api/onboarding/users`, {
+      method: 'POST',
+      headers: json,
+      body: JSON.stringify({
+        client_id: clientId,
+        name: 'E2E Admin',
+        username: USERNAME,
+        password: PASSWORD,
+        language: 'en',
+      }),
+    });
+    if (!created.ok) throw new Error(`onboarding user step failed: ${created.status} ${await created.text()}`);
+    const { auth_code } = (await created.json()) as { auth_code: string };
+    const exchanged = await fetch(`${BASE_URL}/auth/token`, {
+      method: 'POST',
+      body: new URLSearchParams({ grant_type: 'authorization_code', code: auth_code, client_id: clientId }),
+    });
+    if (!exchanged.ok) throw new Error(`token exchange failed: ${exchanged.status} ${await exchanged.text()}`);
+    token = ((await exchanged.json()) as { access_token: string }).access_token;
+  }
+
+  if (token) {
+    // The remaining steps need the new user's token; each is a no-op body.
+    for (const [step, body] of [
+      ['core_config', {}],
+      ['analytics', {}],
+      ['integration', { client_id: clientId, redirect_uri: `${clientId}?auth_callback=1` }],
+    ] as const) {
+      const res = await fetch(`${BASE_URL}/api/onboarding/${step}`, {
+        method: 'POST',
+        headers: { ...json, Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error(`onboarding ${step} step failed: ${res.status} ${await res.text()}`);
+    }
+  }
 }
 
 export interface Tokens {
