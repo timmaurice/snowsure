@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Tux - Eggalm 360°",
+    "url": "https://hintertux.panomax.com/eggalm",
+    "type": "panomax",
+    "credit": "Hintertuxer Gletscherbahnen / Panomax",
+    "thumbnailUrl": "https://panodata.panomax.com/cams/4848/recent_default.jpg"
+  },
+  {
+    "name": "Idalp – Panorama 360°",
+    "url": "https://panodata.panomax.com/cams/331/recent_default.jpg",
+    "type": "panomax",
+    "credit": "Silvrettaseilbahn AG / Bergbahnen Samnaun AG",
+    "thumbnailUrl": "https://qtmrhdvk0wsarlae.public.blob.vercel-storage.com/webcam-thumbnails/ischgl-idalp-panorama-360.jpg"
+  },
+  {
+    "name": "Courchevel - La Saulire (2700m)",
+    "url": "https://www.skaping.com/courchevel/saulire",
+    "type": "skaping",
+    "credit": "Skaping",
+    "thumbnailUrl": "https://qtmrhdvk0wsarlae.public.blob.vercel-storage.com/webcam-thumbnails/courchevel-1850-courchevel-la-saulire-2700m.jpg"
+  },
+  {
+    "name": "Lac de Montriond 1072m",
+    "url": "https://api.skaping.com/GJJVR-xsghn-qZxTe-cZpf6/media/latest/hd.jpg",
+    "type": "skaping",
+    "credit": "Skaping",
+    "thumbnailUrl": "https://qtmrhdvk0wsarlae.public.blob.vercel-storage.com/webcam-thumbnails/morzine-lac-de-montriond-1072m.jpg"
+  },
+  {
+    "name": "Attitash Base Area",
+    "url": "https://player.brownrice.com/snapshot/attitash3",
+    "type": "image",
+    "credit": "Attitash Mountain / Brown Rice",
+    "thumbnailUrl": "https://qtmrhdvk0wsarlae.public.blob.vercel-storage.com/webcam-thumbnails/attitash-mountain-attitash-base-area.jpg"
+  }
+]
