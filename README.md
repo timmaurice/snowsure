@@ -250,6 +250,10 @@ Translate all the values in both new files and submit a pull request with your c
 
 </details>
 
+## Disclaimer
+
+This integration is not affiliated with or endorsed by [SnowSure.ai](https://www.snowsure.ai) or the [European Avalanche Warning Services (EAWS)](https://www.avalanches.org). It is a community project. SnowSure and the SnowSure logo are trademarks of Afore; the logo is used only to show where the data comes from.
+
 ---
 
 For further assistance or to [report issues](https://github.com/timmaurice/snowsure/issues), please visit the [GitHub repository](https://github.com/timmaurice/snowsure).
