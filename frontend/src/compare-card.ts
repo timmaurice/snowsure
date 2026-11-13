@@ -155,8 +155,8 @@ export class SnowsureCompareCard extends LitElement implements LovelaceCard {
   }
 
   /** A height switch re-ranks the rows: note where each one was... */
-  protected willUpdate(changed: PropertyValues<this>): void {
-    this._tops = changed.has('_band' as keyof this) ? this._rowTops() : undefined;
+  protected willUpdate(changed: PropertyValues): void {
+    this._tops = changed.has('_band') ? this._rowTops() : undefined;
   }
 
   /** ...and slide every moved row from there to its new place (FLIP). */
