@@ -40,3 +40,8 @@ export function snowQualityText(hass: HomeAssistant | undefined, label: string |
   if (!label) return '';
   return tryLocalize(hass, `card.snow_quality_values.${weatherKey(label)}`) ?? label;
 }
+
+export function ratingText(hass: HomeAssistant | undefined, label: string | null | undefined): string {
+  if (!label) return '';
+  return tryLocalize(hass, `card.rating_values.${weatherKey(label)}`) ?? label;
+}
