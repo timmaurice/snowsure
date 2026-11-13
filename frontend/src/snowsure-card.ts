@@ -23,7 +23,7 @@ import {
 import { ResortEntities, isAvailable, resortEntities, snowsureDevices } from './entities';
 import { entityDigits, formatDate, formatNumber, formatWeekday, toNumber } from './format';
 import { localize, tryLocalize } from './localize';
-import { snowQualityText, weatherIcon, weatherText } from './weather';
+import { ratingText, snowQualityText, weatherIcon, weatherText } from './weather';
 import { fireEvent } from './utils';
 import { AVALANCHE_COLORS, avalancheIcon, customStatIcon } from './icons';
 import { ATTRIBUTION, SNOWSURE_URL, upstreamCredits } from './credits';
@@ -462,7 +462,9 @@ export class SnowsureCard extends LitElement implements LovelaceCard {
                 @click=${() => this._moreInfo(score)}
               >
                 <span class="score-value">${formatNumber(scoreValue!, hass, { maximumFractionDigits: 0 })}</span>
-                <span class="score-rating">${(score?.attributes.rating as string | undefined) ?? ''}</span>
+                <span class="score-rating"
+                  >${ratingText(this.hass, score?.attributes.rating as string | undefined)}</span
+                >
                 ${
                   trend && TREND_ICONS[trend]
                     ? html`<ha-icon

@@ -90,6 +90,13 @@
       "thunderstorm_with_slight_hail": "Thunderstorm with slight hail",
       "thunderstorm_with_heavy_hail": "Thunderstorm with heavy hail"
     },
+    "rating_values": {
+      "excellent": "Excellent",
+      "good": "Good",
+      "solid": "Solid",
+      "fair": "Fair",
+      "poor": "Poor"
+    },
     "snow_quality_values": {
       "powder": "Powder",
       "packed": "Packed",

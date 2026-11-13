@@ -57,6 +57,14 @@ describe('localize', () => {
     expect(snowQualityText(hass('de'), 'something new')).toBe('something new');
   });
 
+  it('translates the score rating and keeps unknown ones', async () => {
+    const { ratingText } = await import('../src/weather');
+    expect(ratingText(hass('de'), 'Excellent')).toBe('Ausgezeichnet');
+    expect(ratingText(hass('en'), 'Excellent')).toBe('Excellent');
+    expect(ratingText(hass('de'), 'Something new')).toBe('Something new');
+    expect(ratingText(hass('de'), undefined)).toBe('');
+  });
+
   it('fills placeholders', () => {
     expect(localize(hass('en'), 'card.avalanche_level', { level: 3 })).toBe('Level 3');
   });

@@ -90,6 +90,13 @@
       "thunderstorm_with_slight_hail": "Gewitter mit leichtem Hagel",
       "thunderstorm_with_heavy_hail": "Gewitter mit starkem Hagel"
     },
+    "rating_values": {
+      "excellent": "Ausgezeichnet",
+      "good": "Gut",
+      "solid": "Solide",
+      "fair": "Mittelmäßig",
+      "poor": "Schlecht"
+    },
     "snow_quality_values": {
       "powder": "Pulver",
       "packed": "Gepresst",
