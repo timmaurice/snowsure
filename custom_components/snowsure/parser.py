@@ -12,6 +12,7 @@ changing both sides.
 from __future__ import annotations
 
 from typing import Any
+from urllib.parse import urlsplit
 
 from homeassistant.util import slugify
 
@@ -264,10 +265,14 @@ def parse_avalanche(payload: dict[str, Any] | None) -> dict[str, Any]:
     }
 
 
-# Webcam types whose ``url`` is itself a live JPEG. For the others (iframe
-# players, Feratel pages) ``url`` is an HTML page and only ``thumbnailUrl`` is
-# an image: a live one for Feratel, a copy SnowSure refreshes for the rest.
-_LIVE_IMAGE_TYPES = frozenset({"image", "panomax", "skaping"})
+# An "image" webcam's ``url`` is its live picture, often a snapshot endpoint
+# without a file extension. Panomax and Skaping cams have either a live JPEG or
+# the HTML viewer page in ``url``, so theirs counts only when its path names an
+# image file. Everything else uses ``thumbnailUrl``: a live one for Feratel and
+# Panomax, a copy SnowSure refreshes for the rest.
+_LIVE_IMAGE_TYPES = frozenset({"image"})
+_LIVE_IMAGE_FILE_TYPES = frozenset({"panomax", "skaping"})
+_IMAGE_FILE_SUFFIXES = (".jpg", ".jpeg", ".png", ".webp")
 # YouTube "webcams" are streams; their thumbnail is a video poster, often 404.
 _SKIPPED_WEBCAM_TYPES = frozenset({"youtube"})
 
@@ -292,6 +297,17 @@ def parse_credits(raw: Any) -> list[dict[str, str | None]]:
     return credits
 
 
+def _live_image(kind: Any, page: str | None) -> str | None:
+    """The webcam's own ``url`` when it is the live picture, else None."""
+    if page is None:
+        return None
+    if kind in _LIVE_IMAGE_TYPES:
+        return page
+    if kind in _LIVE_IMAGE_FILE_TYPES and urlsplit(page).path.lower().endswith(_IMAGE_FILE_SUFFIXES):
+        return page
+    return None
+
+
 def parse_webcams(raw: Any) -> list[dict[str, str | None]]:
     """The resort's webcams that have an image, in SnowSure's order."""
     cams: list[dict[str, str | None]] = []
@@ -301,8 +317,7 @@ def parse_webcams(raw: Any) -> list[dict[str, str | None]]:
             continue
         name = _str(cam.get("name"))
         page = _https(cam.get("url")) or _https(cam.get("embedUrl"))
-        image = page if cam.get("type") in _LIVE_IMAGE_TYPES else None
-        image = image or _https(cam.get("thumbnailUrl"))
+        image = _live_image(cam.get("type"), page) or _https(cam.get("thumbnailUrl"))
         if not name or not image or name in seen:
             continue
         seen.add(name)

@@ -110,6 +110,39 @@ def test_webcams_pick_a_live_image_where_there_is_one() -> None:
     assert image_cam["image_url"] == "https://player.example.com/snapshot/cam"
 
 
+def _live_type_cams() -> dict[str, dict]:
+    detail = _detail()
+    detail["webcams"] = load_fixture("webcams_live_types.json")
+    return {cam["name"]: cam for cam in parse_resort(detail)["webcams"]}
+
+
+def test_webcams_panomax_viewer_page_falls_back_to_thumbnail() -> None:
+    # Panomax puts its HTML viewer in ``url``: Home Assistant cannot show a page.
+    cam = _live_type_cams()["Tux - Eggalm 360°"]
+    assert cam["image_url"] == "https://panodata.panomax.com/cams/4848/recent_default.jpg"
+    assert cam["page_url"] == "https://hintertux.panomax.com/eggalm"
+
+
+def test_webcams_panomax_live_jpeg_is_kept() -> None:
+    cam = _live_type_cams()["Idalp – Panorama 360°"]
+    assert cam["image_url"] == "https://panodata.panomax.com/cams/331/recent_default.jpg"
+
+
+def test_webcams_skaping_viewer_page_falls_back_to_thumbnail() -> None:
+    cams = _live_type_cams()
+    page = cams["Courchevel - La Saulire (2700m)"]
+    assert page["image_url"].endswith("/courchevel-1850-courchevel-la-saulire-2700m.jpg")
+    assert page["page_url"] == "https://www.skaping.com/courchevel/saulire"
+    live = cams["Lac de Montriond 1072m"]
+    assert live["image_url"] == "https://api.skaping.com/GJJVR-xsghn-qZxTe-cZpf6/media/latest/hd.jpg"
+
+
+def test_webcams_image_snapshot_without_extension_is_kept() -> None:
+    # "image" cams are live snapshots, often an endpoint without a file name.
+    cam = _live_type_cams()["Attitash Base Area"]
+    assert cam["image_url"] == "https://player.brownrice.com/snapshot/attitash3"
+
+
 def test_webcams_skip_duplicates_and_insecure_urls() -> None:
     detail = _detail()
     detail["webcams"] = [
