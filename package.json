@@ -1,6 +1,6 @@
 {
   "name": "snowsure-card",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "A Lovelace card for SnowSure ski resort conditions and snow forecasts.",
   "homepage": "https://github.com/timmaurice/snowsure#readme",
   "bugs": {
