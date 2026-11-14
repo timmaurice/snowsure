@@ -31,9 +31,44 @@ export const BASE_URL = `http://127.0.0.1:${PORT}`;
 export const USERNAME = process.env.HA_E2E_USER ?? 'admin';
 export const PASSWORD = process.env.HA_E2E_PASSWORD ?? 'password';
 
-/** Brings the repository's own compose environment up if it is not running. */
+const CONTAINER_NAME = 'ha-snowsure-test';
+
+/**
+ * Brings the repository's own compose environment up if it is not running.
+ *
+ * - `HA_E2E_MANAGE_DOCKER=0` skips compose entirely: the suite then only talks
+ *   to whatever answers on the port (a running instance, or one you started).
+ * - An existing container that was created from another checkout (another
+ *   compose working directory, e.g. a git worktree) is never recreated: that
+ *   would swap the developer instance's mounts for this copy's. The suite
+ *   stops with a message instead.
+ */
 export function ensureRunning(): void {
+  if (process.env.HA_E2E_MANAGE_DOCKER === '0') return;
+
+  const owner = composeWorkingDir(CONTAINER_NAME);
+  if (owner !== undefined && resolve(owner) !== REPO_ROOT) {
+    throw new Error(
+      `Container ${CONTAINER_NAME} belongs to the checkout ${owner}, not ${REPO_ROOT}. ` +
+        'Run the suite from that checkout, or set HA_E2E_MANAGE_DOCKER=0 to use the running instance as it is.',
+    );
+  }
   execFileSync('docker', ['compose', 'up', '-d'], { cwd: REPO_ROOT, stdio: 'inherit' });
+}
+
+/** The compose working directory a container was created from, if the container exists. */
+export function composeWorkingDir(container: string): string | undefined {
+  try {
+    const out = execFileSync(
+      'docker',
+      ['inspect', '--format', '{{index .Config.Labels "com.docker.compose.project.working_dir"}}', container],
+      { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] },
+    ).trim();
+    return out || undefined;
+  } catch {
+    // No such container (fresh clone, CI) or docker not reachable: compose decides.
+    return undefined;
+  }
 }
 
 export async function waitForFrontend(timeoutMs = 180_000): Promise<void> {
