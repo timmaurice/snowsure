@@ -231,7 +231,14 @@ button {
 }
 
 .score-rating {
-  font-size: 0.65rem;
+  // The ring leaves about 58px of width at this height; long labels such as
+  // the German "Ausgezeichnet" must fit inside it, so the text is smaller and
+  // clipped with an ellipsis as the last resort.
+  max-width: 56px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.5rem;
   color: var(--secondary-text-color);
   margin-top: 2px;
 }
