@@ -238,15 +238,25 @@ const DEMO_MARKER_FILE = resolve(E2E_DIR, '.demo-entry-disabled.json');
 
 interface ConfigEntry {
   entry_id: string;
-  unique_id: string | null;
+  title?: string;
+  domain?: string;
+  /** Not returned by config_entries/get in recent Home Assistant releases. */
+  unique_id?: string | null;
   state: string;
   disabled_by: string | null;
 }
 
+/**
+ * Matches by title: Home Assistant 2026.11 no longer sends `unique_id` in
+ * config_entries/get, so that field alone never finds the entry. The unique id
+ * stays as a fallback for releases that still report it.
+ */
+export const isDemoEntry = (entry: ConfigEntry): boolean =>
+  (entry.domain === undefined || entry.domain === 'snowsure') &&
+  (entry.title === DEMO_NAME || entry.unique_id === DEMO_UNIQUE_ID);
+
 const demoEntry = async () =>
-  (await callWebsocket<ConfigEntry[]>({ type: 'config_entries/get', domain: 'snowsure' })).find(
-    (entry) => entry.unique_id === DEMO_UNIQUE_ID,
-  );
+  (await callWebsocket<ConfigEntry[]>({ type: 'config_entries/get', domain: 'snowsure' })).find(isDemoEntry);
 
 /**
  * A disabled demo entry keeps its device in the registry but loads no
