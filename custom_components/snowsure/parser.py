@@ -125,7 +125,7 @@ def parse_resort(
     horizon = _int(forecast.get("forecastHorizonDays")) or 7
     daily = [
         {target: day.get(source) for source, target in _DAILY_FIELDS.items()}
-        for day in forecast.get("daily", [])
+        for day in forecast.get("daily") or []
         if isinstance(day, dict)
     ][:horizon]
     band_elevations = _add_band_snowfall(daily, _dict(_dict(forecast.get("bands")).get("bands")))
