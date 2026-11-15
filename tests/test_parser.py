@@ -210,6 +210,14 @@ def test_forecast_without_bands_keeps_the_point_forecast() -> None:
     assert "snowfall_summit" not in data["forecast_daily"][0]
 
 
+def test_forecast_with_null_daily_keeps_the_rest() -> None:
+    detail = _detail()
+    detail["forecast"]["daily"] = None
+    data = parse_resort(detail)
+    assert data["forecast_daily"] == []
+    assert data["depth_mid"] is not None
+
+
 def test_forecast_change_from_the_runs() -> None:
     runs = load_fixture("forecast_runs.json")["data"]
     data = parse_resort(_detail(), forecast_runs=runs)
