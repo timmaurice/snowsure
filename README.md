@@ -1,6 +1,6 @@
 # SnowSure Integration for Home Assistant
 
-[![Marketplace / HACS](https://img.shields.io/badge/Marketplace%20%2F%20HACS-Custom-41BDF5.svg?style=flat-square)](https://hacs.xyz/docs/faq/custom_repositories/)
+[![Marketplace / HACS](https://img.shields.io/badge/Marketplace%20%2F%20HACS-Default-41BDF5.svg?style=flat-square)](https://hacs.xyz/docs/marketplace/)
 ![GitHub release (latest by date)](https://img.shields.io/github/v/release/timmaurice/snowsure?style=flat-square)
 [![GH-downloads](https://img.shields.io/github/downloads/timmaurice/snowsure/total?style=flat-square)](https://github.com/timmaurice/snowsure/releases)
 [![GH-last-commit](https://img.shields.io/github/last-commit/timmaurice/snowsure.svg?style=flat-square)](https://github.com/timmaurice/snowsure/commits/main)
@@ -27,7 +27,7 @@ This custom integration for Home Assistant fetches ski resort data from [SnowSur
 
 ### Marketplace or HACS (Recommended)
 
-Until this integration is in the default catalog, add it as a custom repository: in HACS, open the menu → **Custom repositories**, enter `https://github.com/timmaurice/snowsure` with the category **Integration**, then install **SnowSure**. The button opens the repository in your Home Assistant:
+This integration is in the default catalog. From Home Assistant 2026.11, find it under **Settings** → **Marketplace**; on earlier versions, in the [Home Assistant Community Store (HACS)](https://hacs.xyz/). The button opens it in whichever of the two your Home Assistant has:
 
 <a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=timmaurice&repository=snowsure&category=integration" target="_blank" rel="noreferrer noopener"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open this repository in the Marketplace or HACS of your Home Assistant instance." /></a>
 

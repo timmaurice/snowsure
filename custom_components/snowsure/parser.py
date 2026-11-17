@@ -260,7 +260,7 @@ def parse_avalanche(payload: dict[str, Any] | None) -> dict[str, Any]:
         "avalanche_advice": _str(data.get("travelAdvice")),
         "avalanche_valid_until": _str(data.get("validUntil")),
         "avalanche_issuer": _str(data.get("issuer")) or _str(meta.get("issuer")),
-        "avalanche_link": _str(data.get("link")) or _str(meta.get("link")),
+        "avalanche_link": _https(data.get("link")) or _https(meta.get("link")),
         "avalanche_coverage": _str(meta.get("coverage")),
     }
 

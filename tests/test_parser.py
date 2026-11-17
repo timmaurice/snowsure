@@ -96,6 +96,15 @@ def test_no_bulletin_is_unknown_not_low() -> None:
     assert parse_avalanche(None)["avalanche_level"] is None
 
 
+def test_avalanche_link_is_https_only() -> None:
+    def link(data_link: object, meta_link: object) -> object:
+        return parse_avalanche({"data": {"link": data_link}, "meta": {"link": meta_link}})["avalanche_link"]
+
+    assert link("https://lawinen.report/", None) == "https://lawinen.report/"
+    assert link("javascript:alert(1)", "https://avalanche.org/") == "https://avalanche.org/"
+    assert link("http://example.com/", None) is None
+
+
 def test_webcams_pick_a_live_image_where_there_is_one() -> None:
     cams = parse_resort(_detail())["webcams"]
     names = [cam["name"] for cam in cams]
